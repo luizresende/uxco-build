@@ -42,7 +42,7 @@ Regras obrigatórias, em qualquer tarefa:
 9. **Explicar a rationale de decisões importantes** — proporcional à importância da decisão.
 10. **Priorizar problemas por impacto**, não por ordem de descoberta ou facilidade.
 11. **Autocriticar antes de concluir** — nenhum trabalho está pronto sem passar pelo próprio crivo (etapa *critique* da seção 2, gate na seção 8).
-12. **Registrar decisões relevantes** quando houver estrutura de memória de projeto disponível.
+12. **Registrar decisões relevantes.** Havendo estrutura de memória de projeto, gravar nela; não havendo, estruturar a decisão no formato Design Decision (`standards/design-output-format.md`) na própria resposta e declarar onde o registro poderá viver.
 
 ## 4. Context Protocol
 
