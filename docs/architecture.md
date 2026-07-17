@@ -58,9 +58,38 @@ Executado via:
 npm run preflight
 ```
 
-Verifica **apenas infraestrutura local observável pelo Node.js**: versão do Node, executável Git, repositório e branch, arquivos essenciais e um diagnóstico de disponibilidade do endpoint HTTP do Paper MCP. É rápido, roda fora do Claude Code e não depende de sessão de agente.
+Verifica **apenas infraestrutura local observável pelo Node.js**: versão do Node, executáveis (Git, Claude Code, GitHub CLI), repositório e branch, arquivos essenciais e um diagnóstico de disponibilidade do endpoint HTTP do Paper MCP. É rápido, roda fora do Claude Code e não depende de sessão de agente.
 
 O que ele **não** consegue ver: se o Claude Code tem o servidor MCP registrado, se as tools estão expostas na sessão atual, ou se há um documento ativo no Paper.
+
+#### Dependências detectadas e classificação
+
+| Dependência | Classificação | Ausência gera | Instalação |
+| --- | --- | --- | --- |
+| Node.js | REQUIRED | FAIL | Manual (https://nodejs.org) — nunca automatizada |
+| Git | REQUIRED | FAIL | Manual (https://git-scm.com) — nunca automatizada |
+| Claude Code | REQUIRED | FAIL | Manual (https://claude.com/claude-code, requer conta) — nunca automatizada |
+| GitHub CLI | OPTIONAL | WARN | Comando conhecido (`winget install --id GitHub.cli`); candidata a instalação assistida futura |
+| Paper MCP endpoint | OPTIONAL* | WARN | Não se "instala" pelo preflight: exige Paper Desktop aberto com documento; configuração do MCP acontece dentro do Claude Code |
+
+\* O endpoint é opcional para o *trabalho local no repositório*; para trabalho com o Paper ele é pré-condição — mas quem decide isso é o **Agent Preflight**, não o Machine Preflight.
+
+Regras de comportamento:
+
+- **REQUIRED ausente** → `FAIL` + comando/passo de instalação recomendado quando existir opção segura e conhecida, ou instrução explícita de que a instalação é manual. Nunca instala silenciosamente.
+- **OPTIONAL ausente** → `WARN` + explicação do impacto + instalação sugerida.
+- **Nunca instalar automaticamente:** Node.js, Git, Claude Code e Paper Desktop.
+- **MCP:** o preflight local apenas **diagnostica disponibilidade** do endpoint. A configuração real do MCP acontece dentro do Claude Code (plugin oficial ou `claude mcp add`), e uma porta HTTP respondendo **nunca** é tratada como prova de MCP funcional — isso é papel do Agent Preflight.
+
+#### Modelo de ações: DETECT → RECOMMEND → INSTALL WITH USER APPROVAL
+
+Toda dependência do UXCO Build é tratada por três ações possíveis, em escala crescente de intervenção:
+
+1. **DETECT** — verificar se a dependência está presente e funcional. *Implementado hoje* no Machine Preflight.
+2. **RECOMMEND** — mostrar ao usuário o comando ou passo de instalação recomendado, sem executá-lo. *Implementado hoje*: toda falha/aviso vem acompanhado de uma linha `RECOMMEND`.
+3. **INSTALL WITH USER APPROVAL** — executar a instalação somente mediante aprovação explícita do usuário, e somente para dependências com comando seguro e conhecido. ***Não implementado*** — reservado para uma versão futura de instalação assistida. O código do preflight já prepara essa evolução: cada dependência carrega um `install.mode` (`manual` = nunca automatizar; `assisted-future` = candidata à instalação assistida).
+
+Instalação automática silenciosa (sem aprovação) não existe em nenhum nível e não deve ser introduzida.
 
 ### 2. Agent Preflight
 

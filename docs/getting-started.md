@@ -4,12 +4,18 @@ Como preparar o ambiente local para trabalhar no UXCO Build (Sprint 0).
 
 ## Pré-requisitos
 
-- **Node.js** 18 ou superior (`node --version`)
-- **Git** (`git --version`)
-- **Claude Code** instalado e autenticado
-- **Paper Desktop** instalado
-- **Paper MCP** disponível (ver [`../.mcp/README.md`](../.mcp/README.md))
-- Terminal (PowerShell, bash ou equivalente)
+Obrigatórios (**REQUIRED** — o preflight falha sem eles):
+
+- **Node.js** 18 ou superior (`node --version`) — instalação manual: https://nodejs.org
+- **Git** (`git --version`) — instalação manual: https://git-scm.com
+- **Claude Code** instalado e autenticado (`claude --version`) — instalação manual: https://claude.com/claude-code
+
+Opcionais (**OPTIONAL** — o preflight avisa, com o impacto da ausência):
+
+- **GitHub CLI** (`gh --version`) — necessária só para operações com GitHub em sprints futuras
+- **Paper Desktop + Paper MCP** — necessários apenas para trabalho com o Paper (ver [`../.mcp/README.md`](../.mcp/README.md))
+
+O preflight **detecta e recomenda, mas nunca instala nada automaticamente** — Node.js, Git, Claude Code e Paper Desktop são sempre instalação manual sua. Instalação assistida (com aprovação explícita) é uma evolução futura prevista; detalhes do modelo DETECT → RECOMMEND → INSTALL WITH USER APPROVAL em [`architecture.md`](architecture.md).
 
 ## Passos
 
