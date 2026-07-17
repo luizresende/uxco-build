@@ -1,0 +1,14 @@
+{
+  "name": "uxco-build",
+  "version": "0.0.1",
+  "private": true,
+  "description": "UXCO Build — agente especializado em Product Design operando sobre Claude Code + Paper MCP. Sprint 0: validação de infraestrutura.",
+  "type": "module",
+  "scripts": {
+    "preflight": "node scripts/preflight.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED"
+}

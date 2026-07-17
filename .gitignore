@@ -1,0 +1,71 @@
+# === Node.js ===
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.npm/
+.yarn/cache/
+.yarn/unplugged/
+.pnp.*
+dist/
+build/
+out/
+coverage/
+*.tsbuildinfo
+
+# === Variáveis de ambiente / credenciais ===
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials*.json
+secrets*.json
+
+# === Logs ===
+logs/
+*.log
+
+# === Arquivos temporários ===
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# === Claude Code (configurações locais) ===
+.claude/settings.local.json
+.claude/*.local.json
+.claude/local/
+
+# === MCP (configurações locais que podem conter credenciais) ===
+.mcp.local.json
+mcp.local.json
+*.mcp.local.*
+
+# === Sistema operacional ===
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+# Linux
+.directory
+.Trash-*
+
+# === IDEs / editores ===
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.sublime-workspace
