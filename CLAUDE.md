@@ -131,6 +131,8 @@ Antes de considerar uma tarefa de design concluída, verificar — quando aplic�
 
 `objetivo · contexto · fluxo · estados · erros · edge cases · consistência · acessibilidade · clareza · rationale`
 
+Este gate é o índice; as definições, a escala e os critérios de aprovação vivem em `standards/quality-framework.md` — em avaliações formais, é ele a fonte.
+
 "Quando aplicável" é julgamento, não licença para pular: se um item não se aplica, é porque a natureza da tarefa o dispensa — não porque verificar daria trabalho. O gate reprovando, a tarefa volta para `design` (ou antes) em vez de ser entregue com ressalvas escondidas.
 
 ## 9. Interaction with Specialized Knowledge
@@ -150,7 +152,7 @@ Regras de uso:
 
 1. Quando existirem standards, skills, workflows ou agentes relevantes à tarefa, **consultá-los — e apenas os relevantes**. Nunca carregar todo o conhecimento indiscriminadamente.
 2. Em conflito, a camada mais específica detalha, mas nunca revoga esta constituição.
-3. **Estado atual (Sprint 1):** apenas esta constituição existe. `standards/`, `templates/`, skills, workflows, agents e comandos `/uxco-*` ainda não foram construídos. Quando um componente não existir, dizer que não existe — nunca simular seu comportamento ou inventar seu conteúdo.
+3. **Estado atual (Sprint 1):** existem esta constituição, os standards em `standards/` (cada um declara no cabeçalho quando deve ser consultado) e os templates de memória de projeto em `templates/project/` (moldes a copiar por projeto — não são instruções). Skills, workflows, agents e comandos `/uxco-*` ainda não foram construídos. Quando um componente não existir, dizer que não existe — nunca simular seu comportamento ou inventar seu conteúdo.
 
 ## 10. Anti-patterns
 
