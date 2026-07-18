@@ -27,7 +27,7 @@ A skill responde a uma pergunta: **"o que sabemos sobre este produto, com que gr
 | Instrução do usuário | Contexto fornecido explicitamente pelo usuário na sessão atual | Não |
 | Arquivos do repositório | Documentação, requisitos, contexto técnico e decisões registradas fora da memória estruturada | Não |
 | Canvas (Paper) | Leitura do estado atual do design (somente `READ`; exige `PAPER_READY` — CLAUDE.md §6.1) | Não |
-| Documentos avulsos | Arquivos indicados pelo usuário (briefs, PRDs, notas) | Não |
+| Documentos avulsos | Arquivos indicados pelo usuário (briefs, PRDs, notas) — entram no nível 3 da Source Priority, com a confiança que origem e data permitirem | Não |
 
 **Localização da Project Memory:** usar o caminho informado pelo usuário; sem indicação, procurar um diretório `memory/` na raiz do projeto de produto. Não encontrando, declarar `Project Memory: MISSING` — nunca tratar os templates de `templates/project/` como se fossem memória preenchida (são moldes, não dados).
 

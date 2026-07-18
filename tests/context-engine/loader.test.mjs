@@ -60,6 +60,20 @@ test('unknown files do not crash the loader and are not inventoried', () => {
   }
 });
 
+test('substantive content before the first section is not misread as empty', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'uxco-loader-'));
+  try {
+    writeFileSync(
+      join(dir, 'product.md'),
+      '# Product\n\nResumo real do produto escrito antes das seções.\n\n## Vision\n\n_Not filled_\n'
+    );
+    const source = bySource(loadContext(dir))['product.md'];
+    assert.equal(source.status, 'loaded');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('complete fixture loads successfully (7 loaded, 0 empty, 0 missing)', () => {
   const { summary } = loadContext(fixture('complete'));
   assert.deepEqual(summary, { loaded: 7, empty: 0, missing: 0 });

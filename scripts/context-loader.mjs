@@ -81,9 +81,11 @@ function inspectFile(memoryDir, file) {
   const sections = parseSections(content);
 
   const filledSections = sections.filter((s) => s.filled);
-  const hasLooseContent =
-    sections.length === 0 &&
-    content.split(/\r?\n/).some(isSubstantive);
+  // Conteúdo fora de qualquer seção (preâmbulo, ou arquivo sem `## `) também conta.
+  const lines = content.split(/\r?\n/);
+  const firstSection = lines.findIndex((l) => /^## /.test(l));
+  const preamble = firstSection === -1 ? lines : lines.slice(0, firstSection);
+  const hasLooseContent = preamble.some(isSubstantive);
 
   if (filledSections.length === 0 && !hasLooseContent) {
     return { file, status: 'empty', declaredFillStatus, sections };

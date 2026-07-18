@@ -21,6 +21,6 @@ Inventário mecânico (Context Loader):
 npm run context:load -- examples/context-tests/<fixture>
 ```
 
-Teste comportamental completo: executar a Product Context Skill (`skills/product-context/SKILL.md`) sobre cada fixture e avaliar o Brief produzido contra os cenários de `tests/context-engine/` e o resultado esperado acima.
+Teste comportamental completo: executar a Product Context Skill (`skills/product-context/SKILL.md`) sobre cada fixture e avaliar o Brief produzido contra os cenários de `benchmarks/context-engine/test-cases.md` (CTX-001..003) e o resultado esperado acima.
 
 Regras: fixtures são dados de teste **controlados** — mudanças aqui invalidam os cenários correspondentes e devem ser feitas junto com eles. O esperado em `incomplete/` é o agente **nomear o que falta**, nunca preencher; em `contradictory/`, **nomear o conflito**, nunca escolher um lado por conta própria.
