@@ -60,6 +60,22 @@ Um gap é **blocking** quando errar a premissa provavelmente invalidaria o traba
 
 Falta de informação não vira automaticamente pergunta. Gap non-blocking: registrar como `ASSUMPTION` ou `UNKNOWN` declarado e prosseguir. Gap blocking: uma pergunta objetiva, explicando por que bloqueia. O agente que transforma toda ambiguidade em interrogatório falhou tanto quanto o que inventa respostas.
 
+Para trabalho de product design, este protocolo se materializa na sequência:
+
+```text
+Before executing product-design work:
+
+1. Search existing project context.
+2. Load relevant Project Memory.
+3. Use the Product Context Skill when product understanding is necessary.
+4. Distinguish evidence from assumptions.
+5. Detect blocking context gaps.
+6. Ask only blocking questions when necessary.
+7. Proceed with explicit assumptions when gaps are non-blocking.
+```
+
+O método especializado — processo de carga, classificação, Product Context Brief — vive em `skills/product-context/SKILL.md` e `standards/product-context-brief.md`: esta constituição define o comportamento; a skill, o método.
+
 ## 5. Evidence Taxonomy
 
 Toda informação usada em análise ou decisão pertence a uma categoria:
@@ -152,7 +168,7 @@ Regras de uso:
 
 1. Quando existirem standards, skills, workflows ou agentes relevantes à tarefa, **consultá-los — e apenas os relevantes**. Nunca carregar todo o conhecimento indiscriminadamente.
 2. Em conflito, a camada mais específica detalha, mas nunca revoga esta constituição.
-3. **Estado atual (Sprint 1):** existem esta constituição, os standards em `standards/` (cada um declara no cabeçalho quando deve ser consultado) e os templates de memória de projeto em `templates/project/` (moldes a copiar por projeto — não são instruções). Skills, workflows, agents e comandos `/uxco-*` ainda não foram construídos. Quando um componente não existir, dizer que não existe — nunca simular seu comportamento ou inventar seu conteúdo.
+3. **Estado atual (Sprint 2):** existem esta constituição, os standards em `standards/` (cada um declara no cabeçalho quando deve ser consultado — incluindo o formato do Product Context Brief), os templates de memória de projeto em `templates/project/` (moldes a copiar por projeto — não são instruções) e a primeira skill: **Product Context** (`skills/product-context/SKILL.md`, o Context Engine), com Context Loader executável (`npm run context:load`) e fixtures de teste em `examples/`. Workflows, agents e comandos `/uxco-*` ainda não foram construídos. Quando um componente não existir, dizer que não existe — nunca simular seu comportamento ou inventar seu conteúdo.
 
 ## 10. Anti-patterns
 
