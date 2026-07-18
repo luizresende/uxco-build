@@ -1,6 +1,6 @@
 # UXCO Build
 
-> Projeto privado — Sprint 2: Context Engine do UXCO Design Engine.
+> Projeto privado — Sprint 3: Critique Engine do UXCO Design Engine.
 
 O **UXCO Build** é um agente especializado em Product Design, capaz de transformar contexto de produto em decisões, análises e alterações de design executadas diretamente no canvas.
 
@@ -22,7 +22,8 @@ Claude Code  →  UXCO Design Engine  →  Paper MCP  →  Paper Canvas
 
 - **Sprint 0 — concluída:** infraestrutura validada (repositório, preflight, integração Paper MCP com smoke test de leitura/escrita aprovado). Registro em [`docs/sprint-0.md`](docs/sprint-0.md).
 - **Sprint 1 — concluída:** fundação comportamental do UXCO Design Engine — constituição, standards, templates de memória de projeto e suíte de validação comportamental.
-- **Sprint 2 — atual:** Context Engine — a primeira camada de inteligência contextual, descrita na seção [Context Engine](#context-engine).
+- **Sprint 2 — concluída:** Context Engine — a primeira camada de inteligência contextual, descrita na seção [Context Engine](#context-engine).
+- **Sprint 3 — atual:** Critique Engine — análise crítica de interfaces e fluxos, descrita na seção [Critique Engine](#critique-engine).
 
 ## Architecture
 
@@ -31,12 +32,13 @@ O que existe hoje no repositório e a responsabilidade de cada parte:
 ```text
 CLAUDE.md               Constituição operacional — sempre carregada
 standards/              Critérios compartilhados — consultados por tarefa
-skills/product-context/ Product Context Skill — o Context Engine
+skills/                 product-context (Context Engine) · design-critique ·
+                        interaction-design (Critique Engine)
 templates/project/      Moldes de memória de projeto — copiados por projeto
-examples/               Memória demo (Pulse) e fixtures de teste do Context Engine
+examples/               Memória demo (Pulse) e fixtures de teste dos engines
 scripts/                Machine Preflight e Context Loader
-tests/                  foundation/ (comportamental) · context-engine/ (determinístico)
-benchmarks/             Evaluation harness da Product Context Skill
+tests/                  foundation/ · context-engine/ · critique-engine/ (determinísticos)
+benchmarks/             Harnesses de avaliação manual (context e critique engines)
 docs/                   Arquitetura, getting started, registros de sprint
 experiments/paper-mcp/  Evidência do smoke test da Sprint 0 (histórico)
 ```
@@ -80,13 +82,30 @@ Product Context Brief
 
 **Testes:** determinísticos do Loader em [`tests/context-engine/`](tests/context-engine/) (`npm test`); avaliação manual da skill (AGENT EVALUATION) em [`benchmarks/context-engine/`](benchmarks/context-engine/), sobre as fixtures de [`examples/context-tests/`](examples/context-tests/).
 
+### Critique Engine
+
+Análise crítica de interfaces e fluxos (Sprint 3): duas skills complementares sobre um contrato comum.
+
+```text
+Product Context Brief ──▶ Design Critique ◀──▶ Interaction Design
+                                │
+                                ▼
+                     Design Critique Report
+```
+
+- **Design Critique** — [`skills/design-critique/SKILL.md`](skills/design-critique/SKILL.md): diagnóstico amplo pelas camadas L0–L8, com Impact Test anti-superficialidade e cenários de comportamento para contexto incompleto e tela isolada.
+- **Interaction Design** — [`skills/interaction-design/SKILL.md`](skills/interaction-design/SKILL.md): profundidade comportamental — cadeia de interação, análise de fluxo, estados e edge cases.
+- **Critique Framework** — [`standards/critique-framework.md`](standards/critique-framework.md): camadas, contrato do achado (7 campos), formato do Design Critique Report e as regras comuns de crítica.
+
+**Testes:** contratos determinísticos em [`tests/critique-engine/`](tests/critique-engine/) (`npm test`); fixtures cegas em [`examples/critique-tests/`](examples/critique-tests/); harness de avaliação manual e protocolo A/B (baseline × engine) em [`benchmarks/critique-engine/`](benchmarks/critique-engine/).
+
 ### tests/foundation/ — validação comportamental
 
 Dez cenários manuais em [`tests/foundation/scenarios.md`](tests/foundation/scenarios.md) que validam a conduta do agente sob a constituição (agir sem contexto, gaps bloqueantes, ações destrutivas, contradições, estética vs. problema, registro de decisões etc.). Resultados de execução são registrados em `tests/foundation/results/` (append-only).
 
 ### Ainda não implementado
 
-**Workflows, agents e comandos `/uxco-*` não existem ainda** — estão previstos para as próximas sprints (a primeira skill, Product Context, foi construída na Sprint 2). Nada neste repositório deve ser lido como se eles existissem; a própria constituição (§9.3) proíbe o agente de simular componentes inexistentes.
+**Workflows, agents e comandos `/uxco-*` não existem ainda** — estão previstos para as próximas sprints (as três skills — Product Context, Design Critique e Interaction Design — foram construídas nas Sprints 2 e 3). Nada neste repositório deve ser lido como se eles existissem; a própria constituição (§9.3) proíbe o agente de simular componentes inexistentes.
 
 ## Como executar o preflight
 
