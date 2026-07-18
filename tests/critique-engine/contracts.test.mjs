@@ -35,6 +35,7 @@ test('required sprint 3 files exist', () => {
     'standards/critique-framework.md',
     'examples/critique-tests/README.md',
     'benchmarks/critique-engine/README.md',
+    'benchmarks/critique-engine/ab-protocol.md',
     'benchmarks/critique-engine/results',
     ...FIXTURE_SLUGS.map((s) => `examples/critique-tests/${s}/fixture.md`),
     ...FIXTURE_SLUGS.map((s) => `benchmarks/critique-engine/expectations/${s}.md`),

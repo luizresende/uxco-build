@@ -6,7 +6,8 @@ Avaliação manual (AGENT EVALUATION) das skills da Sprint 3 — `design-critiqu
 
 ```text
 benchmarks/critique-engine/
-├── README.md          este arquivo — protocolo e scoring
+├── README.md          este arquivo — protocolo e scoring de execução das skills
+├── ab-protocol.md     protocolo A/B: Claude puro × Claude com Critique Engine
 ├── expectations/      gabarito por fixture (CRT-001..005) — SÓ para o avaliador
 └── results/           registros de execução (append-only, YYYY-MM-DD-run-N.md)
 ```
