@@ -66,7 +66,7 @@ Regras do contrato:
    - **hipótese** — evidência fraca ou indireta; ponto de investigação, não conclusão → `Low`, com a validação necessária indicada na Recommendation.
 3. **Evidence é obrigatória em qualquer Finding** — `Low` confidence significa evidência fraca, nunca evidência nenhuma. Suspeita sem qualquer evidência observável **não entra em Findings**: vira Open Question, coerente com `severity-framework.md` ("sem evidência, não é achado, é hipótese").
 4. **Recommendation** responde ao Issue — não a outro problema, não a uma preferência. Quando a recomendação depender de contexto ausente, ela é apresentada como condicional ("se X for verdade...") ou acompanhada da Open Question correspondente — nunca como verdade.
-5. **Tokens canônicos para processamento:** `Category` usa exatamente `L0`–`L8` (opcionalmente seguido do nome da camada); `Severity` e `Confidence` usam exatamente os valores das escalas citadas. Sinônimos e variações quebram o consumo programático do report.
+5. **Tokens canônicos para processamento:** `Category` usa exatamente `L0`–`L8` (opcionalmente seguido do nome da camada); `Severity` e `Confidence` usam exatamente os valores das escalas citadas. Sinônimos e variações quebram o consumo programático do report. **Cada achado tem exatamente uma Category — a camada causal** (regra da Desambiguação); camadas secundárias relevantes aparecem no texto de Evidence/User Impact, nunca como Category composta ("L1/L8").
 6. **Opportunity não é canal para gosto:** uma Opportunity declara o benefício esperado (o que melhora, para quem, por qual mecanismo) com a mesma disciplina de evidência dos problemas; sugestão puramente estética é registrada como preferência do autor, não como Opportunity.
 
 ## Contrato do report
