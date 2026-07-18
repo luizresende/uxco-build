@@ -54,6 +54,8 @@ A ordem disciplina a consulta — **não autoriza descartar fontes em silêncio*
 
 A skill segue **obrigatoriamente** esta sequência. Os passos 1–4 são a fase **mecânica** (o Context Loader): descobrir, inventariar, carregar e organizar — proibido nesta fase interpretar o produto, inventar contexto ou tomar decisão de design. Os passos 5–9 são a fase de **análise**; o passo 10, a saída.
 
+O inventário dos STEPs 1–2 tem implementação executável em `scripts/context-loader.mjs` (`npm run context:load -- <projectPath> [--json]`) — usá-la quando disponível garante inventário mecânico e auditável; o resultado alimenta, nunca substitui, a análise.
+
 ```text
 STEP 1   Discover available context sources.
 STEP 2   Read Project Memory.
