@@ -81,19 +81,29 @@ A saída completa de uma crítica segue esta estrutura (blocos de `design-output
               ou declaração explícita de crítica sem contexto e o que isso limita]
 **Date:**    [YYYY-MM-DD]
 
-## Summary
+## Executive Summary
 
 [2–4 linhas: veredito, contagem por severidade, tema dominante / causa estrutural]
 
-## Findings
+## Issues
 
-[Blocos Design Issue, ordenados por severidade (Critical → Low), agrupados por
-causa estrutural quando fizer sentido — o grupo nomeia a causa, os itens listam
-as manifestações]
+[Blocos Design Issue completos, ordenados por severidade (Critical → Low)]
+
+## Patterns Detected
+
+[Causas estruturais transversais: cada padrão nomeia a causa uma vez e lista as
+manifestações agrupadas (regras 5 e 10). "Nenhum padrão detectado" é declarado,
+não omitido]
 
 ## Opportunities
 
-[Achados Opportunity — sempre separados dos problemas]
+[Achados Opportunity — sempre separados dos problemas; benefício esperado declarado]
+
+## Unknowns and Assumptions
+
+[Premissas adotadas pela análise (bloco Assumption), UNKNOWNs relevantes e
+Open Questions (blocking/non-blocking) — inclusive suspeitas sem evidência,
+que vivem aqui e não em Issues]
 
 ## Layer Coverage
 
@@ -108,9 +118,10 @@ L2: out-of-scope — [por quê]
 [Quando avaliação formal for pedida: notas por dimensão e veredito dos gates,
 conforme quality-framework.md]
 
-## Open Questions
+## Recommended Next Steps
 
-[Blocos Open Question — blocking/non-blocking]
+[Priorizados por impacto: correções na ordem de ataque, validações pendentes dos
+achados Confidence Low, e o que destravaria as camadas not-evaluable]
 ```
 
 O campo **Context** é obrigatório: crítica sem contexto declarado esconde a própria limitação. `Layer Coverage` cumpre para a crítica o papel que o inventário de fontes cumpre no Brief — ausência declarada, nunca silenciosa.
