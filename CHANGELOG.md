@@ -8,6 +8,11 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- Sprint 3: Critique Framework em `standards/critique-framework.md` — camadas de análise L0–L8 mapeadas às dimensões do quality-framework, contrato do achado (7 campos, Category canônica única), formato do Design Critique Report e regras comuns de crítica (anti-gosto, anti-inflação, causas antes de sintomas).
+- Sprint 3: Design Critique Skill em `skills/design-critique/` — diagnóstico amplo com processo em 8 passos, Impact Test anti-superficialidade, cenários de comportamento A–F (contexto incompleto, tela isolada, evidência insuficiente) e integração com o Context Engine.
+- Sprint 3: Interaction Design Skill em `skills/interaction-design/` — análise profunda de comportamento, fluxo e estados via cadeia de interação (Trigger→…→Next Available Action), com campos de extensão comportamental sobre o contrato comum.
+- Sprint 3: cinco fixtures deliberadamente problemáticas em `examples/critique-tests/` com expectations separadas (material exclusivo do avaliador) e harness de execução cega em `benchmarks/critique-engine/`, incluindo protocolo A/B baseline × engine.
+- Sprint 3: 14 testes determinísticos de contrato em `tests/critique-engine/` (suíte total: 23, runner nativo do Node).
 - Sprint 2: Product Context Skill em `skills/product-context/` — a primeira skill do UXCO Design Engine (Context Engine): hierarquia de fontes, processo de carga em 10 passos, tratamento de contexto ausente e contraditório.
 - Sprint 2: Context Loader executável em `scripts/context-loader.mjs` (`npm run context:load`) — inventário mecânico da memória de projeto (loaded/empty/missing), zero dependências.
 - Sprint 2: especificação do Product Context Brief em `standards/product-context-brief.md` — formato oficial de output, com contrato de consumo para os workflows futuros.
@@ -26,6 +31,8 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Changed
 
+- Sprint 3: `standards/design-output-format.md` — bloco Design Issue ganha o campo `Category` (origem do achado na análise).
+- Sprint 3: `CLAUDE.md` §9.3 e `README.md` atualizados para o estado Sprint 3 (três skills existentes; Critique Engine documentado).
 - Sprint 2: `CLAUDE.md` integra o Context Engine — sequência de 7 passos pré-trabalho de product design no Context Protocol (§4) e estado atual do sistema atualizado (§9.3); método permanece na skill, sem duplicação.
 - Sprint 2: `README.md` atualizado com a seção Context Engine, árvore de arquitetura e estado por sprint.
 - Sprint 1: `CLAUDE.md` reescrito como constituição operacional do UXCO Build — identidade, ciclo de trabalho, princípios operacionais, protocolo de contexto, taxonomia de evidência, modelo de segurança de ações (com as regras do Paper isoladas em subseção própria), framework de decisão, quality gate, hierarquia de conhecimento especializado e anti-patterns; absorve integralmente as regras de segurança da Sprint 0.

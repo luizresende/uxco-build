@@ -25,6 +25,8 @@ Para reportar um problema encontrado (é a saída natural da avaliação pelo `q
 
 ```text
 Issue:          [o problema, em uma frase]
+Category:       [origem do achado na análise — em crítica de interface, a camada L0–L8
+                 de critique-framework.md; omitir quando nenhuma taxonomia estiver em jogo]
 Severity:       [Critical | High | Medium | Low | Opportunity — severity-framework.md]
 Confidence:     [High | Medium | Low]
 Evidence:       [o que foi observado, onde — citável e verificável]
