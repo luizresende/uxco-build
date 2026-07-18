@@ -220,7 +220,7 @@ Regras de conduta:
 1. **Procurar antes de perguntar.** Nenhuma pergunta é feita sem antes buscar a resposta nas fontes disponíveis (ordem da Source Priority) — perguntar o que a memória já responde é falha.
 2. **Poucas e objetivas**, cada uma com o *porquê* do bloqueio. Havendo muitas candidatas, priorizar por impacto — o agente **não é uma máquina de fazer perguntas** (anti-pattern 10).
 3. No Brief, cada uma usa o bloco Open Question com `Blocking: Yes`.
-4. Perguntas blocking **não impedem a emissão do Brief**: ele é emitido com o veredito de prontidão refletindo o bloqueio (ver `standards/product-context-brief.md`). O que elas bloqueiam é o trabalho de design que dependeria da resposta.
+4. Perguntas blocking **não impedem a emissão do Brief**: ele é emitido com `Execution Recommendation: REQUEST BLOCKING CONTEXT` (ver `standards/product-context-brief.md`). O que elas bloqueiam é o trabalho de design que dependeria da resposta.
 
 ## Non-Blocking Questions
 
@@ -234,7 +234,7 @@ No Brief, usam o bloco Open Question com `Blocking: No` e acompanham o trabalho 
 
 ## Output Format
 
-A saída é **exclusivamente** o Product Context Brief, no formato definido em `standards/product-context-brief.md` — Context Status (Completeness, Confidence, Blocking Questions, Readiness), as seções de entendimento, contradições, perguntas abertas e o inventário de fontes. As 13 dimensões da análise preenchem as seções correspondentes do Brief; `Success Criteria` deriva do cruzamento objetivo + métricas (o que "dar certo" significa antes dos números). A skill não emite formatos alternativos; resumos conversacionais podem acompanhar o Brief, nunca substituí-lo quando o Brief foi pedido.
+A saída é **exclusivamente** o Product Context Brief, no formato definido em `standards/product-context-brief.md` — Context Status (Context Completeness, Confidence, Blocking Questions, Execution Recommendation), as seções de entendimento, contradições, perguntas abertas e o inventário de fontes. As 13 dimensões da análise preenchem as seções correspondentes do Brief; `Success Criteria` deriva do cruzamento objetivo + métricas (o que "dar certo" significa antes dos números). A skill não emite formatos alternativos; resumos conversacionais podem acompanhar o Brief, nunca substituí-lo quando o Brief foi pedido.
 
 ## Failure Conditions
 
@@ -260,7 +260,7 @@ Autocrítica antes de entregar (etapa `critique` do ciclo — CLAUDE.md §2):
 - [ ] O cruzamento de fontes foi feito e as contradições listadas?
 - [ ] Perguntas abertas classificadas blocking/non-blocking, com o porquê nas blocking?
 - [ ] Nenhuma das Failure Conditions ocorre?
-- [ ] O veredito de prontidão reflete honestamente o estado do contexto?
+- [ ] Context Completeness e Execution Recommendation refletem honestamente o estado do contexto?
 
 ## Examples
 
@@ -278,7 +278,8 @@ Usuário:  Gerente de logística de transportadoras médias (50–200 veículos)
 ```text
 Fontes: product.md MISSING · users.md EMPTY · demais MISSING
 Problema: UNKNOWN — nenhuma fonte disponível
-Prontidão: contexto insuficiente para design responsável; 2 perguntas blocking abertas
+Context Completeness: LOW
+Execution Recommendation: REQUEST BLOCKING CONTEXT — 2 perguntas blocking abertas
 ```
 
 **Contradição detectada** — nunca resolvida em silêncio:

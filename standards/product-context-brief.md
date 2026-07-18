@@ -21,10 +21,10 @@
 
 ## Context Status
 
-Completeness:       [COMPLETE | PARTIAL | MINIMAL | EMPTY]
-Confidence:         [High | Medium | Low]
-Blocking Questions: [n abertas]
-Readiness:          [READY | READY_WITH_ASSUMPTIONS | BLOCKED]
+Context Completeness:     [HIGH | MEDIUM | LOW]
+Confidence:               [High | Medium | Low]
+Blocking Questions:       [n abertas]
+Execution Recommendation: [PROCEED | PROCEED WITH ASSUMPTIONS | REQUEST BLOCKING CONTEXT]
 
 ## Problem
 
@@ -95,21 +95,22 @@ Readiness:          [READY | READY_WITH_ASSUMPTIONS | BLOCKED]
 
 ## Semântica do Context Status
 
-O Context Status é o veredito que um consumidor lê antes de qualquer seção — quatro campos, todos obrigatórios:
+O Context Status é o veredito que um consumidor lê antes de qualquer seção — quatro campos, todos obrigatórios. A avaliação é **qualitativa, por julgamento** sobre o estado das seções nucleares (Problem, User, Goal, JTBD, Context of Use) e das perguntas abertas — **sem pontuação numérica nem falsa precisão matemática**.
 
 | Campo | Valores | Critério |
 | --- | --- | --- |
-| Completeness | `COMPLETE` | Seções nucleares (Problem, User, Goal, JTBD, Context of Use) sustentadas por `CONFIRMED`/`EVIDENCE` |
-| | `PARTIAL` | Nucleares parcialmente cobertas; lacunas declaradas |
-| | `MINIMAL` | Maioria das nucleares em `ASSUMPTION`/`UNKNOWN` |
-| | `EMPTY` | Nenhuma fonte real de contexto disponível |
-| Confidence | `High · Medium · Low` | Força agregada das fontes nas seções nucleares (escala de `design-output-format.md`) — reflete a base do conjunto, não a média aritmética |
+| Context Completeness | `HIGH` | Contexto suficiente para agir com confiança; podem restar perguntas secundárias (non-blocking) |
+| | `MEDIUM` | É possível avançar, mas hipóteses relevantes sustentam parte do entendimento |
+| | `LOW` | O problema central ou o usuário não estão suficientemente definidos; tende a exigir perguntas blocking antes da execução |
+| Confidence | `High · Medium · Low` | Força agregada das fontes nas seções nucleares (escala de `design-output-format.md`) — reflete a base do conjunto, não uma média aritmética |
 | Blocking Questions | `n` | Contagem de Open Questions com `Blocking: Yes` ainda sem resposta |
-| Readiness | `READY` | Sem blocking questions; contexto sustenta trabalho de design |
-| | `READY_WITH_ASSUMPTIONS` | Trabalho razoável possível — apoiado em premissas explícitas listadas em Assumptions |
-| | `BLOCKED` | ≥ 1 blocking question aberta: trabalho de design que dependa da resposta não deve prosseguir |
+| Execution Recommendation | `PROCEED` | Contexto sustenta execução direta; premissas apenas periféricas |
+| | `PROCEED WITH ASSUMPTIONS` | Trabalho razoável possível — apoiado nas premissas explícitas listadas em Assumptions |
+| | `REQUEST BLOCKING CONTEXT` | Há blocking question aberta (ou núcleo indefinido): obter as respostas antes de qualquer trabalho que dependa delas |
 
-`Readiness: BLOCKED` **não impede a emissão do Brief** — o Brief é justamente o instrumento que comunica o bloqueio e as perguntas que o resolvem.
+Acoplamentos típicos — julgamento, não fórmula: `HIGH → PROCEED`, `MEDIUM → PROCEED WITH ASSUMPTIONS`, `LOW → REQUEST BLOCKING CONTEXT`. Duas regras, porém, são invariantes: **qualquer blocking question aberta força `REQUEST BLOCKING CONTEXT`**, e `HIGH` é incompatível com blocking question aberta.
+
+`REQUEST BLOCKING CONTEXT` **não impede a emissão do Brief** — o Brief é justamente o instrumento que comunica o bloqueio e as perguntas que o resolvem.
 
 ## Contrato de consumo (workflows futuros)
 
@@ -123,6 +124,6 @@ O que um consumidor **pode** assumir:
 
 O que um consumidor **deve** respeitar:
 
-1. `Readiness: BLOCKED` — não iniciar trabalho que dependa das blocking questions abertas.
+1. `Execution Recommendation: REQUEST BLOCKING CONTEXT` — não iniciar trabalho que dependa das blocking questions abertas.
 2. **Herança de categorias:** premissas do Brief continuam premissas no trabalho derivado — consumir uma `ASSUMPTION` não a promove a fato (CLAUDE.md §5).
 3. **Contradições abertas não se resolvem por consumo:** o workflow que precisar de um dos lados devolve a decisão ao usuário.
