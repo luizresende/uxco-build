@@ -1,6 +1,6 @@
 # UXCO Build
 
-> Projeto privado — Sprint 1: fundação comportamental do UXCO Design Engine.
+> Projeto privado — Sprint 2: Context Engine do UXCO Design Engine.
 
 O **UXCO Build** é um agente especializado em Product Design, capaz de transformar contexto de produto em decisões, análises e alterações de design executadas diretamente no canvas.
 
@@ -21,7 +21,8 @@ Claude Code  →  UXCO Design Engine  →  Paper MCP  →  Paper Canvas
 ## Estado do projeto
 
 - **Sprint 0 — concluída:** infraestrutura validada (repositório, preflight, integração Paper MCP com smoke test de leitura/escrita aprovado). Registro em [`docs/sprint-0.md`](docs/sprint-0.md).
-- **Sprint 1 — atual:** fundação comportamental do UXCO Design Engine — constituição, standards, templates de memória de projeto e suíte de validação comportamental, descritos abaixo.
+- **Sprint 1 — concluída:** fundação comportamental do UXCO Design Engine — constituição, standards, templates de memória de projeto e suíte de validação comportamental.
+- **Sprint 2 — atual:** Context Engine — a primeira camada de inteligência contextual, descrita na seção [Context Engine](#context-engine).
 
 ## Architecture
 
@@ -30,10 +31,13 @@ O que existe hoje no repositório e a responsabilidade de cada parte:
 ```text
 CLAUDE.md               Constituição operacional — sempre carregada
 standards/              Critérios compartilhados — consultados por tarefa
+skills/product-context/ Product Context Skill — o Context Engine
 templates/project/      Moldes de memória de projeto — copiados por projeto
-tests/foundation/       Validação comportamental — cenários manuais
+examples/               Memória demo (Pulse) e fixtures de teste do Context Engine
+scripts/                Machine Preflight e Context Loader
+tests/                  foundation/ (comportamental) · context-engine/ (determinístico)
+benchmarks/             Evaluation harness da Product Context Skill
 docs/                   Arquitetura, getting started, registros de sprint
-scripts/preflight.mjs   Machine Preflight do ambiente local
 experiments/paper-mcp/  Evidência do smoke test da Sprint 0 (histórico)
 ```
 
@@ -55,13 +59,34 @@ Conhecimento profundo, um tópico por arquivo, consultado sob demanda (cada arqu
 
 Sete moldes em Markdown puro que projetos futuros copiam e preenchem: `product`, `users`, `requirements`, `research`, `metrics`, `decisions` (log append-only) e `glossary`. Todos aceitam preenchimento incompleto (`_Not filled_` é dado válido) e separam estruturalmente fatos, suposições e desconhecidos — nenhum template incentiva fabricação de informação.
 
+### Context Engine
+
+A primeira camada de inteligência contextual (Sprint 2): transforma a memória de um projeto em entendimento estruturado e honesto sobre o que se sabe, o que se supõe e o que falta saber.
+
+```text
+Project Memory
+      ↓
+Context Loader
+      ↓
+Product Context Skill
+      ↓
+Product Context Brief
+```
+
+- **Project Memory** — os arquivos de `templates/project/` instanciados por projeto (exemplo real em [`examples/demo-project/`](examples/demo-project/)).
+- **Context Loader** — inventário mecânico das fontes (`loaded`/`empty`/`missing`): `npm run context:load -- <projectPath> [--json]`.
+- **Product Context Skill** — [`skills/product-context/SKILL.md`](skills/product-context/SKILL.md): hierarquia de fontes, classificação em cinco categorias (`CONFIRMED · EVIDENCE · ASSUMPTION · UNKNOWN · CONTRADICTION`), perguntas blocking/non-blocking.
+- **Product Context Brief** — o output padronizado, especificado em [`standards/product-context-brief.md`](standards/product-context-brief.md), consumível pelos workflows futuros.
+
+**Testes:** determinísticos do Loader em [`tests/context-engine/`](tests/context-engine/) (`npm test`); avaliação manual da skill (AGENT EVALUATION) em [`benchmarks/context-engine/`](benchmarks/context-engine/), sobre as fixtures de [`examples/context-tests/`](examples/context-tests/).
+
 ### tests/foundation/ — validação comportamental
 
 Dez cenários manuais em [`tests/foundation/scenarios.md`](tests/foundation/scenarios.md) que validam a conduta do agente sob a constituição (agir sem contexto, gaps bloqueantes, ações destrutivas, contradições, estética vs. problema, registro de decisões etc.). Resultados de execução são registrados em `tests/foundation/results/` (append-only).
 
 ### Ainda não implementado
 
-**Skills, workflows, agents e comandos `/uxco-*` não existem ainda** — estão previstos para as próximas sprints. Nada neste repositório deve ser lido como se eles existissem; a própria constituição (§9.3) proíbe o agente de simular componentes inexistentes.
+**Workflows, agents e comandos `/uxco-*` não existem ainda** — estão previstos para as próximas sprints (a primeira skill, Product Context, foi construída na Sprint 2). Nada neste repositório deve ser lido como se eles existissem; a própria constituição (§9.3) proíbe o agente de simular componentes inexistentes.
 
 ## Como executar o preflight
 
