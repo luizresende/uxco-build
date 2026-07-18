@@ -1,0 +1,118 @@
+# Critique Framework
+
+> **Propósito:** o contrato do Critique Engine — as camadas de análise de interface (L0–L8), o contrato do achado, o formato do report e as regras comuns de crítica. Define **como criticar**; o que já existe em outros standards é referenciado, nunca redefinido.
+> **Quando consultar:** ao analisar criticamente qualquer interface ou fluxo; é a fonte das skills de crítica (Sprint 3).
+
+Dependências explícitas: severidade vem de `severity-framework.md`; Confidence e o bloco Design Issue vêm de `design-output-format.md`; dimensões, escala e gates vêm de `quality-framework.md`; o piso de acessibilidade de `accessibility-baseline.md`; o contexto de produto do Product Context Brief (`standards/product-context-brief.md`).
+
+## Camadas de análise (L0–L8)
+
+A crítica varre a interface em nove camadas, **da mais estrutural para a mais superficial** — porque um sintoma numa camada alta frequentemente tem causa numa camada baixa, e a ordem força a busca da causa antes do sintoma (regra 10).
+
+| Camada | O que examina | Pergunta-chave |
+| --- | --- | --- |
+| **L0 — Product Intent** | Aderência da interface ao problema, usuário e objetivo declarados no contexto | Isto deveria existir — e existir assim — para este produto e este usuário? |
+| **L1 — User Flow** | O caminho da tarefa: passos, ordem, entradas, saídas, becos sem saída | O usuário chega ao fim da tarefa pelo caminho mais curto razoável, sem se perder? |
+| **L2 — Information Architecture** | Organização, agrupamento, nomeação e navegação | A informação está onde o usuário espera encontrá-la, com os nomes que ele usa? |
+| **L3 — Interaction** | Affordances, feedback, controles, comportamento dos elementos interativos | Toda ação tem resposta perceptível e comportamento previsível? |
+| **L4 — Content** | Linguagem, rótulos, microcopy, vocabulário do produto | Os textos orientam, no vocabulário do usuário, sem ambiguidade? |
+| **L5 — Visual Hierarchy** | Direcionamento da atenção; proeminência × importância | O olhar encontra primeiro o que mais importa? A ação primária domina? |
+| **L6 — System Consistency** | Coerência interna e com convenções da plataforma | O mesmo problema é resolvido do mesmo jeito em todo lugar? |
+| **L7 — Accessibility** | As 10 áreas de `accessibility-baseline.md` | O piso foi verificado — e o não-validável está declarado? |
+| **L8 — States & Edge Cases** | Vazio, carregando, erro, parcial, volumes extremos, textos longos | O que acontece quando está vazio, falha, demora ou transborda? |
+
+### Relação com as dimensões do quality-framework
+
+Camadas organizam a **varredura** (o que olhar, em que ordem); as dimensões do `quality-framework.md` organizam a **avaliação** (como pontuar e aprovar). O mapeamento:
+
+```text
+L0 → Context Fit ★        L3 → Interaction        L6 → Consistency
+L1 → Usability ★          L4 → Content            L7 → Accessibility ★
+L2 → Clarity              L5 → Visual Hierarchy   L8 → Completeness ★
+```
+
+A dimensão *Rationale* não tem camada própria: ela avalia a fundamentação das escolhas, não o artefato — é alimentada pelo conjunto da crítica. Um achado carrega a **camada** como `Category`; a nota de cada dimensão deriva do pior achado mapeado nela (regra do `quality-framework.md`).
+
+**L0 exige contexto.** Sem Product Context Brief (ou contexto equivalente declarado), L0 não é avaliável — registra-se `UNKNOWN` na camada e a limitação aparece no report; as demais camadas seguem avaliáveis com escopo declarado. Criticar L0 inventando a intenção do produto é fabricação.
+
+## Contrato do achado
+
+Todo problema identificado usa o bloco **Design Issue** de `design-output-format.md`, com todos os campos obrigatórios:
+
+```text
+Issue:          [o problema, em uma frase]
+Category:       [camada L0–L8 que originou o achado]
+Severity:       [Critical | High | Medium | Low | Opportunity — severity-framework.md]
+Confidence:     [High | Medium | Low — design-output-format.md]
+Evidence:       [o que foi observado, onde — citável e verificável]
+User Impact:    [o que acontece com quem encontra o problema]
+Recommendation: [correção proposta, respondendo ao problema identificado]
+```
+
+Regras do contrato:
+
+1. **Severity** usa as definições e desempates de `severity-framework.md` — na dúvida, o nível menor; pisos de acessibilidade e perda de dados, sempre `High`+. Severidade mede consequência para usuário e tarefa, nunca intensidade visual nem gosto.
+2. **Confidence** usa a escala de `design-output-format.md` e materializa a distinção obrigatória entre três naturezas de achado:
+   - **problema observado** — sustentado por evidência direta → `High`;
+   - **inferência** — evidência razoável completada por interpretação → `Medium`;
+   - **hipótese** — pouca evidência; ponto de investigação, não conclusão → `Low`, com a validação necessária indicada.
+3. **Evidence** aponta para algo observável (elemento, tela, fluxo, dado do Brief). Sem evidência não há achado — há hipótese, e ela se apresenta como tal.
+4. **Recommendation** responde ao Issue — não a outro problema, não a uma preferência. Quando a recomendação depender de contexto ausente, ela é apresentada como condicional ("se X for verdade...") ou acompanhada da Open Question correspondente — nunca como verdade.
+
+## Contrato do report
+
+A saída completa de uma crítica segue esta estrutura (blocos de `design-output-format.md`; proporcionalidade vale — crítica pontual pode usar só a seção Findings):
+
+```markdown
+# Design Critique Report
+
+**Scope:**   [o que foi analisado e a partir de que fonte — canvas, descrição, imagem]
+**Context:** [referência ao Product Context Brief usado + seu Context Status;
+              ou declaração explícita de crítica sem contexto e o que isso limita]
+**Date:**    [YYYY-MM-DD]
+
+## Summary
+
+[2–4 linhas: veredito, contagem por severidade, tema dominante / causa estrutural]
+
+## Findings
+
+[Blocos Design Issue, ordenados por severidade (Critical → Low), agrupados por
+causa estrutural quando fizer sentido — o grupo nomeia a causa, os itens listam
+as manifestações]
+
+## Opportunities
+
+[Achados Opportunity — sempre separados dos problemas]
+
+## Layer Coverage
+
+[L0–L8, cada uma: avaliada | não avaliável (UNKNOWN + o que faltou) | fora de
+escopo (declarado). Nenhuma camada é omitida em silêncio]
+
+## Quality Gate
+
+[Quando avaliação formal for pedida: notas por dimensão e veredito dos gates,
+conforme quality-framework.md]
+
+## Open Questions
+
+[Blocos Open Question — blocking/non-blocking]
+```
+
+O campo **Context** é obrigatório: crítica sem contexto declarado esconde a própria limitação. `Layer Coverage` cumpre para a crítica o papel que o inventário de fontes cumpre no Brief — ausência declarada, nunca silenciosa.
+
+## Regras comuns de crítica
+
+Regras que valem para qualquer skill de crítica. As que derivam da constituição ou de outro standard citam a fonte — a formulação aqui operacionaliza, não substitui:
+
+1. **Preferência estética nunca vira problema de usabilidade** sem impacto observável (CLAUDE.md §3.6; anti-pattern 9). A preferência pode ser atendida como escolha legítima do dono do produto — o que é proibido é travesti-la de defeito.
+2. **Toda crítica demonstra impacto:** o campo User Impact é obrigatório e específico — "fica ruim" não é impacto; "o usuário não percebe que o formulário falhou e perde o que digitou" é.
+3. **Toda recomendação responde ao problema identificado** — na mesma camada ou na camada causal.
+4. **Recomendação que depende de contexto ausente é condicional**, nunca afirmada como verdade (regra 4 do contrato do achado).
+5. **Problemas semelhantes são agrupados** quando compartilham causa — o report nomeia a causa uma vez, não repete o mesmo achado por tela.
+6. **Toda conclusão declara sua natureza:** problema observado, inferência ou hipótese — via Confidence (regra 2 do contrato) e linguagem correspondente.
+7. **Sem listas infladas:** achados triviais não sobem ao report para dar volume — `Low` de baixo valor pode ser resumido em uma linha agregada; volume não é rigor.
+8. **Severidade reflete impacto no usuário e na tarefa** — as quatro lentes de `severity-framework.md` (impact × reach × task criticality × recoverability), nunca gosto pessoal.
+9. **Problemas visuais só escalam quando afetam percepção, compreensão, prioridade, legibilidade ou comportamento** — o desalinhamento gritante sem efeito funcional é `Low`; o contraste que esconde a ação primária não é.
+10. **Causas estruturais antes de sintomas:** a varredura L0→L8 existe para isso — três sintomas em L5 com causa em L2 são reportados como um achado em L2 com manifestações, não como três achados soltos.
