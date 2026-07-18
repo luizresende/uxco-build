@@ -27,6 +27,6 @@ Cobrem:
 
 Comportamento interpretativo da Product Context Skill — classificação de evidência, detecção de contradições, blocking vs non-blocking, Context Status do Brief. Depende do julgamento do Claude sob a constituição: é **avaliado por execução de cenário e critérios observáveis**, não por assert automatizado (mesmo protocolo de `tests/foundation/scenarios.md`).
 
-Cenários em `scenarios.md` (um por fixture de `examples/context-tests/`); resultados esperados na tabela de `examples/context-tests/README.md`. Execuções são registradas em `results/` (append-only, `YYYY-MM-DD-run-N.md`) — mesmo formato da suíte da Sprint 1.
+O harness completo vive em `benchmarks/context-engine/`: cenários em `test-cases.md` (CTX-001..003, um por fixture de `examples/context-tests/`), checklist e score em `evaluation-template.md`, execuções registradas em `benchmarks/context-engine/results/` (append-only, `YYYY-MM-DD-run-N.md`) — mesmo protocolo da suíte da Sprint 1.
 
 A regra de leitura dos resultados: um cenário AGENT EVALUATION passa se a **conduta observável** satisfaz os critérios, qualquer que seja a redação; a variabilidade de redação entre execuções é esperada e não constitui falha.
