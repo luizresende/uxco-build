@@ -311,6 +311,36 @@ test('workflow consolidates the full finding set in a dedicated stage before the
     'priority ordering must be defined with Opportunities kept apart');
 });
 
+test('workflow report composition maps every canonical section to the official contract', () => {
+  const wf = read(WORKFLOW);
+  const out = wf.split('## Output')[1]?.split('\n## ')[0];
+  assert.ok(out, 'missing Output section');
+  assert.ok(out.includes('Composição do report'), 'missing report composition map');
+  // as dez entregas canônicas, mapeadas — nenhuma seção paralela criada
+  const canonical = ['Executive Summary', 'Review Scope', 'Context Snapshot',
+    'Critical', 'High', 'Medium', 'Low', 'Opportunities',
+    'Recommended Next Steps', 'Review Limitations'];
+  for (const c of canonical) assert.ok(out.includes(c), `missing canonical content: ${c}`);
+  for (const official of ['## Issues', '## Unknowns and Assumptions', '## Layer Coverage']) {
+    assert.ok(out.includes(official.replace('## ', '')), `missing official target: ${official}`);
+  }
+  assert.ok(out.includes('nenhuma seção paralela'), 'must not create a parallel report format');
+  // Executive Summary: diagnóstico, não contagem
+  assert.ok(/[Nn]unca apenas uma contagem/.test(out));
+  for (const e of ['diagnóstico principal', 'risco geral', 'prioridade recomendada']) {
+    assert.ok(out.includes(e), `executive summary missing element: ${e}`);
+  }
+  // ordenação estrita e desempate
+  assert.ok(out.includes('impacto → confiança → alcance'), 'missing severity tie-break order');
+  // next steps amarrados às issues, com o exemplo
+  assert.ok(/[Nn]unca lista genérica/.test(out));
+  assert.ok(out.includes('recuperação de pagamento'), 'must carry the worked example');
+  // limitações: as quatro origens
+  for (const l of ['contexto ausente', 'Canvas Snapshot', 'suposições', 'validação humana']) {
+    assert.ok(out.toLowerCase().includes(l.toLowerCase()), `missing limitation origin: ${l}`);
+  }
+});
+
 test('workflow honors the context gate contract of the Brief', () => {
   const wf = read(WORKFLOW);
   for (const token of ['PROCEED', 'PROCEED WITH ASSUMPTIONS', 'REQUEST BLOCKING CONTEXT']) {

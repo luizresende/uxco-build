@@ -184,7 +184,7 @@ E sobre o conjunto inteiro, independentemente da origem:
 
 5. **Duplicatas removidas, equivalentes agrupados:** o mesmo sintoma observado em várias telas ou camadas é agrupado em um único achado na camada causal, com as manifestações listadas — nunca N blocos repetidos (regras 5 e 10 do critique-framework).
 6. **`Low` agregados:** achados `Low` que compartilham causa ou não mudam a próxima ação do time entram em linha única agregada; bloco individual só quando a correção é acionável isoladamente (regra 7).
-7. **Ordenação por prioridade:** severidade primeiro (`Critical` → `Low`); dentro do mesmo nível, impacto e alcance desempatam; `Opportunity` sempre separada, ao final. A ordem do report é a ordem de ataque recomendada.
+7. **Ordenação por prioridade:** severidade primeiro (`Critical` → `Low`); dentro do mesmo nível, desempate por **impacto → confiança → alcance**; `Opportunity` sempre separada, ao final. A ordem do report é a ordem de ataque recomendada.
 
 ## Issue Model
 
@@ -272,6 +272,37 @@ STEP 7  Report — Design Critique Report completo, com Quality Gate
 
 A saída é **exclusivamente** o Design Critique Report no contrato de `standards/critique-framework.md`, com a seção **Quality Gate sempre presente** (é o que distingue o review formal da crítica pontual). O Brief que o alimentou acompanha o report — íntegro ou referenciado, quando já entregue na sessão. Resumo conversacional pode acompanhar, nunca substituir.
 
+### Composição do report
+
+O output canônico do `/uxco-review` é o contrato oficial — nenhuma seção paralela é criada. O mapa, auditável:
+
+| Conteúdo canônico do review | Onde vive no contrato oficial |
+| --- | --- |
+| Executive Summary | `## Executive Summary` |
+| Review Scope | Campo `Scope` — o Scope block íntegro (o que foi revisado, frames/telas em `Includes`, origem em `Source`) |
+| Context Snapshot | Campo `Context` — Context Status do Brief + assumptions e lacunas relevantes |
+| Critical · High · Medium · Low Issues | `## Issues`, ordenadas `Critical → Low` (subtítulos por severidade quando houver volume) |
+| Opportunities | `## Opportunities` |
+| Recommended Next Steps | `## Recommended Next Steps` |
+| Review Limitations | `## Unknowns and Assumptions` + `## Layer Coverage` |
+
+Disciplinas por seção:
+
+- **Executive Summary** — cinco elementos, em prosa: o que foi analisado (fluxo/tela), o diagnóstico principal (causa dominante), quantos problemas relevantes, o risco geral e a prioridade recomendada. **Nunca apenas uma contagem** — contagem sem diagnóstico é sumário vazio.
+- **Context Snapshot** — só o contexto necessário para interpretar a análise: Context Status, as assumptions que sustentam julgamentos e as lacunas que os limitam. O detalhe completo vive no Brief e em Unknowns and Assumptions — o snapshot aponta, não duplica.
+- **Issues** — ordem estrita da maior para a menor prioridade: severidade primeiro; **dentro da mesma severidade, impacto → confiança → alcance**.
+- **Recommended Next Steps** — **nunca lista genérica**: cada passo remete a uma issue encontrada, a uma validação pendente (achados `Low` confidence) ou ao que destravaria uma camada `not-evaluable`. A forma esperada:
+
+  ```text
+  1. Resolver o bloqueio de recuperação de pagamento.        [← issue Critical]
+  2. Validar a regra do estado de pagamento pendente.        [← validação de Confidence Low]
+  3. Simplificar a escolha de endereço.                      [← issue High]
+  4. Revisar a microcopy secundária.                         [← Lows agregados]
+  ```
+
+  "Fazer testes de usabilidade" sem objeto não é next step — é ruído.
+- **Review Limitations** — declaradas honestamente, cobrindo quatro origens: **contexto ausente** (do Brief), **dados não disponíveis pela integração** (as `Limitations` do Canvas Snapshot sobem ao report — nunca ficam só no snapshot), **suposições adotadas** (blocos Assumption) e **áreas que exigem validação humana** (achados `Low` confidence, pendências não validáveis do baseline de acessibilidade).
+
 ## Failure Conditions
 
 O review é **inválido** — refazer, não entregar — se:
@@ -300,5 +331,6 @@ Antes de entregar (etapa `critique` do ciclo aplicada ao workflow):
 - [ ] Interaction Design acionada quando o escopo pedia (fluxo, multi-tela, sequência) — e achados das duas skills consolidados: nenhum problema em dois blocos, evidência mais forte preservada, severidade maior mantida só com justificativa?
 - [ ] STEP 5 aplicado ao conjunto inteiro: sem duplicatas, `Low` agregados, ordenado por prioridade — o report entrega sinal, não volume?
 - [ ] Quality Gate presente, com dimensões críticas avaliadas ou `UNKNOWN` justificado?
+- [ ] Report composto pelo mapa canônico: Executive Summary com diagnóstico (nunca só contagem), Scope block íntegro, Context Snapshot mínimo, issues em ordem estrita, next steps amarrados às issues, limitações das quatro origens consolidadas?
 - [ ] Nenhuma operação de escrita aconteceu?
 - [ ] Recommended Next Steps priorizados por impacto, incluindo o que destravaria camadas `not-evaluable`?
