@@ -115,10 +115,11 @@ workflows/uxco-review.md
 STEP 0-1  escopo · preflight condicional (canvas → PAPER_READY)
 STEP 2-3  Product Context Skill → Brief → gate de contexto
 STEP 4    Design Critique (+ Interaction Design) → achados
-STEP 5-6  Quality Gate → Design Critique Report
+STEP 5    Consolidation — deduplicação, agrupamento, prioridade
+STEP 6-7  Quality Gate → Design Critique Report
 ```
 
-- **Workflow** — [`workflows/uxco-review.md`](workflows/uxco-review.md): processo em 7 STEPs com gates explícitos; orquestra por referência (nenhum método é redefinido) e é integralmente operação `READ` — review nunca escreve no canvas nem na memória.
+- **Workflow** — [`workflows/uxco-review.md`](workflows/uxco-review.md): processo em 8 STEPs com gates explícitos; orquestra por referência (nenhum método é redefinido) e é integralmente operação `READ` — review nunca escreve no canvas nem na memória.
 - **Comando** — [`.claude/commands/uxco-review.md`](.claude/commands/uxco-review.md): o slash command real do Claude Code; roteador fino para o workflow.
 - **Gate de contexto** — a `Execution Recommendation` do Brief governa a passagem: `REQUEST BLOCKING CONTEXT` exige respostas do usuário ou autorização explícita para o modo degradado (cenário C) — nunca respostas inventadas.
 - **Quality Gate sempre presente** — review formal é avaliação formal (`standards/quality-framework.md`): é o que o distingue da crítica pontual via skill.

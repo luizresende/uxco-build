@@ -171,12 +171,20 @@ O que ela decompõe — pelo método dela (cadeia de interação e Flow Analysis
 
 ### Consolidação — um problema, um achado
 
-Os achados das duas skills compõem **um único conjunto** no report. Quando ambas identificam o mesmo problema:
+A consolidação é o **STEP 5**: o conjunto bruto de achados — das duas skills, de todas as camadas e telas — é depurado antes do Quality Gate e do report. Crítica automatizada tende a inflar listas; este estágio existe para impedir isso: **uma boa revisão com 8 problemas relevantes vale mais que uma revisão artificial com 37 observações repetitivas — sinal sobre volume, sempre; volume não é rigor** (regra 7 do critique-framework).
+
+Quando as duas skills identificam o mesmo problema:
 
 1. **Um diagnóstico só:** consolidar na camada causal — cada achado tem exatamente uma Category (contrato do achado); as manifestações vistas por cada skill entram como evidência do mesmo bloco. Duas issues iguais no report é falha de consolidação, não rigor dobrado.
 2. **Evidência mais forte preservada:** o campo Evidence cita primeiro a evidência mais forte (observação direta > inferência > hipótese); a mais fraca complementa, nunca substitui. A Confidence do achado consolidado deriva da evidência mais forte preservada.
 3. **A maior severidade só permanece se justificada** pelas quatro lentes do `standards/severity-framework.md`; sem justificativa que sobreviva às lentes, vale a menor — regra de desempate do próprio framework (inflação destrói a escala).
 4. Os campos de extensão comportamental (Trigger, Current/Expected Behavior, Missing State) enriquecem o achado consolidado quando esclarecem — nunca justificam um segundo bloco para o mesmo problema.
+
+E sobre o conjunto inteiro, independentemente da origem:
+
+5. **Duplicatas removidas, equivalentes agrupados:** o mesmo sintoma observado em várias telas ou camadas é agrupado em um único achado na camada causal, com as manifestações listadas — nunca N blocos repetidos (regras 5 e 10 do critique-framework).
+6. **`Low` agregados:** achados `Low` que compartilham causa ou não mudam a próxima ação do time entram em linha única agregada; bloco individual só quando a correção é acionável isoladamente (regra 7).
+7. **Ordenação por prioridade:** severidade primeiro (`Critical` → `Low`); dentro do mesmo nível, impacto e alcance desempatam; `Opportunity` sempre separada, ao final. A ordem do report é a ordem de ataque recomendada.
 
 ## Issue Model
 
@@ -244,8 +252,9 @@ STEP 1  Preflight & Paper Inspection (condicional — apenas quando o canvas é 
 STEP 2  Context phase — Product Context Skill → Product Context Brief
 STEP 3  Context gate — aplicar a Execution Recommendation do Brief
 STEP 4  Critique phase — Design Critique (+ Interaction Design) → achados
-STEP 5  Quality Gate — avaliação formal pelo quality-framework
-STEP 6  Report — Design Critique Report completo, com Quality Gate
+STEP 5  Consolidation — deduplicar, agrupar, priorizar (sinal sobre volume)
+STEP 6  Quality Gate — avaliação formal pelo quality-framework
+STEP 7  Report — Design Critique Report completo, com Quality Gate
 ```
 
 - **STEP 0 — Resolve scope and target.** Identificar o artefato observável e resolver o escopo pela ordem de precedência de Scope Resolution (explícito → seleção ativa → contexto → ambiguidade sinalizada). Dois gaps blocking possíveis aqui: artefato ausente (pedir a fonte, nunca reviewar de memória) e ambiguidade de escopo entre múltiplos candidatos plausíveis (perguntar listando os candidatos, nunca escolher por palpite).
@@ -255,8 +264,9 @@ STEP 6  Report — Design Critique Report completo, com Quality Gate
   - `PROCEED` ou `PROCEED WITH ASSUMPTIONS` → seguir ao STEP 4, herdando as premissas como premissas (nunca promovidas a fato).
   - `REQUEST BLOCKING CONTEXT` → apresentar as blocking questions — e, **por padrão, continuar mesmo assim**: a crítica prossegue nas camadas que não dependem das respostas (cenário C da Design Critique Skill: L0 `not-evaluable`, Confidence rebaixada onde depender de task criticality), com as perguntas abertas visíveis no report. Isso respeita o contrato do Brief: o que as blocking questions bloqueiam é o julgamento que depende delas, não as camadas observáveis. **Interromper é exceção**: reservada a quando a ausência tornaria a análise potencialmente enganosa mesmo com limitações declaradas — nesse caso o review para nas perguntas, explicando por que prosseguir seria pior que esperar. **Inventar respostas nunca é saída.**
 - **STEP 4 — Critique phase.** Executar a Design Critique Skill sobre o artefato — o Canvas Snapshot, quando a fonte for o Paper —, com o Brief como contexto (Context Integration da skill), varrendo L0–L8 sob o Gate de evidência por camada (Critique Orchestration). A Interaction Design Skill entra pelo Roteamento da Critique Orchestration — automática para escopo de fluxo, tarefa multi-tela ou sequência de interação; sob demanda diante de cheiro comportamental — e os achados das duas skills passam pela Consolidação: um problema, um achado, no mesmo contrato de 7 campos.
-- **STEP 5 — Quality Gate.** Review formal é avaliação formal: aplicar o `quality-framework.md` — nota por dimensão derivada do pior achado, dimensões críticas (★) avaliadas no nível do escopo, `UNKNOWN` onde não houver informação, e o veredito dos três gates (média ≥ 4; críticas ≥ 3; nenhum blocker aberto). Blocker aberto reprova independentemente da média; só sai por correção verificada ou aceite explícito de risco registrado como `DECISION`.
-- **STEP 6 — Report.** Emitir o **Design Critique Report** completo (`standards/critique-framework.md`), incluindo a seção Quality Gate com o veredito, o Context citando o Brief e seu Context Status, Layer Coverage integral e Recommended Next Steps priorizados por impacto. Autocrítica antes da entrega: as Quality Checklists das skills envolvidas e o Quality Gate da constituição (§8).
+- **STEP 5 — Consolidation.** Antes de qualquer nota ou relatório, o conjunto bruto de achados passa pela Consolidação (contrato em Critique Orchestration): duplicatas removidas, equivalentes agrupados pela causa, conflitos de severidade resolvidos pelas lentes, evidência mais forte preservada, `Low` não acionáveis agregados e o conjunto ordenado por prioridade. O Quality Gate pontua o conjunto **consolidado**, nunca o bruto.
+- **STEP 6 — Quality Gate.** Review formal é avaliação formal: aplicar o `quality-framework.md` — nota por dimensão derivada do pior achado, dimensões críticas (★) avaliadas no nível do escopo, `UNKNOWN` onde não houver informação, e o veredito dos três gates (média ≥ 4; críticas ≥ 3; nenhum blocker aberto). Blocker aberto reprova independentemente da média; só sai por correção verificada ou aceite explícito de risco registrado como `DECISION`.
+- **STEP 7 — Report.** Emitir o **Design Critique Report** completo (`standards/critique-framework.md`), incluindo a seção Quality Gate com o veredito, o Context citando o Brief e seu Context Status, Layer Coverage integral e Recommended Next Steps priorizados por impacto. Autocrítica antes da entrega: as Quality Checklists das skills envolvidas e o Quality Gate da constituição (§8).
 
 ## Output
 
@@ -279,7 +289,7 @@ O review é **inválido** — refazer, não entregar — se:
 
 Antes de entregar (etapa `critique` do ciclo aplicada ao workflow):
 
-- [ ] Os 7 STEPs aconteceram — ou o desvio está declarado com o porquê?
+- [ ] Os 8 STEPs aconteceram — ou o desvio está declarado com o porquê?
 - [ ] Escopo resolvido pela ordem de precedência (explícito → seleção → contexto) e declarado no report com a origem — ambiguidade real sinalizada em vez de resolvida por palpite?
 - [ ] O Brief existe, tem Context Status e o gate do STEP 3 foi aplicado como o contrato manda?
 - [ ] Contexto incompleto tratado pela Política de bloqueio: review continuou com Confidence rebaixada e limitações declaradas nas conclusões afetadas — e interrupção usada somente diante de análise potencialmente enganosa?
@@ -288,6 +298,7 @@ Antes de entregar (etapa `critique` do ciclo aplicada ao workflow):
 - [ ] Severidade pelas quatro lentes do severity-framework, pisos intactos — e ortogonal à Confidence: incerteza expressa em Confidence, nunca rebaixando severidade em silêncio?
 - [ ] Gate de evidência aplicado camada a camada: *not enough evidence* virou `not-evaluable` declarado — nenhum achado fabricado, nenhuma camada não verificada dada como avaliada?
 - [ ] Interaction Design acionada quando o escopo pedia (fluxo, multi-tela, sequência) — e achados das duas skills consolidados: nenhum problema em dois blocos, evidência mais forte preservada, severidade maior mantida só com justificativa?
+- [ ] STEP 5 aplicado ao conjunto inteiro: sem duplicatas, `Low` agregados, ordenado por prioridade — o report entrega sinal, não volume?
 - [ ] Quality Gate presente, com dimensões críticas avaliadas ou `UNKNOWN` justificado?
 - [ ] Nenhuma operação de escrita aconteceu?
 - [ ] Recommended Next Steps priorizados por impacto, incluindo o que destravaria camadas `not-evaluable`?

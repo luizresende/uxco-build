@@ -47,11 +47,11 @@ test('workflow has all mandatory sections', () => {
   for (const s of sections) assert.ok(wf.includes(s), `missing section: ${s}`);
 });
 
-test('workflow defines the seven steps in order', () => {
+test('workflow defines the eight steps in order', () => {
   const wf = read(WORKFLOW);
   const process = wf.split('## Process')[1];
   assert.ok(process, 'missing Process section');
-  const steps = ['STEP 0', 'STEP 1', 'STEP 2', 'STEP 3', 'STEP 4', 'STEP 5', 'STEP 6'];
+  const steps = ['STEP 0', 'STEP 1', 'STEP 2', 'STEP 3', 'STEP 4', 'STEP 5', 'STEP 6', 'STEP 7'];
   let last = -1;
   for (const s of steps) {
     const i = process.indexOf(s);
@@ -287,6 +287,28 @@ test('workflow severity engine defers to the framework and keeps confidence orth
     'Critical/Low must be shown as a legitimate combination');
   assert.ok(se.includes('jamais rebaixa severidade'),
     'uncertainty must never silently lower severity');
+});
+
+test('workflow consolidates the full finding set in a dedicated stage before the report', () => {
+  const wf = read(WORKFLOW);
+  // STEP 5 é a etapa de consolidação, antes do gate e do report
+  const process = wf.split('## Process')[1];
+  const stepList = process.split('```text')[1]?.split('```')[0];
+  assert.ok(/STEP 5\s+Consolidation/.test(stepList), 'STEP 5 must be the consolidation stage');
+  assert.ok(stepList.indexOf('Consolidation') < stepList.indexOf('Quality Gate'),
+    'consolidation must precede the quality gate');
+  assert.ok(process.includes('conjunto **consolidado**, nunca o bruto'),
+    'the gate must score the consolidated set');
+  // contrato do estágio: os cinco deveres + sinal sobre volume
+  const cons = wf.split('### Consolidação')[1]?.split('\n### ')[0]?.split('\n## ')[0];
+  assert.ok(cons, 'missing consolidation contract');
+  for (const duty of ['duplicata', 'agrupa', 'severidade', 'evidência', 'prioridade']) {
+    assert.ok(cons.toLowerCase().includes(duty), `missing consolidation duty: ${duty}`);
+  }
+  assert.ok(/[Ss]inal sobre volume/.test(cons), 'signal-over-volume principle must be explicit');
+  assert.ok(cons.includes('volume não é rigor'));
+  assert.ok(cons.includes('Opportunity') && cons.includes('ordem de ataque'),
+    'priority ordering must be defined with Opportunities kept apart');
 });
 
 test('workflow honors the context gate contract of the Brief', () => {

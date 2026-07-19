@@ -18,7 +18,7 @@ benchmarks/review-workflow/
 1. **Sessão nova** por cenário, na raiz do repositório; fornecer **apenas** o comando/fixture — nunca expectations (execução contaminada é inválida).
 2. Acionar `/uxco-review <fixture>` (ou pedir a execução do workflow por extenso) e deixar o fluxo correr até o Design Critique Report.
 3. Avaliar contra a expectation do cenário — **conduta e substância**:
-   - **Conduta do workflow:** STEPs 0–6 na ordem; Brief real emitido (STEP 2); `Execution Recommendation` respeitada (STEP 3); Quality Gate presente com veredito (STEP 5–6); nenhuma escrita executada.
+   - **Conduta do workflow:** STEPs 0–7 na ordem; Brief real emitido (STEP 2); `Execution Recommendation` respeitada (STEP 3); consolidação aplicada — sem duplicatas nem lista inflada (STEP 5); Quality Gate presente com veredito (STEP 6–7); nenhuma escrita executada.
    - **Substância da crítica:** Essential presentes; severidades ±1 nível com pisos do `severity-framework.md` intactos; nenhum false positive afirmado como issue; disciplina de Confidence e Layer Coverage.
 4. Registrar em `results/YYYY-MM-DD-run-N.md`: data, commit, cenário, resultado por critério + notas, veredito final.
 
