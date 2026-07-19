@@ -203,6 +203,33 @@ test('workflow gates every critique layer on available evidence', () => {
   assert.ok(/duas direções/.test(co), 'false precision must be forbidden in both directions');
 });
 
+test('workflow routes interaction design and consolidates findings without duplication', () => {
+  const wf = read(WORKFLOW);
+  const co = wf.split('## Critique Orchestration')[1]?.split('\n## ')[0];
+  const routing = co?.split('### Roteamento da Interaction Design')[1]?.split('\n### ')[0];
+  assert.ok(routing, 'missing Interaction Design routing subsection');
+  // gatilhos automáticos por escopo
+  for (const t of ['flow', 'multi-tela', 'sequência de interação']) {
+    assert.ok(routing.includes(t), `missing routing trigger: ${t}`);
+  }
+  // as doze dimensões comportamentais, por referência ao método da skill
+  for (const d of ['sequência', 'continuidade', 'feedback', 'estados', 'transições',
+    'reversibilidade', 'prevenção de erro', 'recuperação', 'dependências',
+    'permissões', 'gargalos', 'redundâncias']) {
+    assert.ok(routing.includes(d), `missing behavioral dimension: ${d}`);
+  }
+  assert.ok(routing.includes('skills/interaction-design/SKILL.md'));
+
+  const consolidation = co.split('### Consolidação')[1];
+  assert.ok(consolidation, 'missing consolidation subsection');
+  assert.ok(/[Dd]uas issues iguais/.test(consolidation), 'duplicate issues must be named as failure');
+  assert.ok(consolidation.includes('evidência mais forte'), 'strongest evidence must be preserved');
+  assert.ok(consolidation.includes('maior severidade só permanece se justificada'),
+    'higher severity must require justification');
+  assert.ok(consolidation.includes('severity-framework.md'),
+    'severity rule must defer to the framework');
+});
+
 test('workflow honors the context gate contract of the Brief', () => {
   const wf = read(WORKFLOW);
   for (const token of ['PROCEED', 'PROCEED WITH ASSUMPTIONS', 'REQUEST BLOCKING CONTEXT']) {

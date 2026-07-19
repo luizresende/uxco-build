@@ -160,6 +160,24 @@ O gate aplicado aos casos típicos:
 
 **Falsa precisão é falha nas duas direções:** fabricar achado sem evidência suficiente e apresentar camada não verificada como avaliada (ou aprovada) são a mesma violação. O Layer Coverage declara o estado real de cada camada — "nenhum achado" só é dito de camada efetivamente avaliada.
 
+### Roteamento da Interaction Design
+
+A Interaction Design Skill (`skills/interaction-design/SKILL.md`) entra em dois regimes:
+
+- **Automático, pelo escopo** (Scope block): `Type: flow`, tarefa multi-tela (`frame-set` ou seleção que atravessa uma tarefa) ou sequência de interação declarada como objeto — o território comportamental é o próprio alvo do review, não um detalhe dele.
+- **Sob demanda, pelo cheiro comportamental:** em qualquer outro escopo, quando a varredura da Design Critique encontrar fluxo crítico, estados suspeitos ou recuperação de erro mal resolvida (regra de roteamento da própria skill).
+
+O que ela decompõe — pelo método dela (cadeia de interação e Flow Analysis; nada é replicado aqui): sequência · continuidade da tarefa · feedback · estados · transições · reversibilidade · prevenção de erro · recuperação · dependências · permissões · gargalos · redundâncias.
+
+### Consolidação — um problema, um achado
+
+Os achados das duas skills compõem **um único conjunto** no report. Quando ambas identificam o mesmo problema:
+
+1. **Um diagnóstico só:** consolidar na camada causal — cada achado tem exatamente uma Category (contrato do achado); as manifestações vistas por cada skill entram como evidência do mesmo bloco. Duas issues iguais no report é falha de consolidação, não rigor dobrado.
+2. **Evidência mais forte preservada:** o campo Evidence cita primeiro a evidência mais forte (observação direta > inferência > hipótese); a mais fraca complementa, nunca substitui. A Confidence do achado consolidado deriva da evidência mais forte preservada.
+3. **A maior severidade só permanece se justificada** pelas quatro lentes do `standards/severity-framework.md`; sem justificativa que sobreviva às lentes, vale a menor — regra de desempate do próprio framework (inflação destrói a escala).
+4. Os campos de extensão comportamental (Trigger, Current/Expected Behavior, Missing State) enriquecem o achado consolidado quando esclarecem — nunca justificam um segundo bloco para o mesmo problema.
+
 ## Safety Model
 
 1. **O review inteiro é operação `READ`** (CLAUDE.md §6): este workflow nunca escreve no canvas, nunca altera a memória do projeto e nunca corrige o que criticou. Recomendar é o limite — execução de mudanças pertence a workflows futuros, com as aprovações que o Action Safety Model exigir.
@@ -186,7 +204,7 @@ STEP 6  Report — Design Critique Report completo, com Quality Gate
 - **STEP 3 — Context gate.** Ler o Context Status do Brief e aplicar o contrato de consumo (`standards/product-context-brief.md`) sob a Política de bloqueio (Context Integration):
   - `PROCEED` ou `PROCEED WITH ASSUMPTIONS` → seguir ao STEP 4, herdando as premissas como premissas (nunca promovidas a fato).
   - `REQUEST BLOCKING CONTEXT` → apresentar as blocking questions — e, **por padrão, continuar mesmo assim**: a crítica prossegue nas camadas que não dependem das respostas (cenário C da Design Critique Skill: L0 `not-evaluable`, Confidence rebaixada onde depender de task criticality), com as perguntas abertas visíveis no report. Isso respeita o contrato do Brief: o que as blocking questions bloqueiam é o julgamento que depende delas, não as camadas observáveis. **Interromper é exceção**: reservada a quando a ausência tornaria a análise potencialmente enganosa mesmo com limitações declaradas — nesse caso o review para nas perguntas, explicando por que prosseguir seria pior que esperar. **Inventar respostas nunca é saída.**
-- **STEP 4 — Critique phase.** Executar a Design Critique Skill sobre o artefato — o Canvas Snapshot, quando a fonte for o Paper —, com o Brief como contexto (Context Integration da skill), varrendo L0–L8 sob o Gate de evidência por camada (Critique Orchestration). Cheiro comportamental que exija decomposição (fluxo crítico, estados suspeitos, recuperação de erro) roteia a Interaction Design Skill, e os achados compõem **um único conjunto** — mesma regra de agrupamento por causa estrutural, mesmo contrato de 7 campos.
+- **STEP 4 — Critique phase.** Executar a Design Critique Skill sobre o artefato — o Canvas Snapshot, quando a fonte for o Paper —, com o Brief como contexto (Context Integration da skill), varrendo L0–L8 sob o Gate de evidência por camada (Critique Orchestration). A Interaction Design Skill entra pelo Roteamento da Critique Orchestration — automática para escopo de fluxo, tarefa multi-tela ou sequência de interação; sob demanda diante de cheiro comportamental — e os achados das duas skills passam pela Consolidação: um problema, um achado, no mesmo contrato de 7 campos.
 - **STEP 5 — Quality Gate.** Review formal é avaliação formal: aplicar o `quality-framework.md` — nota por dimensão derivada do pior achado, dimensões críticas (★) avaliadas no nível do escopo, `UNKNOWN` onde não houver informação, e o veredito dos três gates (média ≥ 4; críticas ≥ 3; nenhum blocker aberto). Blocker aberto reprova independentemente da média; só sai por correção verificada ou aceite explícito de risco registrado como `DECISION`.
 - **STEP 6 — Report.** Emitir o **Design Critique Report** completo (`standards/critique-framework.md`), incluindo a seção Quality Gate com o veredito, o Context citando o Brief e seu Context Status, Layer Coverage integral e Recommended Next Steps priorizados por impacto. Autocrítica antes da entrega: as Quality Checklists das skills envolvidas e o Quality Gate da constituição (§8).
 
@@ -218,6 +236,7 @@ Antes de entregar (etapa `critique` do ciclo aplicada ao workflow):
 - [ ] Blocking e non-blocking unknowns distinguidos — blocking no gate, non-blocking como pendência declarada sem interromper nada?
 - [ ] Achados em contrato pleno (7 campos, tokens canônicos), agrupados por causa?
 - [ ] Gate de evidência aplicado camada a camada: *not enough evidence* virou `not-evaluable` declarado — nenhum achado fabricado, nenhuma camada não verificada dada como avaliada?
+- [ ] Interaction Design acionada quando o escopo pedia (fluxo, multi-tela, sequência) — e achados das duas skills consolidados: nenhum problema em dois blocos, evidência mais forte preservada, severidade maior mantida só com justificativa?
 - [ ] Quality Gate presente, com dimensões críticas avaliadas ou `UNKNOWN` justificado?
 - [ ] Nenhuma operação de escrita aconteceu?
 - [ ] Recommended Next Steps priorizados por impacto, incluindo o que destravaria camadas `not-evaluable`?
