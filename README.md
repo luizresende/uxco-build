@@ -1,6 +1,6 @@
 # UXCO Build
 
-> Projeto privado — Sprint 3: Critique Engine do UXCO Design Engine.
+> Projeto privado — Sprint 4: Review Workflow (`/uxco-review`) do UXCO Design Engine.
 
 O **UXCO Build** é um agente especializado em Product Design, capaz de transformar contexto de produto em decisões, análises e alterações de design executadas diretamente no canvas.
 
@@ -23,7 +23,8 @@ Claude Code  →  UXCO Design Engine  →  Paper MCP  →  Paper Canvas
 - **Sprint 0 — concluída:** infraestrutura validada (repositório, preflight, integração Paper MCP com smoke test de leitura/escrita aprovado). Registro em [`docs/sprint-0.md`](docs/sprint-0.md).
 - **Sprint 1 — concluída:** fundação comportamental do UXCO Design Engine — constituição, standards, templates de memória de projeto e suíte de validação comportamental.
 - **Sprint 2 — concluída:** Context Engine — a primeira camada de inteligência contextual, descrita na seção [Context Engine](#context-engine).
-- **Sprint 3 — atual:** Critique Engine — análise crítica de interfaces e fluxos, descrita na seção [Critique Engine](#critique-engine).
+- **Sprint 3 — concluída:** Critique Engine — análise crítica de interfaces e fluxos, descrita na seção [Critique Engine](#critique-engine).
+- **Sprint 4 — atual:** Review Workflow — o primeiro workflow e o primeiro comando real (`/uxco-review`), descrito na seção [Review Workflow](#review-workflow).
 
 ## Architecture
 
@@ -34,11 +35,14 @@ CLAUDE.md               Constituição operacional — sempre carregada
 standards/              Critérios compartilhados — consultados por tarefa
 skills/                 product-context (Context Engine) · design-critique ·
                         interaction-design (Critique Engine)
+workflows/              uxco-review (Review Workflow — orquestra os engines)
+.claude/commands/       Comandos reais do Claude Code — /uxco-review
 templates/project/      Moldes de memória de projeto — copiados por projeto
-examples/               Memória demo (Pulse) e fixtures de teste dos engines
+examples/               Memória demo (Pulse) e fixtures de teste dos engines e do workflow
 scripts/                Machine Preflight e Context Loader
-tests/                  foundation/ · context-engine/ · critique-engine/ (determinísticos)
-benchmarks/             Harnesses de avaliação manual (context e critique engines)
+tests/                  foundation/ · context-engine/ · critique-engine/ ·
+                        review-workflow/ (determinísticos)
+benchmarks/             Harnesses de avaliação manual (engines e review workflow)
 docs/                   Arquitetura, getting started, registros de sprint
 experiments/paper-mcp/  Evidência do smoke test da Sprint 0 (histórico)
 ```
@@ -99,13 +103,35 @@ Product Context Brief ──▶ Design Critique ◀──▶ Interaction Design
 
 **Testes:** contratos determinísticos em [`tests/critique-engine/`](tests/critique-engine/) (`npm test`); fixtures cegas em [`examples/critique-tests/`](examples/critique-tests/); harness de avaliação manual e protocolo A/B (baseline × engine) em [`benchmarks/critique-engine/`](benchmarks/critique-engine/).
 
+### Review Workflow
+
+O primeiro workflow do sistema (Sprint 4): a orquestração que conecta os dois engines em um review formal de design, acionável pelo primeiro comando real — `/uxco-review`.
+
+```text
+/uxco-review <alvo>
+      ↓
+workflows/uxco-review.md
+      ↓
+STEP 0-1  escopo · preflight condicional (canvas → PAPER_READY)
+STEP 2-3  Product Context Skill → Brief → gate de contexto
+STEP 4    Design Critique (+ Interaction Design) → achados
+STEP 5-6  Quality Gate → Design Critique Report
+```
+
+- **Workflow** — [`workflows/uxco-review.md`](workflows/uxco-review.md): processo em 7 STEPs com gates explícitos; orquestra por referência (nenhum método é redefinido) e é integralmente operação `READ` — review nunca escreve no canvas nem na memória.
+- **Comando** — [`.claude/commands/uxco-review.md`](.claude/commands/uxco-review.md): o slash command real do Claude Code; roteador fino para o workflow.
+- **Gate de contexto** — a `Execution Recommendation` do Brief governa a passagem: `REQUEST BLOCKING CONTEXT` exige respostas do usuário ou autorização explícita para o modo degradado (cenário C) — nunca respostas inventadas.
+- **Quality Gate sempre presente** — review formal é avaliação formal (`standards/quality-framework.md`): é o que o distingue da crítica pontual via skill.
+
+**Testes:** contratos determinísticos em [`tests/review-workflow/`](tests/review-workflow/) (`npm test`); fixture E2E com memória em [`examples/review-tests/`](examples/review-tests/); harness de avaliação manual (conduta + substância) em [`benchmarks/review-workflow/`](benchmarks/review-workflow/).
+
 ### tests/foundation/ — validação comportamental
 
 Dez cenários manuais em [`tests/foundation/scenarios.md`](tests/foundation/scenarios.md) que validam a conduta do agente sob a constituição (agir sem contexto, gaps bloqueantes, ações destrutivas, contradições, estética vs. problema, registro de decisões etc.). Resultados de execução são registrados em `tests/foundation/results/` (append-only).
 
 ### Ainda não implementado
 
-**Workflows, agents e comandos `/uxco-*` não existem ainda** — estão previstos para as próximas sprints (as três skills — Product Context, Design Critique e Interaction Design — foram construídas nas Sprints 2 e 3). Nada neste repositório deve ser lido como se eles existissem; a própria constituição (§9.3) proíbe o agente de simular componentes inexistentes.
+**Agents e os demais comandos `/uxco-*` não existem ainda** — `/uxco-new-feature`, `/uxco-improve-flow`, `/uxco-explore`, `/uxco-design-qa` e `/uxco-status` estão previstos para as próximas sprints (as três skills vieram das Sprints 2–3; o workflow de review e o comando `/uxco-review`, da Sprint 4). Nada neste repositório deve ser lido como se eles existissem; a própria constituição (§9.3) proíbe o agente de simular componentes inexistentes.
 
 ## Como executar o preflight
 

@@ -8,6 +8,10 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- Sprint 4: Review Workflow em `workflows/uxco-review.md` — o primeiro workflow do UXCO Design Engine: orquestra Context Engine → gate de contexto (Execution Recommendation do Brief) → Critique Engine → Quality Gate → Design Critique Report, em 7 STEPs com gates explícitos e operação exclusivamente `READ`.
+- Sprint 4: primeiro comando real do sistema — `/uxco-review` em `.claude/commands/uxco-review.md`, roteador fino para o workflow (aceita alvo por argumento; resolve o alvo na sessão quando omitido).
+- Sprint 4: fixture E2E com memória de projeto em `examples/review-tests/01-pulse-signal-capture/` (fluxo de triage do Pulse, ancorado em `examples/demo-project/`) e harness de avaliação do workflow em `benchmarks/review-workflow/` — cenários RVW-001 (sem memória, reutilizando fixture da Sprint 3) e RVW-002 (com memória), avaliando conduta da orquestração além da substância da crítica.
+- Sprint 4: 12 testes determinísticos de contrato em `tests/review-workflow/` (existência, STEPs em ordem, orquestração por referência, tokens do gate de contexto, READ-only, frontmatter do comando, integridade de referências; suíte total: 35).
 - Sprint 3: Critique Framework em `standards/critique-framework.md` — camadas de análise L0–L8 mapeadas às dimensões do quality-framework, contrato do achado (7 campos, Category canônica única), formato do Design Critique Report e regras comuns de crítica (anti-gosto, anti-inflação, causas antes de sintomas).
 - Sprint 3: Design Critique Skill em `skills/design-critique/` — diagnóstico amplo com processo em 8 passos, Impact Test anti-superficialidade, cenários de comportamento A–F (contexto incompleto, tela isolada, evidência insuficiente) e integração com o Context Engine.
 - Sprint 3: Interaction Design Skill em `skills/interaction-design/` — análise profunda de comportamento, fluxo e estados via cadeia de interação (Trigger→…→Next Available Action), com campos de extensão comportamental sobre o contrato comum.
@@ -31,6 +35,8 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Changed
 
+- Sprint 4: `package.json` — glob de testes inclui `tests/review-workflow/`.
+- Sprint 4: `CLAUDE.md` §9.3 e `README.md` atualizados para o estado Sprint 4 (workflow Review e comando `/uxco-review` existentes; agents e demais comandos seguem não construídos).
 - Sprint 3: `standards/design-output-format.md` — bloco Design Issue ganha o campo `Category` (origem do achado na análise).
 - Sprint 3: `CLAUDE.md` §9.3 e `README.md` atualizados para o estado Sprint 3 (três skills existentes; Critique Engine documentado).
 - Sprint 2: `CLAUDE.md` integra o Context Engine — sequência de 7 passos pré-trabalho de product design no Context Protocol (§4) e estado atual do sistema atualizado (§9.3); método permanece na skill, sem duplicação.
