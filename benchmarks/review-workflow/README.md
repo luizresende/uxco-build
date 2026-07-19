@@ -36,7 +36,7 @@ Falha de conduta do workflow é sempre `FAIL`, mesmo com crítica substancialmen
 
 | ID | Alvo | Expectation | O que testa |
 | --- | --- | --- | --- |
-| RVW-001 | `/uxco-review examples/critique-tests/02-checkout-flow/fixture.md` | Substância: `benchmarks/critique-engine/expectations/02-checkout-flow.md` · conduta: este protocolo | Workflow **sem memória de projeto**: Brief honesto (7 fontes `MISSING`), gate de contexto em modo degradado ou perguntas blocking, crítica nos cenários B/C |
+| RVW-001 | `/uxco-review examples/critique-tests/02-checkout-flow/fixture.md` | Substância: `benchmarks/critique-engine/expectations/02-checkout-flow.md` · conduta: este protocolo | Workflow **sem memória de projeto**: Brief honesto (7 fontes `MISSING`), Política de bloqueio aplicada — blocking questions visíveis sem travar as camadas observáveis, crítica nos cenários B/C com Confidence rebaixada nas conclusões afetadas |
 | RVW-002 | `/uxco-review examples/review-tests/01-pulse-signal-capture/fixture.md` | `expectations/01-pulse-signal-capture.md` | Workflow **com memória** (`examples/demo-project/`): STEP 2 real, L0 avaliável, achados dependentes de glossário e decisões ativas, blocker reprovando o gate |
 
 Além dos cenários E2E acima, o STEP 0 tem cenários comportamentais próprios — **SCP-001..005** em `tests/review-workflow/scope-scenarios.md` (detecção de escopo: explícito, seleção, contexto, insuficiente, ambíguo). As execuções são registradas neste mesmo `results/`.

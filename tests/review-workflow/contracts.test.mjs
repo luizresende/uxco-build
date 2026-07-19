@@ -39,8 +39,9 @@ test('required sprint 4 files exist', () => {
 test('workflow has all mandatory sections', () => {
   const wf = read(WORKFLOW);
   const sections = [
-    '## Purpose', '## Inputs', '## Scope Resolution', '## Safety Model',
-    '## Process', '## Output', '## Failure Conditions', '## Quality Checklist',
+    '## Purpose', '## Inputs', '## Scope Resolution', '## Context Integration',
+    '## Safety Model', '## Process', '## Output', '## Failure Conditions',
+    '## Quality Checklist',
   ];
   for (const s of sections) assert.ok(wf.includes(s), `missing section: ${s}`);
 });
@@ -133,6 +134,35 @@ test('workflow orchestrates the existing engines by reference, not copies', () =
   for (const r of refs) assert.ok(wf.includes(r), `missing reference: ${r}`);
   // não redefine as camadas nem o contrato do achado — apenas os consome
   assert.ok(!/\|\s*\*\*L\d — /.test(wf), 'workflow must not redefine the L0-L8 layer table');
+});
+
+test('workflow integrates the context engine without replicating it', () => {
+  const wf = read(WORKFLOW);
+  const ci = wf.split('## Context Integration')[1]?.split('\n## ')[0];
+  assert.ok(ci, 'missing Context Integration section');
+  // pipeline reutiliza a infraestrutura da Sprint 2, na ordem (diagrama)
+  const diagram = ci.split('```text')[1]?.split('```')[0];
+  assert.ok(diagram, 'missing pipeline diagram');
+  const pipeline = ['Scope Detection', 'Context Loader', 'Product Context Skill',
+    'Product Context Brief'];
+  let last = -1;
+  for (const stage of pipeline) {
+    const i = diagram.indexOf(stage);
+    assert.ok(i !== -1, `pipeline missing stage: ${stage}`);
+    assert.ok(i > last, `pipeline order broken at: ${stage}`);
+    last = i;
+  }
+  assert.ok(ci.includes('context:load'), 'must reuse the executable loader');
+  assert.ok(ci.includes('não replica'), 'must declare no replication of the skill logic');
+  // consome as cinco categorias do Brief, sem redefini-las
+  for (const cat of ['CONFIRMED', 'EVIDENCE', 'ASSUMPTION', 'UNKNOWN', 'CONTRADICTION']) {
+    assert.ok(ci.includes(`\`${cat}\``), `missing consumed category: ${cat}`);
+  }
+  // blocking vs non-blocking + política de bloqueio (só quando enganosa)
+  assert.ok(ci.includes('blocking unknowns') && ci.includes('non-blocking unknowns'),
+    'must distinguish blocking from non-blocking unknowns');
+  assert.ok(ci.includes('potencialmente enganosa'),
+    'blocking policy must be limited to potentially misleading analysis');
 });
 
 test('workflow honors the context gate contract of the Brief', () => {

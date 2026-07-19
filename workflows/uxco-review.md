@@ -70,6 +70,39 @@ Regras do bloco:
 
 Os cinco casos têm cenários comportamentais executáveis em `tests/review-workflow/scope-scenarios.md` (SCP-001..005).
 
+## Context Integration
+
+O workflow **reutiliza o Context Engine da Sprint 2 por inteiro e não replica nada dele**: descoberta, classificação e síntese pertencem à Product Context Skill — o workflow apenas a aciona e consome o Brief pelo contrato publicado.
+
+```text
+Review request
+      ↓
+Scope Detection          STEP 0 — Scope block
+      ↓
+Context Loader           npm run context:load — inventário mecânico (STEPs 1–2 da skill)
+      ↓
+Product Context Skill    skills/product-context/SKILL.md — análise (STEPs 3–10)
+      ↓
+Product Context Brief    standards/product-context-brief.md — o contrato consumido
+      ↓
+Context gate             STEP 3 → Critique
+```
+
+Como o review consome cada categoria do Brief (Evidence Classification da skill — usada, nunca redefinida aqui):
+
+| Categoria no Brief | Uso no review |
+| --- | --- |
+| `CONFIRMED` (fatos confirmados) | Chão firme: fundamenta L0 e calibra severidade (task criticality real) sem ressalva |
+| `EVIDENCE` (Known Evidence) | Sustenta julgamentos com o peso do método; citada nos achados que dependem dela |
+| `ASSUMPTION` (Assumptions) | Herdada como premissa — nunca promovida a fato (contrato de consumo do Brief); julgamento apoiado nela declara a dependência e reduz Confidence |
+| `UNKNOWN` (Open Questions) | Distinguido por blocking/non-blocking: **blocking unknowns** entram no gate do STEP 3; **non-blocking unknowns** acompanham o report como pendência declarada, sem interromper nada |
+| `CONTRADICTION` | Nunca resolvida pelo review: nomeada no report, escolha devolvida ao usuário |
+
+**Política de bloqueio do review** — ausência de informação, por si, nunca bloqueia:
+
+- Contexto incompleto mas suficiente → o review **continua**, com as conclusões afetadas explicitamente rebaixadas de Confidence e as limitações declaradas (cenários B/C da Design Critique Skill).
+- Bloquear é exceção, reservada a quando a falta de contexto tornaria a análise **potencialmente enganosa** — quando, mesmo com limitações declaradas, o review provavelmente apontaria os problemas errados ou calibraria severidades sem sentido (o critério de blocking do CLAUDE.md §4 aplicado ao review inteiro).
+
 ## Safety Model
 
 1. **O review inteiro é operação `READ`** (CLAUDE.md §6): este workflow nunca escreve no canvas, nunca altera a memória do projeto e nunca corrige o que criticou. Recomendar é o limite — execução de mudanças pertence a workflows futuros, com as aprovações que o Action Safety Model exigir.
@@ -93,9 +126,9 @@ STEP 6  Report — Design Critique Report completo, com Quality Gate
 - **STEP 0 — Resolve scope and target.** Identificar o artefato observável e resolver o escopo pela ordem de precedência de Scope Resolution (explícito → seleção ativa → contexto → ambiguidade sinalizada). Dois gaps blocking possíveis aqui: artefato ausente (pedir a fonte, nunca reviewar de memória) e ambiguidade de escopo entre múltiplos candidatos plausíveis (perguntar listando os candidatos, nunca escolher por palpite).
 - **STEP 1 — Preflight (condicional).** Somente quando o canvas for fonte: percorrer o Agent Preflight até `PAPER_READY` (docs/architecture.md); qualquer outro estado bloqueia a leitura do canvas e é reportado com a ação de correção. Fontes textuais e imagens não exigem preflight.
 - **STEP 2 — Context phase.** Executar a Product Context Skill pelo seu processo integral (STEPs 1–10 dela), usando `npm run context:load -- <projectPath>` quando houver caminho de memória. A saída é o **Product Context Brief** — emitido mesmo com memória `MISSING` (o Brief honesto sobre ausência também é Brief). Se um Brief atual do mesmo escopo já existir na sessão, reutilizá-lo é permitido — declarando a reutilização.
-- **STEP 3 — Context gate.** Ler o Context Status do Brief e aplicar o contrato de consumo (`standards/product-context-brief.md`):
-  - `PROCEED` ou `PROCEED WITH ASSUMPTIONS` → seguir ao STEP 4, herdando as premissas como premissas (nunca promovidas a fato);
-  - `REQUEST BLOCKING CONTEXT` → apresentar as blocking questions ao usuário. Três saídas possíveis, todas explícitas: (a) respostas obtidas → reclassificar e seguir; (b) o usuário autoriza prosseguir sem respostas → review em **modo degradado** (cenário C da Design Critique Skill: L0 `not-evaluable`, Confidence rebaixada onde depender de task criticality), com a autorização registrada; (c) interromper até as respostas existirem. **Inventar respostas nunca é saída.**
+- **STEP 3 — Context gate.** Ler o Context Status do Brief e aplicar o contrato de consumo (`standards/product-context-brief.md`) sob a Política de bloqueio (Context Integration):
+  - `PROCEED` ou `PROCEED WITH ASSUMPTIONS` → seguir ao STEP 4, herdando as premissas como premissas (nunca promovidas a fato).
+  - `REQUEST BLOCKING CONTEXT` → apresentar as blocking questions — e, **por padrão, continuar mesmo assim**: a crítica prossegue nas camadas que não dependem das respostas (cenário C da Design Critique Skill: L0 `not-evaluable`, Confidence rebaixada onde depender de task criticality), com as perguntas abertas visíveis no report. Isso respeita o contrato do Brief: o que as blocking questions bloqueiam é o julgamento que depende delas, não as camadas observáveis. **Interromper é exceção**: reservada a quando a ausência tornaria a análise potencialmente enganosa mesmo com limitações declaradas — nesse caso o review para nas perguntas, explicando por que prosseguir seria pior que esperar. **Inventar respostas nunca é saída.**
 - **STEP 4 — Critique phase.** Executar a Design Critique Skill sobre o artefato, com o Brief como contexto (Context Integration da skill). Cheiro comportamental que exija decomposição (fluxo crítico, estados suspeitos, recuperação de erro) roteia a Interaction Design Skill, e os achados compõem **um único conjunto** — mesma regra de agrupamento por causa estrutural, mesmo contrato de 7 campos.
 - **STEP 5 — Quality Gate.** Review formal é avaliação formal: aplicar o `quality-framework.md` — nota por dimensão derivada do pior achado, dimensões críticas (★) avaliadas no nível do escopo, `UNKNOWN` onde não houver informação, e o veredito dos três gates (média ≥ 4; críticas ≥ 3; nenhum blocker aberto). Blocker aberto reprova independentemente da média; só sai por correção verificada ou aceite explícito de risco registrado como `DECISION`.
 - **STEP 6 — Report.** Emitir o **Design Critique Report** completo (`standards/critique-framework.md`), incluindo a seção Quality Gate com o veredito, o Context citando o Brief e seu Context Status, Layer Coverage integral e Recommended Next Steps priorizados por impacto. Autocrítica antes da entrega: as Quality Checklists das skills envolvidas e o Quality Gate da constituição (§8).
@@ -111,7 +144,7 @@ O review é **inválido** — refazer, não entregar — se:
 1. Review executado sem artefato observável (crítica de memória ou de suposição).
 2. Escopo inventado: ambiguidade entre candidatos plausíveis resolvida por palpite em vez de sinalizada (Scope Resolution violada) — ou seleção/pedido explícito ignorados em silêncio.
 3. STEP 2 pulado ou fabricado: crítica formal sem Brief, ou Brief inventado para viabilizar L0.
-4. Blocking question respondida por invenção, ou modo degradado ativado sem autorização explícita do usuário.
+4. Blocking question respondida por invenção; conclusão afetada por contexto ausente entregue sem a redução explícita de Confidence e a limitação declarada; ou review interrompido por ausência de informação que não tornaria a análise enganosa (bloqueio indevido — anti-pattern 10).
 5. Qualquer escrita em canvas ou memória de projeto durante o review.
 6. Report formal sem a seção Quality Gate, ou gate reprovado entregue como aprovado / com ressalvas escondidas (CLAUDE.md §8).
 7. Qualquer Failure Condition das skills consumidas (elas permanecem válidas dentro do workflow).
@@ -123,7 +156,8 @@ Antes de entregar (etapa `critique` do ciclo aplicada ao workflow):
 - [ ] Os 7 STEPs aconteceram — ou o desvio está declarado com o porquê?
 - [ ] Escopo resolvido pela ordem de precedência (explícito → seleção → contexto) e declarado no report com a origem — ambiguidade real sinalizada em vez de resolvida por palpite?
 - [ ] O Brief existe, tem Context Status e o gate do STEP 3 foi aplicado como o contrato manda?
-- [ ] Modo degradado, se ativo, tem autorização registrada e as limitações do cenário C aplicadas?
+- [ ] Contexto incompleto tratado pela Política de bloqueio: review continuou com Confidence rebaixada e limitações declaradas nas conclusões afetadas — e interrupção usada somente diante de análise potencialmente enganosa?
+- [ ] Blocking e non-blocking unknowns distinguidos — blocking no gate, non-blocking como pendência declarada sem interromper nada?
 - [ ] Achados em contrato pleno (7 campos, tokens canônicos), agrupados por causa?
 - [ ] Quality Gate presente, com dimensões críticas avaliadas ou `UNKNOWN` justificado?
 - [ ] Nenhuma operação de escrita aconteceu?
