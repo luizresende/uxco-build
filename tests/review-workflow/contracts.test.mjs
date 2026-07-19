@@ -39,10 +39,11 @@ test('required sprint 4 files exist', () => {
 test('workflow has all mandatory sections', () => {
   const wf = read(WORKFLOW);
   const sections = [
-    '## Purpose', '## Inputs', '## Scope Resolution', '## Context Integration',
-    '## Paper Inspection', '## Critique Orchestration', '## Issue Model',
-    '## Safety Model', '## Process', '## Output', '## Failure Conditions',
-    '## Quality Checklist',
+    '## Purpose', '## Trigger', '## Inputs', '## Preconditions',
+    '## Scope Resolution', '## Context Integration', '## Paper Inspection',
+    '## Critique Orchestration', '## Issue Model', '## Safety Model',
+    '## Skill Dependencies', '## Process', '## Output',
+    '## Completion Criteria', '## Failure Conditions', '## Quality Checklist',
   ];
   for (const s of sections) assert.ok(wf.includes(s), `missing section: ${s}`);
 });
@@ -339,6 +340,45 @@ test('workflow report composition maps every canonical section to the official c
   for (const l of ['contexto ausente', 'Canvas Snapshot', 'suposições', 'validação humana']) {
     assert.ok(out.toLowerCase().includes(l.toLowerCase()), `missing limitation origin: ${l}`);
   }
+});
+
+test('workflow maps the canonical fourteen-stage pipeline onto its steps', () => {
+  const wf = read(WORKFLOW);
+  const process = wf.split('## Process')[1]?.split('\n## ')[0];
+  assert.ok(process.includes('Pipeline canônico'), 'missing canonical pipeline map');
+  const stages = ['Receive review request', 'Detect scope', 'Load project context',
+    'Inspect Paper', 'Build Context Brief', 'Run Design Critique',
+    'Run Interaction Design when relevant', 'Normalize findings', 'Classify severity',
+    'Assign confidence', 'Deduplicate findings', 'Prioritize issues',
+    'Generate report', 'Present next steps'];
+  let last = -1;
+  for (const s of stages) {
+    const i = process.indexOf(s);
+    assert.ok(i !== -1, `missing pipeline stage: ${s}`);
+    assert.ok(i > last, `pipeline stage out of order: ${s}`);
+    last = i;
+  }
+});
+
+test('workflow documentation sections carry their required substance', () => {
+  const wf = read(WORKFLOW);
+  const section = (name) => wf.split(`## ${name}`)[1]?.split('\n## ')[0] ?? '';
+  const trigger = section('Trigger');
+  assert.ok(trigger.includes('/uxco-review') && trigger.includes('contextual'),
+    'Trigger must cover command and contextual invocation');
+  const pre = section('Preconditions');
+  assert.ok(pre.includes('Artefato observável') && pre.includes('PAPER_READY'),
+    'Preconditions must name the observable artifact and canvas readiness');
+  const deps = section('Skill Dependencies');
+  for (const d of ['skills/product-context/SKILL.md', 'skills/design-critique/SKILL.md',
+    'skills/interaction-design/SKILL.md', 'scripts/context-loader.mjs']) {
+    assert.ok(deps.includes(d), `Skill Dependencies missing: ${d}`);
+  }
+  const done = section('Completion Criteria');
+  assert.ok(done.includes('8 STEPs') && done.includes('Quality Gate'),
+    'Completion Criteria must bind steps and gate');
+  assert.ok(done.includes('Gate reprovado não é review incompleto'),
+    'failed gate must not equal incomplete review');
 });
 
 test('workflow honors the context gate contract of the Brief', () => {

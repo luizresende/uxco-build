@@ -11,6 +11,16 @@ Responder: **"este design está pronto — e, se não está, o que precisa mudar
 
 `/uxco-review` é o rito **formal**: Brief de contexto, varredura completa de crítica e Quality Gate com veredito. Crítica pontual de um detalhe não passa por aqui — usa a Design Critique Skill diretamente, com a proporcionalidade da constituição (§2).
 
+## Trigger
+
+O workflow dispara por qualquer uma destas vias — todas equivalentes:
+
+- **Comando:** `/uxco-review` (puro, com alvo nomeado ou com caminho — formas em `.claude/commands/uxco-review.md`).
+- **Pedido contextual:** solicitação de review formal em linguagem natural ("faça o review do fluxo de checkout"), roteada pela constituição (CLAUDE.md §9).
+- **Ciclo de trabalho:** a etapa `critique` do ciclo (CLAUDE.md §2) elevada a avaliação formal, quando o usuário pedir o rito completo sobre trabalho da própria sessão.
+
+**Não dispara:** crítica pontual de um detalhe (Design Critique Skill direta) e pedido de design novo (crítica não é geração).
+
 ## Inputs
 
 | Fonte | Papel | Obrigatória |
@@ -19,6 +29,14 @@ Responder: **"este design está pronto — e, se não está, o que precisa mudar
 | Project Memory (caminho informado ou convenção `memory/`) | Alimenta o STEP 2 (Context phase) | Não — ausência é dado e entra no Brief como `MISSING` |
 | Escopo do review — uma tela · um frame · uma seleção · um conjunto de frames · um fluxo | Delimita o que será avaliado | Não — sem escopo explícito, resolvido pela ordem de Scope Resolution |
 | Conversa atual | Restrições, tarefa-alvo, contexto adicional | Não |
+
+## Preconditions
+
+- **Artefato observável** disponível ou obtenível — a única precondição absoluta; sem ela, o review para no caso 4 da detecção de escopo (pedir a fonte).
+- **Canvas como fonte** exige `PAPER_READY` verificado por chamada real (CLAUDE.md §6.1); indisponível, a fonte canvas é declarada inacessível e o review segue com as demais fontes, se existirem.
+- **Memória de projeto é opcional** — ausência não impede nada: vira Brief honesto com fontes `MISSING`.
+- **Context Loader** (`npm run context:load`, Node ≥ 18) quando houver caminho de memória; indisponível, o inventário dos STEPs 1–2 da skill é feito por leitura direta — declarado no Brief.
+- **Constituição e standards carregáveis** — o workflow não opera fora do repositório do UXCO Build (é sobre eles que toda referência resolve).
 
 ## Scope Resolution
 
@@ -242,6 +260,24 @@ Confidence: Low
 2. Canvas como fonte exige `PAPER_READY` verificado por chamada real (CLAUDE.md §6.1; state machine em `docs/architecture.md`). Canvas indisponível **não aborta o review**: a limitação é registrada e o review prossegue com as fontes restantes — ou pede ao usuário uma fonte observável alternativa quando o canvas era a única.
 3. Registro de decisão relevante nascida do review (ex.: aceite explícito de risco de um blocker) segue o §3.12 da constituição — bloco Design Decision, nunca escrita silenciosa em memória alheia.
 
+## Skill Dependencies
+
+Tudo consumido **por referência** — nada redefinido (CLAUDE.md §9.2):
+
+| Dependência | Papel no workflow |
+| --- | --- |
+| `skills/product-context/SKILL.md` | Context Engine — produz o Brief (STEPs 2–3) |
+| `skills/design-critique/SKILL.md` | Varredura L0–L8 e report (STEP 4) |
+| `skills/interaction-design/SKILL.md` | Decomposição comportamental (STEP 4, via Roteamento) |
+| `scripts/context-loader.mjs` | Inventário mecânico da memória (`npm run context:load`) |
+| `standards/product-context-brief.md` | Contrato do Brief e do seu consumo |
+| `standards/critique-framework.md` | Camadas, contrato do achado, contrato do report |
+| `standards/severity-framework.md` | Escala e lentes de severidade |
+| `standards/quality-framework.md` | Dimensões, notas e gates de aprovação (STEP 6) |
+| `standards/design-output-format.md` | Blocos de saída e escala de Confidence |
+| `standards/accessibility-baseline.md` | Piso de acessibilidade (L7) e limites de verificação |
+| `standards/uxco-design-principles.md` | Princípios que qualificam evidência e recomendações |
+
 ## Process
 
 Sequência obrigatória — nenhum STEP é pulado em silêncio; a profundidade de cada um é proporcional ao escopo (CLAUDE.md §2):
@@ -256,6 +292,27 @@ STEP 5  Consolidation — deduplicar, agrupar, priorizar (sinal sobre volume)
 STEP 6  Quality Gate — avaliação formal pelo quality-framework
 STEP 7  Report — Design Critique Report completo, com Quality Gate
 ```
+
+### Pipeline canônico — mapa dos 14 estágios
+
+Os STEPs implementam o pipeline canônico do review. O mapa preserva as dependências reais, não a numeração literal — em particular, a inspeção do Paper precede a construção do Brief porque o Canvas Snapshot é evidência de canvas do próprio Brief:
+
+| Estágio canônico | Onde vive |
+| --- | --- |
+| 1. Receive review request | STEP 0 (entrada via Trigger) |
+| 2. Detect scope | STEP 0 (Scope Resolution → Scope block) |
+| 3. Load project context | STEP 2 (Context Loader — fase mecânica) |
+| 4. Inspect Paper | STEP 1 (Paper Inspection → Canvas Snapshot) |
+| 5. Build Context Brief | STEP 2 (Product Context Skill → Brief; gate no STEP 3) |
+| 6. Run Design Critique | STEP 4 (varredura L0–L8 sob o Gate de evidência) |
+| 7. Run Interaction Design when relevant | STEP 4 (Roteamento da Interaction Design) |
+| 8. Normalize findings | STEP 4 (Issue Model — contrato de 7 campos) |
+| 9. Classify severity | STEP 4 (Severity Engine) |
+| 10. Assign confidence | STEP 4 (Issue Model — ortogonal à severidade) |
+| 11. Deduplicate findings | STEP 5 (Consolidação) |
+| 12. Prioritize issues | STEP 5 (ordenação: severidade → impacto → confiança → alcance) |
+| 13. Generate report | STEP 6–7 (Quality Gate + Composição do report) |
+| 14. Present next steps | STEP 7 (Recommended Next Steps amarrados às issues) |
 
 - **STEP 0 — Resolve scope and target.** Identificar o artefato observável e resolver o escopo pela ordem de precedência de Scope Resolution (explícito → seleção ativa → contexto → ambiguidade sinalizada). Dois gaps blocking possíveis aqui: artefato ausente (pedir a fonte, nunca reviewar de memória) e ambiguidade de escopo entre múltiplos candidatos plausíveis (perguntar listando os candidatos, nunca escolher por palpite).
 - **STEP 1 — Preflight & Paper Inspection (condicional).** Somente quando o canvas for fonte: percorrer o Agent Preflight até `PAPER_READY` (docs/architecture.md); qualquer outro estado bloqueia a leitura do canvas e é reportado com a ação de correção. Com `PAPER_READY`, executar a inspeção e consolidar o **Canvas Snapshot** (seção Paper Inspection), com `Limitations` preenchido. Fontes textuais e imagens não exigem preflight.
@@ -302,6 +359,19 @@ Disciplinas por seção:
 
   "Fazer testes de usabilidade" sem objeto não é next step — é ruído.
 - **Review Limitations** — declaradas honestamente, cobrindo quatro origens: **contexto ausente** (do Brief), **dados não disponíveis pela integração** (as `Limitations` do Canvas Snapshot sobem ao report — nunca ficam só no snapshot), **suposições adotadas** (blocos Assumption) e **áreas que exigem validação humana** (achados `Low` confidence, pendências não validáveis do baseline de acessibilidade).
+
+## Completion Criteria
+
+O review está **completo** somente quando, simultaneamente:
+
+1. Os 8 STEPs executados — ou o desvio declarado com o porquê (proporcionalidade ajusta profundidade, nunca pula gates).
+2. Report emitido na Composição canônica, com Quality Gate presente e veredito dos gates.
+3. Scope block íntegro no report, com a origem da resolução.
+4. Review Limitations cobrindo as quatro origens (contexto ausente · dados não expostos pela integração · suposições · validação humana pendente).
+5. Quality Checklist aprovada (a autocrítica do ciclo — CLAUDE.md §2, §8).
+6. Nenhuma escrita realizada em canvas ou memória de projeto.
+
+**Gate reprovado não é review incompleto:** o review que reporta a reprovação com os achados explícitos está completo — o que volta ao ciclo é o *design avaliado*, não o review.
 
 ## Failure Conditions
 
