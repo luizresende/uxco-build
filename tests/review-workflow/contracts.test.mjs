@@ -16,6 +16,7 @@ const read = (p) => readFileSync(join(root, p), 'utf8');
 
 const WORKFLOW = 'workflows/uxco-review.md';
 const COMMAND = '.claude/commands/uxco-review.md';
+const SCENARIOS = 'tests/review-workflow/scope-scenarios.md';
 const FIXTURE = 'examples/review-tests/01-pulse-signal-capture/fixture.md';
 const EXPECTATION = 'benchmarks/review-workflow/expectations/01-pulse-signal-capture.md';
 
@@ -25,6 +26,7 @@ test('required sprint 4 files exist', () => {
   const required = [
     WORKFLOW,
     COMMAND,
+    SCENARIOS,
     'examples/review-tests/README.md',
     FIXTURE,
     'benchmarks/review-workflow/README.md',
@@ -76,6 +78,45 @@ test('workflow defines the scope resolution contract', () => {
     last = i;
   }
   assert.ok(/nunca inventar|nunca é saída/i.test(sr), 'must forbid inventing scope');
+});
+
+test('workflow formalizes the auditable scope block', () => {
+  const wf = read(WORKFLOW);
+  const block = wf.split('### Scope block')[1]?.split('\n### ')[0];
+  assert.ok(block, 'missing Scope block subsection');
+  for (const f of ['Type:', 'Name:', 'Source:', 'Includes:', 'Confidence:', 'Ambiguities:']) {
+    assert.ok(block.includes(f), `scope block missing field: ${f}`);
+  }
+  // tokens canônicos de Type e Source
+  assert.ok(block.includes('screen | frame | selection | frame-set | flow'),
+    'missing canonical Type tokens');
+  assert.ok(block.includes('explicit | selection | inferred'),
+    'missing canonical Source tokens');
+  // escopo não resolvido é representado, nunca escondido
+  assert.ok(block.includes('UNKNOWN'), 'unresolved scope must be representable');
+});
+
+test('workflow maps the five canonical detection cases with behavioral scenarios', () => {
+  const wf = read(WORKFLOW);
+  const cases = wf.split('### Casos canônicos de detecção')[1]?.split('\n## ')[0];
+  assert.ok(cases, 'missing detection cases subsection');
+  const rows = cases.split('\n').filter(
+    (l) => l.trim().startsWith('|') && !/---|Caso \|/.test(l) && !/\| Caso /.test(l)
+  );
+  assert.equal(rows.length, 5, `expected 5 case rows, got ${rows.length}`);
+  assert.ok(cases.includes(SCENARIOS.replace('tests/review-workflow/', '')) ||
+    wf.includes(SCENARIOS), 'cases must point to the behavioral scenarios');
+
+  const sc = read(SCENARIOS);
+  for (const id of ['SCP-001', 'SCP-002', 'SCP-003', 'SCP-004', 'SCP-005']) {
+    const section = sc.split(`## ${id}`)[1]?.split('\n## ')[0];
+    assert.ok(section, `missing scenario: ${id}`);
+    for (const s of ['### User Request', '### Context Available', '### Expected Behavior',
+      '### Must Do', '### Must Not Do', '### Pass Criteria', '### Fail Criteria']) {
+      assert.ok(section.includes(s), `${id} missing section: ${s}`);
+    }
+  }
+  assert.ok(sc.includes('workflows/uxco-review.md'), 'scenarios must reference the workflow');
 });
 
 test('workflow orchestrates the existing engines by reference, not copies', () => {
@@ -164,6 +205,7 @@ test('no broken repo references in sprint 4 artifacts', () => {
   const files = [
     WORKFLOW,
     COMMAND,
+    SCENARIOS,
     'examples/review-tests/README.md',
     FIXTURE,
     'benchmarks/review-workflow/README.md',

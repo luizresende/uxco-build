@@ -36,7 +36,39 @@ O review aceita como escopo qualquer uma destas unidades: **uma tela · um frame
 3. **Contexto disponível** — sem escopo explícito nem seleção inequívoca, tentar identificar o escopo pelo contexto da sessão: artefato único fornecido, fluxo em discussão na conversa, candidato natural no documento ativo (ex.: um único frame no canvas). A identificação é inferência — declarada como tal (`ASSUMPTION` de escopo, revisável pelo usuário). Candidato único de confiança razoável não é ambiguidade: é inferência declarada, e o review prossegue.
 4. **Ambiguidade** — múltiplos candidatos plausíveis (várias telas, seleção ambígua, conversa apontando para mais de um fluxo) cuja escolha errada comprometeria a confiabilidade da análise: o workflow **sinaliza a ambiguidade e pergunta**, com uma pergunta objetiva listando os candidatos (gap blocking — CLAUDE.md §4). **Inventar o escopo nunca é saída**: escopo inventado invalida o review inteiro (Failure Conditions).
 
-O escopo resolvido é sempre **declarado no campo Scope do report, com a origem da resolução** (explícito · seleção · inferido do contexto). Escopo de tela/frame isolado ativa a disciplina do cenário D (`skills/design-critique/SKILL.md`); conjunto de frames ou fluxo completo, a do cenário E.
+Escopo de tela/frame isolado ativa a disciplina do cenário D (`skills/design-critique/SKILL.md`); conjunto de frames ou fluxo completo, a do cenário E.
+
+### Scope block — representação auditável
+
+O resultado do STEP 0 é materializado neste bloco, que preenche o campo **Scope** do Design Critique Report (expande, sem alterar, o contrato de `standards/critique-framework.md`):
+
+```text
+Scope:
+  Type:        [screen | frame | selection | frame-set | flow]
+  Name:        [nome do alvo — frame, fluxo ou tela como nomeado na fonte]
+  Source:      [explicit | selection | inferred]
+  Includes:    [frames/telas/elementos cobertos — um por item; o que fica de fora relevante, declarado]
+  Confidence:  [High | Medium | Low — escala de standards/design-output-format.md]
+  Ambiguities: [None | ambiguidades abertas, cada uma com seus candidatos]
+```
+
+Regras do bloco:
+
+1. **Tokens canônicos:** `Type` e `Source` usam exatamente os valores acima — `Source` espelha a ordem de precedência (`explicit` = escopo do usuário; `selection` = seleção ativa no Paper; `inferred` = identificado do contexto). Sinônimos quebram o consumo do report.
+2. **Confidence honesta:** `Source: inferred` nunca nasce `High` sem base declarada em Includes/Ambiguities — o workflow **não finge certeza**; a confiança do escopo segue a mesma disciplina de qualquer julgamento (`standards/design-output-format.md`).
+3. **Escopo não resolvido também é representado:** nos casos 4 e 5 abaixo, o bloco é emitido com `Type`/`Name` = `UNKNOWN`, `Ambiguities` listando os candidatos (quando existirem) e uma Open Question `Blocking: Yes` ao lado — a crítica (STEP 4 em diante) **não prossegue** com Scope `UNKNOWN`.
+
+### Casos canônicos de detecção
+
+| Caso | Situação | Resolução esperada |
+| --- | --- | --- |
+| 1 | Usuário especifica explicitamente uma tela | `Type: screen · Source: explicit · Confidence: High`; cenário D ativo |
+| 2 | Usuário especifica explicitamente um fluxo | `Type: flow · Source: explicit`; `Includes` lista as etapas conhecidas; cenário E ativo |
+| 3 | Sem escopo explícito; Paper com seleção utilizável | `Source: selection`; `Type` conforme o que a seleção forma (frame, conjunto, tela); seleção nunca ignorada em silêncio |
+| 4 | Nem escopo explícito, nem seleção, nem candidato identificável no contexto | Scope `UNKNOWN` + Open Question blocking pedindo a fonte; nenhuma crítica é iniciada |
+| 5 | Múltiplos candidatos plausíveis (telas, fluxos ou artefatos concorrentes) | Scope `UNKNOWN` + `Ambiguities` com os candidatos + Open Question blocking listando-os; nunca escolha por palpite |
+
+Os cinco casos têm cenários comportamentais executáveis em `tests/review-workflow/scope-scenarios.md` (SCP-001..005).
 
 ## Safety Model
 
