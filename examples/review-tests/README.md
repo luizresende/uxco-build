@@ -5,6 +5,7 @@ Fixtures ponta a ponta do Review Workflow (`workflows/uxco-review.md`) — Sprin
 | Fixture | Cenário | O que exercita |
 | --- | --- | --- |
 | `01-pulse-signal-capture/` | Sessão de triage semanal do Pulse — fluxo completo, **com memória de projeto** (`examples/demo-project/`) | STEP 2 com memória real, L0 avaliável, achados que dependem de glossário e decisões ativas |
+| `02-pulse-new-item/` | Modal de criação manual de um Feedback Item — **tela única, com memória** | Escopo explícito de tela (cenário D), 3 achados semeados sem nenhum `Critical`, ordenação e report válido com ausência declarada, opportunity separada |
 
 ## Regra de cegueira
 
