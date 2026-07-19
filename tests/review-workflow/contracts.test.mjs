@@ -1,0 +1,160 @@
+// Testes DETERMINISTIC do Review Workflow (Sprint 4): contratos e invariantes
+// verificáveis — existência, seções obrigatórias, integridade de referências,
+// tokens canônicos e o encadeamento declarado com os engines existentes.
+// A qualidade da execução do workflow é AGENT EVALUATION
+// (benchmarks/review-workflow/) e não é fingida aqui como assert.
+
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = fileURLToPath(new URL('../../', import.meta.url));
+const exists = (p) => existsSync(join(root, p));
+const read = (p) => readFileSync(join(root, p), 'utf8');
+
+const WORKFLOW = 'workflows/uxco-review.md';
+const COMMAND = '.claude/commands/uxco-review.md';
+const FIXTURE = 'examples/review-tests/01-pulse-signal-capture/fixture.md';
+const EXPECTATION = 'benchmarks/review-workflow/expectations/01-pulse-signal-capture.md';
+
+const SEVERITIES = ['Critical', 'High', 'Medium', 'Low', 'Opportunity'];
+
+test('required sprint 4 files exist', () => {
+  const required = [
+    WORKFLOW,
+    COMMAND,
+    'examples/review-tests/README.md',
+    FIXTURE,
+    'benchmarks/review-workflow/README.md',
+    EXPECTATION,
+    'benchmarks/review-workflow/results',
+  ];
+  for (const p of required) assert.ok(exists(p), `missing: ${p}`);
+});
+
+test('workflow has all mandatory sections', () => {
+  const wf = read(WORKFLOW);
+  const sections = [
+    '## Purpose', '## Inputs', '## Safety Model', '## Process',
+    '## Output', '## Failure Conditions', '## Quality Checklist',
+  ];
+  for (const s of sections) assert.ok(wf.includes(s), `missing section: ${s}`);
+});
+
+test('workflow defines the seven steps in order', () => {
+  const wf = read(WORKFLOW);
+  const process = wf.split('## Process')[1];
+  assert.ok(process, 'missing Process section');
+  const steps = ['STEP 0', 'STEP 1', 'STEP 2', 'STEP 3', 'STEP 4', 'STEP 5', 'STEP 6'];
+  let last = -1;
+  for (const s of steps) {
+    const i = process.indexOf(s);
+    assert.ok(i !== -1, `missing step: ${s}`);
+    assert.ok(i > last, `step out of order: ${s}`);
+    last = i;
+  }
+});
+
+test('workflow orchestrates the existing engines by reference, not copies', () => {
+  const wf = read(WORKFLOW);
+  const refs = [
+    'skills/product-context/SKILL.md',
+    'skills/design-critique/SKILL.md',
+    'skills/interaction-design/SKILL.md',
+    'standards/product-context-brief.md',
+    'standards/critique-framework.md',
+    'standards/quality-framework.md',
+    'standards/severity-framework.md',
+  ];
+  for (const r of refs) assert.ok(wf.includes(r), `missing reference: ${r}`);
+  // não redefine as camadas nem o contrato do achado — apenas os consome
+  assert.ok(!/\|\s*\*\*L\d — /.test(wf), 'workflow must not redefine the L0-L8 layer table');
+});
+
+test('workflow honors the context gate contract of the Brief', () => {
+  const wf = read(WORKFLOW);
+  for (const token of ['PROCEED', 'PROCEED WITH ASSUMPTIONS', 'REQUEST BLOCKING CONTEXT']) {
+    assert.ok(wf.includes(token), `missing Execution Recommendation token: ${token}`);
+  }
+});
+
+test('workflow declares itself READ-only and requires PAPER_READY for canvas', () => {
+  const wf = read(WORKFLOW);
+  assert.ok(wf.includes('`READ`'), 'workflow must declare the READ safety class');
+  assert.ok(wf.includes('PAPER_READY'), 'workflow must gate canvas reads on PAPER_READY');
+});
+
+test('command file routes to the workflow and has frontmatter', () => {
+  const cmd = read(COMMAND);
+  assert.ok(cmd.startsWith('---'), 'command must open with frontmatter');
+  assert.ok(/description:/.test(cmd), 'command frontmatter must carry a description');
+  assert.ok(cmd.includes(WORKFLOW), 'command must route to the workflow file');
+  assert.ok(cmd.includes('$ARGUMENTS'), 'command must accept arguments');
+});
+
+test('workflow and command use no non-canonical severity vocabulary', () => {
+  // "blocker" fica de fora: é vocabulário legítimo dos gates do quality-framework,
+  // não um token de severidade.
+  const banned = /\b(Major|Minor|Trivial)\b/;
+  for (const file of [WORKFLOW, COMMAND]) {
+    assert.ok(!banned.test(read(file)), `${file} uses a non-canonical severity term`);
+  }
+});
+
+test('review fixture is complete and points to the demo memory', () => {
+  const fx = read(FIXTURE);
+  for (const s of ['## Contexto', '## Estados conhecidos']) {
+    assert.ok(fx.includes(s), `fixture missing section: ${s}`);
+  }
+  assert.ok(/## Tela/.test(fx), 'fixture must describe at least one screen');
+  assert.ok(fx.includes('examples/demo-project/'), 'fixture must point to the demo memory');
+});
+
+test('expectation is complete and uses only allowed severities', () => {
+  const ex = read(EXPECTATION);
+  for (const s of ['## Essential', '## Acceptable', '## False positives', '## Calibração']) {
+    assert.ok(ex.includes(s), `expectation missing section: ${s}`);
+  }
+  assert.ok(ex.includes(FIXTURE), 'expectation must reference its fixture');
+  const essential = ex.split('## Essential')[1].split('\n## ')[0];
+  const rows = essential.split('\n').filter(
+    (l) => l.trim().startsWith('|') && !/---|Problema|Camada/.test(l)
+  );
+  assert.ok(rows.length > 0, 'Essential table has no rows');
+  for (const row of rows) {
+    const cells = row.split('|').map((c) => c.trim()).filter(Boolean);
+    const sev = cells[cells.length - 1];
+    for (const token of sev.split(/[–\-\/,\s]+/).filter(Boolean)) {
+      assert.ok(SEVERITIES.includes(token), `invalid severity token "${token}" in "${sev}"`);
+    }
+  }
+});
+
+test('constitution and README acknowledge the workflow (no simulated components)', () => {
+  assert.ok(read('CLAUDE.md').includes('workflows/uxco-review.md'),
+    'CLAUDE.md §9.3 must list the review workflow as existing');
+  assert.ok(read('README.md').includes('/uxco-review'),
+    'README.md must document the review workflow');
+});
+
+test('no broken repo references in sprint 4 artifacts', () => {
+  const files = [
+    WORKFLOW,
+    COMMAND,
+    'examples/review-tests/README.md',
+    FIXTURE,
+    'benchmarks/review-workflow/README.md',
+    EXPECTATION,
+  ];
+  const refRe = /`((?:standards|skills|scripts|examples|benchmarks|templates|tests|docs|workflows)\/[^`]*?\.(?:md|mjs))`/g;
+  for (const file of files) {
+    const content = read(file);
+    for (const match of content.matchAll(refRe)) {
+      const ref = match[1];
+      if (/YYYY|[<>*]/.test(ref)) continue; // placeholders
+      assert.ok(exists(ref), `${file} references missing path: ${ref}`);
+    }
+  }
+});
