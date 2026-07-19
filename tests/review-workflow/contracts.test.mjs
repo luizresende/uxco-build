@@ -40,8 +40,8 @@ test('workflow has all mandatory sections', () => {
   const wf = read(WORKFLOW);
   const sections = [
     '## Purpose', '## Inputs', '## Scope Resolution', '## Context Integration',
-    '## Safety Model', '## Process', '## Output', '## Failure Conditions',
-    '## Quality Checklist',
+    '## Paper Inspection', '## Safety Model', '## Process', '## Output',
+    '## Failure Conditions', '## Quality Checklist',
   ];
   for (const s of sections) assert.ok(wf.includes(s), `missing section: ${s}`);
 });
@@ -165,6 +165,24 @@ test('workflow integrates the context engine without replicating it', () => {
     'blocking policy must be limited to potentially misleading analysis');
 });
 
+test('workflow defines read-only paper inspection with an auditable snapshot', () => {
+  const wf = read(WORKFLOW);
+  const pi = wf.split('## Paper Inspection')[1]?.split('\n## ')[0];
+  assert.ok(pi, 'missing Paper Inspection section');
+  assert.ok(pi.includes('`READ`') && pi.includes('PAPER_READY'),
+    'inspection must be READ-only under PAPER_READY');
+  assert.ok(pi.includes('experiments/paper-mcp/smoke-test.md'),
+    'capabilities must be grounded in the validated smoke test');
+  assert.ok(pi.includes('jamais é inventado'), 'must forbid inventing unreturned data');
+  const block = pi.split('```text')[1]?.split('```')[0];
+  assert.ok(block, 'missing Canvas Snapshot block');
+  for (const f of ['Document:', 'Captured:', 'Method:', 'Frames:', 'Hierarchy:',
+    'Texts:', 'Properties:', 'Sequence:', 'Patterns:', 'States:', 'Limitations:']) {
+    assert.ok(block.includes(f), `snapshot missing field: ${f}`);
+  }
+  assert.ok(block.includes('nunca omitido'), 'Limitations must be mandatory in the block');
+});
+
 test('workflow honors the context gate contract of the Brief', () => {
   const wf = read(WORKFLOW);
   for (const token of ['PROCEED', 'PROCEED WITH ASSUMPTIONS', 'REQUEST BLOCKING CONTEXT']) {
@@ -241,7 +259,7 @@ test('no broken repo references in sprint 4 artifacts', () => {
     'benchmarks/review-workflow/README.md',
     EXPECTATION,
   ];
-  const refRe = /`((?:standards|skills|scripts|examples|benchmarks|templates|tests|docs|workflows)\/[^`]*?\.(?:md|mjs))`/g;
+  const refRe = /`((?:standards|skills|scripts|examples|benchmarks|templates|tests|docs|workflows|experiments)\/[^`]*?\.(?:md|mjs))`/g;
   for (const file of files) {
     const content = read(file);
     for (const match of content.matchAll(refRe)) {

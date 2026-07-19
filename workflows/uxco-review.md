@@ -103,6 +103,43 @@ Como o review consome cada categoria do Brief (Evidence Classification da skill 
 - Contexto incompleto mas suficiente → o review **continua**, com as conclusões afetadas explicitamente rebaixadas de Confidence e as limitações declaradas (cenários B/C da Design Critique Skill).
 - Bloquear é exceção, reservada a quando a falta de contexto tornaria a análise **potencialmente enganosa** — quando, mesmo com limitações declaradas, o review provavelmente apontaria os problemas errados ou calibraria severidades sem sentido (o critério de blocking do CLAUDE.md §4 aplicado ao review inteiro).
 
+## Paper Inspection
+
+A leitura do canvas que alimenta as skills. Como o §6.1 da constituição, esta é a camada amarrada à ferramenta concreta — trocar de canvas no futuro substitui apenas ela.
+
+**Somente leitura, sempre:** a inspeção usa exclusivamente operações `READ`, sob `PAPER_READY` (STEP 1). Nesta sprint, o `/uxco-review` **não modifica o canvas em nenhuma hipótese** — nem mediante aprovação; correção pertence a workflows futuros.
+
+**O que a inspeção busca**, quando a integração permitir: frames e artboards · hierarquia e elementos · textos visíveis · estrutura e sequência · propriedades relevantes ao escopo (dimensões, cores, tipografia) · relações entre telas · padrões repetidos identificáveis · estados representados.
+
+**Capacidades reais, nunca presumidas:** o repertório de leitura é o validado pelo smoke test da Sprint 0 (`experiments/paper-mcp/smoke-test.md`) — informações do documento, árvore/hierarquia, inspeção de nós (tipo e conteúdo de texto), estilos computados e screenshots. Capacidade fora desse repertório não é assumida: tenta-se por chamada real, e recusa ou ausência vira limitação registrada. Dado que a integração não retornou **jamais é inventado**.
+
+### Canvas Snapshot — representação estável para as skills
+
+O resultado da inspeção é consolidado neste bloco — o suficiente para a crítica, nunca uma reprodução do documento inteiro:
+
+```text
+Canvas Snapshot:
+  Document:    [nome e ID do documento]
+  Captured:    [YYYY-MM-DD — momento da leitura; o canvas pode mudar depois]
+  Method:      [chamadas de leitura realmente executadas]
+  Frames:      [frames no escopo — nome, dimensões]
+  Hierarchy:   [estrutura resumida por frame: elementos relevantes e aninhamento]
+  Texts:       [textos visíveis relevantes ao escopo]
+  Properties:  [propriedades relevantes: tamanhos, cores, tipografia — quando legíveis]
+  Sequence:    [ordem/relações entre telas — só o que nomes/posições evidenciam; inferência marcada]
+  Patterns:    [padrões repetidos observados: componentes, estilos, estruturas]
+  States:      [estados representados no canvas — apenas os desenhados]
+  Limitations: [o que a leitura não alcançou — campo obrigatório, nunca omitido]
+```
+
+Regras do snapshot:
+
+1. **Proporcional ao escopo** (Scope block): inspeciona-se o que o review vai criticar e o mínimo de vizinhança necessária.
+2. **É evidência, não verdade:** o conteúdo entra como `EVIDENCE` com fonte "Paper canvas inspection". O canvas mostra o quê, não o porquê (Source Priority da Product Context Skill): `Sequence` e relações entre telas derivadas de nomes/posições são inferência — marcadas como `ASSUMPTION`, nunca tratadas como fluxo observado (disciplina dos cenários D/E).
+3. **Estados:** `States` registra apenas o que está desenhado; ausência no canvas ≠ ausência no produto (Failure Condition 4 da Interaction Design Skill) — estados não representados vão a `Limitations` e a Unknowns, com Confidence honesta.
+4. **`Limitations` cumpre para o canvas o papel do Layer Coverage no report:** ausência declarada, nunca silenciosa — inclui o não-validável objetivamente (ex.: contraste real sem valores legíveis — `standards/accessibility-baseline.md`), o comportamental que um canvas estático não mostra, e o que a integração não expôs.
+5. **Uma leitura, vários consumidores:** o snapshot alimenta o Brief (evidência de canvas — STEP 4 da Product Context Skill) e a crítica (STEP 3 da Design Critique Skill; cadeia de interação da Interaction Design no que o canvas evidencia) — sem releituras divergentes do mesmo estado.
+
 ## Safety Model
 
 1. **O review inteiro é operação `READ`** (CLAUDE.md §6): este workflow nunca escreve no canvas, nunca altera a memória do projeto e nunca corrige o que criticou. Recomendar é o limite — execução de mudanças pertence a workflows futuros, com as aprovações que o Action Safety Model exigir.
@@ -115,7 +152,7 @@ Sequência obrigatória — nenhum STEP é pulado em silêncio; a profundidade d
 
 ```text
 STEP 0  Resolve scope and target
-STEP 1  Preflight (condicional — apenas quando o canvas é fonte)
+STEP 1  Preflight & Paper Inspection (condicional — apenas quando o canvas é fonte)
 STEP 2  Context phase — Product Context Skill → Product Context Brief
 STEP 3  Context gate — aplicar a Execution Recommendation do Brief
 STEP 4  Critique phase — Design Critique (+ Interaction Design) → achados
@@ -124,12 +161,12 @@ STEP 6  Report — Design Critique Report completo, com Quality Gate
 ```
 
 - **STEP 0 — Resolve scope and target.** Identificar o artefato observável e resolver o escopo pela ordem de precedência de Scope Resolution (explícito → seleção ativa → contexto → ambiguidade sinalizada). Dois gaps blocking possíveis aqui: artefato ausente (pedir a fonte, nunca reviewar de memória) e ambiguidade de escopo entre múltiplos candidatos plausíveis (perguntar listando os candidatos, nunca escolher por palpite).
-- **STEP 1 — Preflight (condicional).** Somente quando o canvas for fonte: percorrer o Agent Preflight até `PAPER_READY` (docs/architecture.md); qualquer outro estado bloqueia a leitura do canvas e é reportado com a ação de correção. Fontes textuais e imagens não exigem preflight.
-- **STEP 2 — Context phase.** Executar a Product Context Skill pelo seu processo integral (STEPs 1–10 dela), usando `npm run context:load -- <projectPath>` quando houver caminho de memória. A saída é o **Product Context Brief** — emitido mesmo com memória `MISSING` (o Brief honesto sobre ausência também é Brief). Se um Brief atual do mesmo escopo já existir na sessão, reutilizá-lo é permitido — declarando a reutilização.
+- **STEP 1 — Preflight & Paper Inspection (condicional).** Somente quando o canvas for fonte: percorrer o Agent Preflight até `PAPER_READY` (docs/architecture.md); qualquer outro estado bloqueia a leitura do canvas e é reportado com a ação de correção. Com `PAPER_READY`, executar a inspeção e consolidar o **Canvas Snapshot** (seção Paper Inspection), com `Limitations` preenchido. Fontes textuais e imagens não exigem preflight.
+- **STEP 2 — Context phase.** Executar a Product Context Skill pelo seu processo integral (STEPs 1–10 dela), usando `npm run context:load -- <projectPath>` quando houver caminho de memória. A saída é o **Product Context Brief** — emitido mesmo com memória `MISSING` (o Brief honesto sobre ausência também é Brief). Quando o canvas é fonte, o Canvas Snapshot do STEP 1 serve de evidência de canvas para o Brief (STEP 4 da skill) — sem releitura. Se um Brief atual do mesmo escopo já existir na sessão, reutilizá-lo é permitido — declarando a reutilização.
 - **STEP 3 — Context gate.** Ler o Context Status do Brief e aplicar o contrato de consumo (`standards/product-context-brief.md`) sob a Política de bloqueio (Context Integration):
   - `PROCEED` ou `PROCEED WITH ASSUMPTIONS` → seguir ao STEP 4, herdando as premissas como premissas (nunca promovidas a fato).
   - `REQUEST BLOCKING CONTEXT` → apresentar as blocking questions — e, **por padrão, continuar mesmo assim**: a crítica prossegue nas camadas que não dependem das respostas (cenário C da Design Critique Skill: L0 `not-evaluable`, Confidence rebaixada onde depender de task criticality), com as perguntas abertas visíveis no report. Isso respeita o contrato do Brief: o que as blocking questions bloqueiam é o julgamento que depende delas, não as camadas observáveis. **Interromper é exceção**: reservada a quando a ausência tornaria a análise potencialmente enganosa mesmo com limitações declaradas — nesse caso o review para nas perguntas, explicando por que prosseguir seria pior que esperar. **Inventar respostas nunca é saída.**
-- **STEP 4 — Critique phase.** Executar a Design Critique Skill sobre o artefato, com o Brief como contexto (Context Integration da skill). Cheiro comportamental que exija decomposição (fluxo crítico, estados suspeitos, recuperação de erro) roteia a Interaction Design Skill, e os achados compõem **um único conjunto** — mesma regra de agrupamento por causa estrutural, mesmo contrato de 7 campos.
+- **STEP 4 — Critique phase.** Executar a Design Critique Skill sobre o artefato — o Canvas Snapshot, quando a fonte for o Paper —, com o Brief como contexto (Context Integration da skill). Cheiro comportamental que exija decomposição (fluxo crítico, estados suspeitos, recuperação de erro) roteia a Interaction Design Skill, e os achados compõem **um único conjunto** — mesma regra de agrupamento por causa estrutural, mesmo contrato de 7 campos.
 - **STEP 5 — Quality Gate.** Review formal é avaliação formal: aplicar o `quality-framework.md` — nota por dimensão derivada do pior achado, dimensões críticas (★) avaliadas no nível do escopo, `UNKNOWN` onde não houver informação, e o veredito dos três gates (média ≥ 4; críticas ≥ 3; nenhum blocker aberto). Blocker aberto reprova independentemente da média; só sai por correção verificada ou aceite explícito de risco registrado como `DECISION`.
 - **STEP 6 — Report.** Emitir o **Design Critique Report** completo (`standards/critique-framework.md`), incluindo a seção Quality Gate com o veredito, o Context citando o Brief e seu Context Status, Layer Coverage integral e Recommended Next Steps priorizados por impacto. Autocrítica antes da entrega: as Quality Checklists das skills envolvidas e o Quality Gate da constituição (§8).
 
