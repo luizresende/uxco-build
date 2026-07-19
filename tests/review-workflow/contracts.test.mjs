@@ -40,8 +40,9 @@ test('workflow has all mandatory sections', () => {
   const wf = read(WORKFLOW);
   const sections = [
     '## Purpose', '## Inputs', '## Scope Resolution', '## Context Integration',
-    '## Paper Inspection', '## Critique Orchestration', '## Safety Model',
-    '## Process', '## Output', '## Failure Conditions', '## Quality Checklist',
+    '## Paper Inspection', '## Critique Orchestration', '## Issue Model',
+    '## Safety Model', '## Process', '## Output', '## Failure Conditions',
+    '## Quality Checklist',
   ];
   for (const s of sections) assert.ok(wf.includes(s), `missing section: ${s}`);
 });
@@ -228,6 +229,41 @@ test('workflow routes interaction design and consolidates findings without dupli
     'higher severity must require justification');
   assert.ok(consolidation.includes('severity-framework.md'),
     'severity rule must defer to the framework');
+});
+
+test('workflow issue model restates the canonical contract without divergence', () => {
+  const wf = read(WORKFLOW);
+  const im = wf.split('## Issue Model')[1]?.split('\n## ')[0];
+  assert.ok(im, 'missing Issue Model section');
+  // mesmo contrato dos standards, nos mesmos campos e na mesma ordem
+  const block = im.split('```text')[1]?.split('```')[0];
+  assert.ok(block, 'missing issue block');
+  const fields = ['Issue:', 'Category:', 'Severity:', 'Confidence:',
+    'Evidence:', 'User Impact:', 'Recommendation:'];
+  let last = -1;
+  for (const f of fields) {
+    const i = block.indexOf(f);
+    assert.ok(i !== -1, `issue block missing field: ${f}`);
+    assert.ok(i > last, `field out of canonical order: ${f}`);
+    last = i;
+  }
+  assert.ok(block.includes('Critical | High | Medium | Low | Opportunity'),
+    'severity tokens must match the canonical scale');
+  assert.ok(block.includes('High | Medium | Low'),
+    'confidence tokens must match the canonical scale');
+  assert.ok(im.includes('design-output-format.md') && im.includes('critique-framework.md'),
+    'contract ownership must stay with the standards');
+  // evidência: princípio abstrato nunca sustenta sozinho (exemplo fraco/melhor)
+  assert.ok(im.includes('nunca é a única evidência'), 'abstract principles must not stand alone');
+  assert.ok(im.includes('boas práticas'), 'must carry the weak-evidence example');
+  // dimensões de impacto nomeadas
+  for (const d of ['usuário', 'tarefa', 'negócio', 'compreensão', 'erro', 'acessibilidade']) {
+    assert.ok(im.includes(d), `missing impact dimension: ${d}`);
+  }
+  // qualidades da recomendação
+  for (const q of ['específica', 'proporcional', 'acionável', 'contextual']) {
+    assert.ok(im.includes(q), `missing recommendation quality: ${q}`);
+  }
 });
 
 test('workflow honors the context gate contract of the Brief', () => {

@@ -178,6 +178,37 @@ Os achados das duas skills compõem **um único conjunto** no report. Quando amb
 3. **A maior severidade só permanece se justificada** pelas quatro lentes do `standards/severity-framework.md`; sem justificativa que sobreviva às lentes, vale a menor — regra de desempate do próprio framework (inflação destrói a escala).
 4. Os campos de extensão comportamental (Trigger, Current/Expected Behavior, Missing State) enriquecem o achado consolidado quando esclarecem — nunca justificam um segundo bloco para o mesmo problema.
 
+## Issue Model
+
+Toda issue do review usa o **contrato canônico já existente** — o bloco Design Issue de `standards/design-output-format.md` sob as regras do contrato do achado de `standards/critique-framework.md`. Nenhum formato paralelo: o bloco abaixo é o mesmo contrato, restatado com a disciplina de cada campo explicitada para o review.
+
+```text
+Issue:          [o problema, em uma frase direta]
+Category:       [L0–L8 — a camada causal, exatamente uma]
+Severity:       [Critical | High | Medium | Low | Opportunity]
+Confidence:     [High | Medium | Low]
+Evidence:       [o que no artefato, snapshot ou contexto sustenta o diagnóstico — citável]
+User Impact:    [consequência potencial, com a dimensão atingida nomeada]
+Recommendation: [correção proposta — específica, proporcional, acionável, contextual]
+```
+
+Disciplina por campo:
+
+- **Issue** — descrição direta do problema, em uma frase; o diagnóstico, não a solução.
+- **Severity** — exclusivamente os cinco tokens, decididos pelas quatro lentes do `standards/severity-framework.md`; `Opportunity` sempre separada dos problemas, nunca em contagem de defeitos.
+- **Evidence** — o que no Canvas Snapshot, no artefato ou no Brief sustenta o diagnóstico. **Princípio abstrato nunca é a única evidência:**
+
+  ```text
+  Fraco:  "Isso viola boas práticas."
+  Melhor: "O fluxo exige que o usuário confirme a exclusão sem informar
+           quais dados serão permanentemente removidos."
+  ```
+
+  Princípios (`standards/uxco-design-principles.md`) qualificam a evidência observada — não a substituem.
+- **User Impact** — a consequência potencial, nomeando a dimensão atingida: usuário, tarefa, negócio, compreensão, erro ou acessibilidade. "Fica ruim" não é impacto (regra 2 do critique-framework); impacto de negócio sem fato de negócio no contexto é inferência — declarada como tal.
+- **Confidence** — a escala de `standards/design-output-format.md` aplicada ao review: `High` = evidência direta no canvas e/ou no contexto; `Medium` = evidência razoável com informação importante ausente; `Low` = hipótese que merece validação — e a validação necessária vai na Recommendation.
+- **Recommendation** — responde ao problema identificado, nunca a outro: **específica** (o que mudar, onde), **proporcional** ao problema (correção pontual não vira redesign), **acionável** (o time sabe o que fazer ao ler) e **contextual** (padrões existentes do produto antes de padrões novos — CLAUDE.md §3.5). Recomendação genérica ("melhorar a usabilidade", "deixar mais claro") é falha de contrato.
+
 ## Safety Model
 
 1. **O review inteiro é operação `READ`** (CLAUDE.md §6): este workflow nunca escreve no canvas, nunca altera a memória do projeto e nunca corrige o que criticou. Recomendar é o limite — execução de mudanças pertence a workflows futuros, com as aprovações que o Action Safety Model exigir.
@@ -234,7 +265,7 @@ Antes de entregar (etapa `critique` do ciclo aplicada ao workflow):
 - [ ] O Brief existe, tem Context Status e o gate do STEP 3 foi aplicado como o contrato manda?
 - [ ] Contexto incompleto tratado pela Política de bloqueio: review continuou com Confidence rebaixada e limitações declaradas nas conclusões afetadas — e interrupção usada somente diante de análise potencialmente enganosa?
 - [ ] Blocking e non-blocking unknowns distinguidos — blocking no gate, non-blocking como pendência declarada sem interromper nada?
-- [ ] Achados em contrato pleno (7 campos, tokens canônicos), agrupados por causa?
+- [ ] Achados em contrato pleno (7 campos, tokens canônicos, disciplina do Issue Model: evidência citável — nunca só princípio —, dimensão de impacto nomeada, recomendação específica), agrupados por causa?
 - [ ] Gate de evidência aplicado camada a camada: *not enough evidence* virou `not-evaluable` declarado — nenhum achado fabricado, nenhuma camada não verificada dada como avaliada?
 - [ ] Interaction Design acionada quando o escopo pedia (fluxo, multi-tela, sequência) — e achados das duas skills consolidados: nenhum problema em dois blocos, evidência mais forte preservada, severidade maior mantida só com justificativa?
 - [ ] Quality Gate presente, com dimensões críticas avaliadas ou `UNKNOWN` justificado?
