@@ -373,6 +373,29 @@ O review está **completo** somente quando, simultaneamente:
 
 **Gate reprovado não é review incompleto:** o review que reporta a reprovação com os achados explícitos está completo — o que volta ao ciclo é o *design avaliado*, não o review.
 
+## Failure Handling
+
+Falhas de execução não são condições de invalidade (estas vivem em Failure Conditions): são **estados previstos, com comportamento definido** — degradar com honestidade, nunca improvisar. Cada modo abaixo aponta o mecanismo do workflow que o resolve; nada aqui redefine método. Regra transversal a todos: **a falha nunca é compensada por invenção** — nem de dados, nem de contexto, nem de método.
+
+**Falha 1 — Paper indisponível.** O preflight do STEP 1 não alcança `PAPER_READY` (verificado por chamada real — nunca por inferência; CLAUDE.md §6.1). Análise de canvas **jamais é inventada**: nenhum campo do Canvas Snapshot é preenchido sem leitura real. Havendo outra fonte observável (fixture, imagem, descrição na conversa), o review prossegue com ela, com a fonte canvas declarada inacessível nas Review Limitations (Safety Model, regra 2). Sendo o canvas a única fonte, o review **bloqueia**, reportando exatamente:
+
+```text
+Review blocked:
+Paper connection unavailable.
+```
+
+seguido da ação de correção (`npm run preflight` / Agent Preflight de `docs/architecture.md`) e do convite a fornecer uma fonte observável alternativa.
+
+**Falha 2 — Nenhum escopo identificável.** Caso 4 da Scope Resolution: Scope block emitido com `Type`/`Name` = `UNKNOWN` e uma Open Question `Blocking: Yes` solicitando o escopo ou a fonte. A necessidade de escopo é sinalizada com o que se sabe (candidatos, quando existirem — caso 5); **nenhuma crítica é iniciada** com Scope `UNKNOWN`, e escopo nunca é inventado.
+
+**Falha 3 — Contexto incompleto, mas suficiente.** O review **continua** (Política de bloqueio da Context Integration). O registro é obrigatório e duplo: a premissa adotada entra como `ASSUMPTION` declarada (herdada do Brief ou registrada no report, em Unknowns and Assumptions), e o **impacto na confiança** é explícito — Confidence rebaixada nas conclusões afetadas, com a dependência nomeada no próprio achado. Continuar sem registrar é a Failure Condition 4.
+
+**Falha 4 — Contexto crítico ausente.** Bloquear é exceção, não reflexo: somente quando, **mesmo com limitações declaradas, uma análise responsável não é possível** — o review provavelmente apontaria os problemas errados ou calibraria severidades sem sentido (STEP 3; critério de blocking do CLAUDE.md §4). Nesse caso o review para nas blocking questions, explicando por que prosseguir seria pior que esperar. Inventar respostas nunca é saída; bloquear por ausência que não tornaria a análise enganosa é anti-pattern 10.
+
+**Falha 5 — Skill indisponível.** Dependência de Skill Dependencies ausente ou ilegível (skill, standard ou loader): falha **explícita** — nomear a dependência quebrada, o STEP que ela impediria e o que a restauraria. **Proibido executar silenciosamente uma versão genérica improvisada** do método: review sem o Critique Engine real não é review degradado, é simulação de componente — violação direta do CLAUDE.md §9.3 ("dizer que não existe — nunca simular"). A exceção já prevista permanece a única: Context Loader indisponível degrada para inventário por leitura direta, **declarado no Brief** (Preconditions).
+
+**Falha 6 — Paper parcialmente legível.** `PAPER_READY` alcançado, mas leituras parciais — chamadas recusadas, propriedades ilegíveis, screenshot indisponível. Executar **apenas as análises sustentadas pelos dados realmente obtidos**: o Gate de evidência por camada decide o destino de cada uma (`evaluated` · Confidence reduzida · `not-evaluable — [o que faltou]`), e dado que a integração não retornou jamais é inventado (Paper Inspection). As limitações são registradas em `Limitations` do Canvas Snapshot e **sobem às Review Limitations do report** — nunca ficam só no snapshot.
+
 ## Failure Conditions
 
 O review é **inválido** — refazer, não entregar — se:
@@ -402,5 +425,6 @@ Antes de entregar (etapa `critique` do ciclo aplicada ao workflow):
 - [ ] STEP 5 aplicado ao conjunto inteiro: sem duplicatas, `Low` agregados, ordenado por prioridade — o report entrega sinal, não volume?
 - [ ] Quality Gate presente, com dimensões críticas avaliadas ou `UNKNOWN` justificado?
 - [ ] Report composto pelo mapa canônico: Executive Summary com diagnóstico (nunca só contagem), Scope block íntegro, Context Snapshot mínimo, issues em ordem estrita, next steps amarrados às issues, limitações das quatro origens consolidadas?
+- [ ] Falhas de execução tratadas pela Failure Handling: canvas indisponível sem análise inventada (bloqueio canônico quando era a única fonte), skill ausente com falha explícita — nunca versão genérica improvisada —, leitura parcial limitada ao sustentável pelos dados?
 - [ ] Nenhuma operação de escrita aconteceu?
 - [ ] Recommended Next Steps priorizados por impacto, incluindo o que destravaria camadas `not-evaluable`?

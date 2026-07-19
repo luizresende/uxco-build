@@ -44,7 +44,8 @@ test('workflow has all mandatory sections', () => {
     '## Scope Resolution', '## Context Integration', '## Paper Inspection',
     '## Critique Orchestration', '## Issue Model', '## Safety Model',
     '## Skill Dependencies', '## Process', '## Output',
-    '## Completion Criteria', '## Failure Conditions', '## Quality Checklist',
+    '## Completion Criteria', '## Failure Handling', '## Failure Conditions',
+    '## Quality Checklist',
   ];
   for (const s of sections) assert.ok(wf.includes(s), `missing section: ${s}`);
 });
@@ -407,6 +408,45 @@ test('report template materializes the official contract with explicit-absence r
     'empty severities must be declared via the summary, not empty headings');
   // workflow aponta o molde
   assert.ok(read(WORKFLOW).includes(TEMPLATE), 'workflow must reference the template');
+});
+
+test('workflow treats the six failure modes explicitly', () => {
+  const wf = read(WORKFLOW);
+  const fh = wf.split('## Failure Handling')[1]?.split('\n## ')[0];
+  assert.ok(fh, 'missing Failure Handling section');
+  // os seis modos, na ordem canônica
+  const modes = ['Paper indisponível', 'Nenhum escopo identificável',
+    'Contexto incompleto, mas suficiente', 'Contexto crítico ausente',
+    'Skill indisponível', 'Paper parcialmente legível'];
+  let last = -1;
+  for (const m of modes) {
+    const i = fh.indexOf(m);
+    assert.ok(i !== -1, `missing failure mode: ${m}`);
+    assert.ok(i > last, `failure mode out of order: ${m}`);
+    last = i;
+  }
+  // Falha 1: mensagem canônica de bloqueio + análise de canvas nunca inventada
+  assert.ok(/Review blocked:\s*\r?\nPaper connection unavailable\./.test(fh),
+    'missing canonical blocked output for Paper unavailable');
+  assert.ok(/jamais é inventada/.test(fh), 'canvas analysis must never be invented');
+  // Falha 2: sinalizar a necessidade de escopo, sem iniciar crítica
+  assert.ok(fh.includes('Blocking: Yes') && /[Nn]enhuma crítica é iniciada/.test(fh),
+    'missing scope must be signaled without starting critique');
+  // Falha 3: continuar com Assumption declarada + impacto de Confidence
+  assert.ok(fh.includes('`ASSUMPTION`') && fh.includes('Confidence'),
+    'sufficient-but-incomplete context must register assumption and confidence impact');
+  // Falha 4: bloquear só quando análise responsável não for possível
+  assert.ok(/exceção/.test(fh) && fh.includes('análise responsável'),
+    'blocking must be the exception, tied to responsible analysis');
+  // Falha 5: falha explícita, nunca versão genérica improvisada
+  assert.ok(fh.includes('genérica improvisada') && /falha \*\*explícita\*\*/.test(fh),
+    'unavailable skill must fail explicitly, never run an improvised generic version');
+  // Falha 6: só análises sustentadas pelos dados + limitações registradas
+  assert.ok(fh.includes('Gate de evidência') && fh.includes('Limitations'),
+    'partial reads must be gated on evidence with limitations recorded');
+  // regra transversal: falha nunca compensada por invenção
+  assert.ok(fh.includes('nunca é compensada por invenção'),
+    'the cross-cutting no-invention rule must be explicit');
 });
 
 test('workflow honors the context gate contract of the Brief', () => {
