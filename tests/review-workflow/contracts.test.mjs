@@ -37,8 +37,8 @@ test('required sprint 4 files exist', () => {
 test('workflow has all mandatory sections', () => {
   const wf = read(WORKFLOW);
   const sections = [
-    '## Purpose', '## Inputs', '## Safety Model', '## Process',
-    '## Output', '## Failure Conditions', '## Quality Checklist',
+    '## Purpose', '## Inputs', '## Scope Resolution', '## Safety Model',
+    '## Process', '## Output', '## Failure Conditions', '## Quality Checklist',
   ];
   for (const s of sections) assert.ok(wf.includes(s), `missing section: ${s}`);
 });
@@ -55,6 +55,27 @@ test('workflow defines the seven steps in order', () => {
     assert.ok(i > last, `step out of order: ${s}`);
     last = i;
   }
+});
+
+test('workflow defines the scope resolution contract', () => {
+  const wf = read(WORKFLOW);
+  const sr = wf.split('## Scope Resolution')[1]?.split('\n## ')[0];
+  assert.ok(sr, 'missing Scope Resolution section');
+  // as cinco unidades de escopo aceitas
+  for (const unit of ['uma tela', 'um frame', 'uma seleção', 'um conjunto de frames', 'um fluxo']) {
+    assert.ok(sr.includes(unit), `missing scope unit: ${unit}`);
+  }
+  // ordem de precedência: explícito → seleção → contexto → ambiguidade
+  const ladder = ['Escopo explícito do usuário', 'Seleção ativa no Paper',
+    'contexto disponível', 'Ambiguidade'];
+  let last = -1;
+  for (const rung of ladder) {
+    const i = sr.indexOf(rung);
+    assert.ok(i !== -1, `missing resolution rung: ${rung}`);
+    assert.ok(i > last, `resolution order broken at: ${rung}`);
+    last = i;
+  }
+  assert.ok(/nunca inventar|nunca é saída/i.test(sr), 'must forbid inventing scope');
 });
 
 test('workflow orchestrates the existing engines by reference, not copies', () => {

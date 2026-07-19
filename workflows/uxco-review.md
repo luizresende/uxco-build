@@ -17,8 +17,26 @@ Responder: **"este design está pronto — e, se não está, o que precisa mudar
 | --- | --- | --- |
 | Artefato de design — canvas (somente `READ`, exige `PAPER_READY`), descrição textual (ex.: fixture) ou imagem | O objeto sob review | **Sim** — sem artefato observável não há review (gap blocking) |
 | Project Memory (caminho informado ou convenção `memory/`) | Alimenta o STEP 2 (Context phase) | Não — ausência é dado e entra no Brief como `MISSING` |
-| Escopo declarado pelo usuário | Delimita o que será avaliado (tela, fluxo, produto) | Não — sem declaração, o escopo é o artefato inteiro, declarado no report |
+| Escopo do review — uma tela · um frame · uma seleção · um conjunto de frames · um fluxo | Delimita o que será avaliado | Não — sem escopo explícito, resolvido pela ordem de Scope Resolution |
 | Conversa atual | Restrições, tarefa-alvo, contexto adicional | Não |
+
+## Scope Resolution
+
+O review aceita como escopo qualquer uma destas unidades: **uma tela · um frame · uma seleção · um conjunto de frames · um fluxo**. A resolução (STEP 0) segue esta ordem de precedência:
+
+```text
+1. Escopo explícito do usuário
+2. Seleção ativa no Paper
+3. Escopo identificado a partir do contexto disponível
+4. Ambiguidade → sinalizar e perguntar — nunca inventar
+```
+
+1. **Escopo explícito do usuário** — quando o pedido nomeia o alvo (argumento do comando, frame citado, fluxo descrito), ele é o escopo. Seleção ativa divergente não o substitui — divergência clara entre pedido e seleção é apontada ao usuário, nunca resolvida em silêncio.
+2. **Seleção ativa no Paper** — sem escopo explícito, havendo canvas como fonte (`PAPER_READY`) e seleção inequívoca, **a seleção tem prioridade**: ela é o escopo, declarado no report com essa origem.
+3. **Contexto disponível** — sem escopo explícito nem seleção inequívoca, tentar identificar o escopo pelo contexto da sessão: artefato único fornecido, fluxo em discussão na conversa, candidato natural no documento ativo (ex.: um único frame no canvas). A identificação é inferência — declarada como tal (`ASSUMPTION` de escopo, revisável pelo usuário). Candidato único de confiança razoável não é ambiguidade: é inferência declarada, e o review prossegue.
+4. **Ambiguidade** — múltiplos candidatos plausíveis (várias telas, seleção ambígua, conversa apontando para mais de um fluxo) cuja escolha errada comprometeria a confiabilidade da análise: o workflow **sinaliza a ambiguidade e pergunta**, com uma pergunta objetiva listando os candidatos (gap blocking — CLAUDE.md §4). **Inventar o escopo nunca é saída**: escopo inventado invalida o review inteiro (Failure Conditions).
+
+O escopo resolvido é sempre **declarado no campo Scope do report, com a origem da resolução** (explícito · seleção · inferido do contexto). Escopo de tela/frame isolado ativa a disciplina do cenário D (`skills/design-critique/SKILL.md`); conjunto de frames ou fluxo completo, a do cenário E.
 
 ## Safety Model
 
@@ -40,7 +58,7 @@ STEP 5  Quality Gate — avaliação formal pelo quality-framework
 STEP 6  Report — Design Critique Report completo, com Quality Gate
 ```
 
-- **STEP 0 — Resolve scope and target.** Identificar o artefato sob review e o escopo (tela única, fluxo, conjunto). Artefato ausente é o único gap blocking estrutural deste workflow: pedir a fonte, nunca reviewar de memória. Tela isolada ativa desde já a disciplina do cenário D (`skills/design-critique/SKILL.md`).
+- **STEP 0 — Resolve scope and target.** Identificar o artefato observável e resolver o escopo pela ordem de precedência de Scope Resolution (explícito → seleção ativa → contexto → ambiguidade sinalizada). Dois gaps blocking possíveis aqui: artefato ausente (pedir a fonte, nunca reviewar de memória) e ambiguidade de escopo entre múltiplos candidatos plausíveis (perguntar listando os candidatos, nunca escolher por palpite).
 - **STEP 1 — Preflight (condicional).** Somente quando o canvas for fonte: percorrer o Agent Preflight até `PAPER_READY` (docs/architecture.md); qualquer outro estado bloqueia a leitura do canvas e é reportado com a ação de correção. Fontes textuais e imagens não exigem preflight.
 - **STEP 2 — Context phase.** Executar a Product Context Skill pelo seu processo integral (STEPs 1–10 dela), usando `npm run context:load -- <projectPath>` quando houver caminho de memória. A saída é o **Product Context Brief** — emitido mesmo com memória `MISSING` (o Brief honesto sobre ausência também é Brief). Se um Brief atual do mesmo escopo já existir na sessão, reutilizá-lo é permitido — declarando a reutilização.
 - **STEP 3 — Context gate.** Ler o Context Status do Brief e aplicar o contrato de consumo (`standards/product-context-brief.md`):
@@ -59,17 +77,19 @@ A saída é **exclusivamente** o Design Critique Report no contrato de `standard
 O review é **inválido** — refazer, não entregar — se:
 
 1. Review executado sem artefato observável (crítica de memória ou de suposição).
-2. STEP 2 pulado ou fabricado: crítica formal sem Brief, ou Brief inventado para viabilizar L0.
-3. Blocking question respondida por invenção, ou modo degradado ativado sem autorização explícita do usuário.
-4. Qualquer escrita em canvas ou memória de projeto durante o review.
-5. Report formal sem a seção Quality Gate, ou gate reprovado entregue como aprovado / com ressalvas escondidas (CLAUDE.md §8).
-6. Qualquer Failure Condition das skills consumidas (elas permanecem válidas dentro do workflow).
+2. Escopo inventado: ambiguidade entre candidatos plausíveis resolvida por palpite em vez de sinalizada (Scope Resolution violada) — ou seleção/pedido explícito ignorados em silêncio.
+3. STEP 2 pulado ou fabricado: crítica formal sem Brief, ou Brief inventado para viabilizar L0.
+4. Blocking question respondida por invenção, ou modo degradado ativado sem autorização explícita do usuário.
+5. Qualquer escrita em canvas ou memória de projeto durante o review.
+6. Report formal sem a seção Quality Gate, ou gate reprovado entregue como aprovado / com ressalvas escondidas (CLAUDE.md §8).
+7. Qualquer Failure Condition das skills consumidas (elas permanecem válidas dentro do workflow).
 
 ## Quality Checklist
 
 Antes de entregar (etapa `critique` do ciclo aplicada ao workflow):
 
 - [ ] Os 7 STEPs aconteceram — ou o desvio está declarado com o porquê?
+- [ ] Escopo resolvido pela ordem de precedência (explícito → seleção → contexto) e declarado no report com a origem — ambiguidade real sinalizada em vez de resolvida por palpite?
 - [ ] O Brief existe, tem Context Status e o gate do STEP 3 foi aplicado como o contrato manda?
 - [ ] Modo degradado, se ativo, tem autorização registrada e as limitações do cenário C aplicadas?
 - [ ] Achados em contrato pleno (7 campos, tokens canônicos), agrupados por causa?
