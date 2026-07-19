@@ -17,6 +17,7 @@ const read = (p) => readFileSync(join(root, p), 'utf8');
 const WORKFLOW = 'workflows/uxco-review.md';
 const COMMAND = '.claude/commands/uxco-review.md';
 const SCENARIOS = 'tests/review-workflow/scope-scenarios.md';
+const TEMPLATE = 'templates/reports/design-review.md';
 const FIXTURE = 'examples/review-tests/01-pulse-signal-capture/fixture.md';
 const EXPECTATION = 'benchmarks/review-workflow/expectations/01-pulse-signal-capture.md';
 
@@ -381,6 +382,33 @@ test('workflow documentation sections carry their required substance', () => {
     'failed gate must not equal incomplete review');
 });
 
+test('report template materializes the official contract with explicit-absence rules', () => {
+  assert.ok(exists(TEMPLATE), 'missing report template');
+  const t = read(TEMPLATE);
+  // propriedade do contrato declarada: o molde não é um segundo contrato
+  assert.ok(t.includes('standards/critique-framework.md') &&
+    t.includes('workflows/uxco-review.md'), 'template must name its contract owners');
+  assert.ok(t.includes('contrato de saída, não texto rígido'));
+  // todas as seções oficiais do report presentes no esqueleto
+  for (const s of ['## Executive Summary', '## Issues', '## Patterns Detected',
+    '## Opportunities', '## Unknowns and Assumptions', '## Layer Coverage',
+    '## Quality Gate', '## Recommended Next Steps']) {
+    assert.ok(t.includes(s), `template missing section: ${s}`);
+  }
+  // Scope block e tokens canônicos
+  assert.ok(t.includes('screen | frame | selection | frame-set | flow'));
+  assert.ok(t.includes('explicit | selection | inferred'));
+  assert.ok(t.includes('Critical | High | Medium | Low | Opportunity'));
+  assert.ok(t.includes('not-evaluable'));
+  // política de ausência: declarar explicitamente; severidade vazia sem subtítulo vazio
+  assert.ok(/[Nn]unca somem em silêncio/.test(t), 'fixed sections must never vanish silently');
+  assert.ok(t.includes('Nenhum padrão detectado'), 'must show an explicit-absence declaration');
+  assert.ok(t.includes('Nenhuma issue Critical identificada'),
+    'empty severities must be declared via the summary, not empty headings');
+  // workflow aponta o molde
+  assert.ok(read(WORKFLOW).includes(TEMPLATE), 'workflow must reference the template');
+});
+
 test('workflow honors the context gate contract of the Brief', () => {
   const wf = read(WORKFLOW);
   for (const token of ['PROCEED', 'PROCEED WITH ASSUMPTIONS', 'REQUEST BLOCKING CONTEXT']) {
@@ -471,6 +499,7 @@ test('no broken repo references in sprint 4 artifacts', () => {
     WORKFLOW,
     COMMAND,
     SCENARIOS,
+    TEMPLATE,
     'examples/review-tests/README.md',
     FIXTURE,
     'benchmarks/review-workflow/README.md',

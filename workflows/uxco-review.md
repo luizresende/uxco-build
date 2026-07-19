@@ -331,7 +331,7 @@ A saída é **exclusivamente** o Design Critique Report no contrato de `standard
 
 ### Composição do report
 
-O output canônico do `/uxco-review` é o contrato oficial — nenhuma seção paralela é criada. O mapa, auditável:
+O output canônico do `/uxco-review` é o contrato oficial — nenhuma seção paralela é criada. O molde operacional de preenchimento vive em `templates/reports/design-review.md` (contrato de saída, não texto rígido; em divergência, o contrato prevalece). O mapa, auditável:
 
 | Conteúdo canônico do review | Onde vive no contrato oficial |
 | --- | --- |

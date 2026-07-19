@@ -37,7 +37,8 @@ skills/                 product-context (Context Engine) · design-critique ·
                         interaction-design (Critique Engine)
 workflows/              uxco-review (Review Workflow — orquestra os engines)
 .claude/commands/       Comandos reais do Claude Code — /uxco-review
-templates/project/      Moldes de memória de projeto — copiados por projeto
+templates/              project/ (memória de projeto, copiada por projeto) ·
+                        reports/ (molde do Design Critique Report do /uxco-review)
 examples/               Memória demo (Pulse) e fixtures de teste dos engines e do workflow
 scripts/                Machine Preflight e Context Loader
 tests/                  foundation/ · context-engine/ · critique-engine/ ·
