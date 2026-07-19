@@ -40,8 +40,8 @@ test('workflow has all mandatory sections', () => {
   const wf = read(WORKFLOW);
   const sections = [
     '## Purpose', '## Inputs', '## Scope Resolution', '## Context Integration',
-    '## Paper Inspection', '## Safety Model', '## Process', '## Output',
-    '## Failure Conditions', '## Quality Checklist',
+    '## Paper Inspection', '## Critique Orchestration', '## Safety Model',
+    '## Process', '## Output', '## Failure Conditions', '## Quality Checklist',
   ];
   for (const s of sections) assert.ok(wf.includes(s), `missing section: ${s}`);
 });
@@ -181,6 +181,26 @@ test('workflow defines read-only paper inspection with an auditable snapshot', (
     assert.ok(block.includes(f), `snapshot missing field: ${f}`);
   }
   assert.ok(block.includes('nunca omitido'), 'Limitations must be mandatory in the block');
+});
+
+test('workflow gates every critique layer on available evidence', () => {
+  const wf = read(WORKFLOW);
+  const co = wf.split('## Critique Orchestration')[1]?.split('\n## ')[0];
+  assert.ok(co, 'missing Critique Orchestration section');
+  // as nove camadas nomeadas por referência ao framework (sem redefinir a tabela)
+  for (const l of ['L0', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8']) {
+    assert.ok(co.includes(l), `missing layer: ${l}`);
+  }
+  assert.ok(co.includes('critique-framework.md'), 'layers must be sourced from the framework');
+  // not enough evidence > falsa precisão, com o token canônico de cobertura
+  assert.ok(co.includes('not enough evidence'), 'must name the not-enough-evidence preference');
+  assert.ok(co.includes('not-evaluable'), 'must map to the canonical coverage token');
+  assert.ok(/[Ff]alsa precisão/.test(co), 'must forbid false precision');
+  // exemplo canônico: contraste não inventado sem dados visuais confiáveis
+  assert.ok(/[Cc]ontraste/.test(co) && co.includes('accessibility-baseline.md'),
+    'must carry the contrast example grounded in the baseline');
+  // as duas direções: nem achado fabricado, nem camada não verificada aprovada
+  assert.ok(/duas direções/.test(co), 'false precision must be forbidden in both directions');
 });
 
 test('workflow honors the context gate contract of the Brief', () => {

@@ -140,6 +140,26 @@ Regras do snapshot:
 4. **`Limitations` cumpre para o canvas o papel do Layer Coverage no report:** ausência declarada, nunca silenciosa — inclui o não-validável objetivamente (ex.: contraste real sem valores legíveis — `standards/accessibility-baseline.md`), o comportamental que um canvas estático não mostra, e o que a integração não expôs.
 5. **Uma leitura, vários consumidores:** o snapshot alimenta o Brief (evidência de canvas — STEP 4 da Product Context Skill) e a crítica (STEP 3 da Design Critique Skill; cadeia de interação da Interaction Design no que o canvas evidencia) — sem releituras divergentes do mesmo estado.
 
+## Critique Orchestration
+
+O STEP 4 aciona a Design Critique Skill para varrer as nove camadas do `standards/critique-framework.md` — L0 Product Intent · L1 User Flow · L2 Information Architecture · L3 Interaction · L4 Content · L5 Visual Hierarchy · L6 System Consistency · L7 Accessibility · L8 States & Edge Cases — **quando aplicáveis** ("Not a Checklist" da skill): camada relevante ao escopo é varrida; varrida não significa com achado, e não há cota de issues.
+
+### Gate de evidência por camada
+
+Antes de julgar cada camada, o material disponível (Canvas Snapshot, artefato textual/imagem, Brief) é confrontado com o que a camada exige:
+
+- **Evidência suficiente** → camada avaliada (`evaluated`), achados pelo contrato de 7 campos.
+- **Evidência parcial** → julgamento entra com `Confidence` reduzida e a limitação nomeada no próprio achado (cenário F da skill), com a validação necessária na Recommendation.
+- **Evidência insuficiente** → *not enough evidence*: a camada entra no Layer Coverage como `not-evaluable — [o que faltou]`, e o que a destravaria vai a Recommended Next Steps. **Nenhum achado é fabricado para a camada "render".**
+
+O gate aplicado aos casos típicos:
+
+- **Contraste (L7):** sem valores de cor legíveis (`Properties` vazio ou na lista de `Limitations` do snapshot), contraste real não é validável — vale a regra de honestidade do `standards/accessibility-baseline.md`: registra-se o não-validável como pendência de verificação; não se inventa problema de contraste **nem se assume aprovação**.
+- **Fluxo (L1):** tela isolada (cenário D) → L1 `not-evaluable` ou limitada ao que a tela evidencia; `Sequence` inferida do snapshot nunca sustenta sozinha um achado de fluxo.
+- **Intent (L0):** Brief sem núcleo definido → L0 `not-evaluable` (regra do próprio framework); intenção do produto jamais é inventada para viabilizar a camada.
+
+**Falsa precisão é falha nas duas direções:** fabricar achado sem evidência suficiente e apresentar camada não verificada como avaliada (ou aprovada) são a mesma violação. O Layer Coverage declara o estado real de cada camada — "nenhum achado" só é dito de camada efetivamente avaliada.
+
 ## Safety Model
 
 1. **O review inteiro é operação `READ`** (CLAUDE.md §6): este workflow nunca escreve no canvas, nunca altera a memória do projeto e nunca corrige o que criticou. Recomendar é o limite — execução de mudanças pertence a workflows futuros, com as aprovações que o Action Safety Model exigir.
@@ -166,7 +186,7 @@ STEP 6  Report — Design Critique Report completo, com Quality Gate
 - **STEP 3 — Context gate.** Ler o Context Status do Brief e aplicar o contrato de consumo (`standards/product-context-brief.md`) sob a Política de bloqueio (Context Integration):
   - `PROCEED` ou `PROCEED WITH ASSUMPTIONS` → seguir ao STEP 4, herdando as premissas como premissas (nunca promovidas a fato).
   - `REQUEST BLOCKING CONTEXT` → apresentar as blocking questions — e, **por padrão, continuar mesmo assim**: a crítica prossegue nas camadas que não dependem das respostas (cenário C da Design Critique Skill: L0 `not-evaluable`, Confidence rebaixada onde depender de task criticality), com as perguntas abertas visíveis no report. Isso respeita o contrato do Brief: o que as blocking questions bloqueiam é o julgamento que depende delas, não as camadas observáveis. **Interromper é exceção**: reservada a quando a ausência tornaria a análise potencialmente enganosa mesmo com limitações declaradas — nesse caso o review para nas perguntas, explicando por que prosseguir seria pior que esperar. **Inventar respostas nunca é saída.**
-- **STEP 4 — Critique phase.** Executar a Design Critique Skill sobre o artefato — o Canvas Snapshot, quando a fonte for o Paper —, com o Brief como contexto (Context Integration da skill). Cheiro comportamental que exija decomposição (fluxo crítico, estados suspeitos, recuperação de erro) roteia a Interaction Design Skill, e os achados compõem **um único conjunto** — mesma regra de agrupamento por causa estrutural, mesmo contrato de 7 campos.
+- **STEP 4 — Critique phase.** Executar a Design Critique Skill sobre o artefato — o Canvas Snapshot, quando a fonte for o Paper —, com o Brief como contexto (Context Integration da skill), varrendo L0–L8 sob o Gate de evidência por camada (Critique Orchestration). Cheiro comportamental que exija decomposição (fluxo crítico, estados suspeitos, recuperação de erro) roteia a Interaction Design Skill, e os achados compõem **um único conjunto** — mesma regra de agrupamento por causa estrutural, mesmo contrato de 7 campos.
 - **STEP 5 — Quality Gate.** Review formal é avaliação formal: aplicar o `quality-framework.md` — nota por dimensão derivada do pior achado, dimensões críticas (★) avaliadas no nível do escopo, `UNKNOWN` onde não houver informação, e o veredito dos três gates (média ≥ 4; críticas ≥ 3; nenhum blocker aberto). Blocker aberto reprova independentemente da média; só sai por correção verificada ou aceite explícito de risco registrado como `DECISION`.
 - **STEP 6 — Report.** Emitir o **Design Critique Report** completo (`standards/critique-framework.md`), incluindo a seção Quality Gate com o veredito, o Context citando o Brief e seu Context Status, Layer Coverage integral e Recommended Next Steps priorizados por impacto. Autocrítica antes da entrega: as Quality Checklists das skills envolvidas e o Quality Gate da constituição (§8).
 
@@ -185,6 +205,7 @@ O review é **inválido** — refazer, não entregar — se:
 5. Qualquer escrita em canvas ou memória de projeto durante o review.
 6. Report formal sem a seção Quality Gate, ou gate reprovado entregue como aprovado / com ressalvas escondidas (CLAUDE.md §8).
 7. Qualquer Failure Condition das skills consumidas (elas permanecem válidas dentro do workflow).
+8. Falsa precisão no Layer Coverage: achado fabricado para camada sem evidência suficiente, ou camada não verificada apresentada como avaliada ou aprovada (violação do Gate de evidência por camada).
 
 ## Quality Checklist
 
@@ -196,6 +217,7 @@ Antes de entregar (etapa `critique` do ciclo aplicada ao workflow):
 - [ ] Contexto incompleto tratado pela Política de bloqueio: review continuou com Confidence rebaixada e limitações declaradas nas conclusões afetadas — e interrupção usada somente diante de análise potencialmente enganosa?
 - [ ] Blocking e non-blocking unknowns distinguidos — blocking no gate, non-blocking como pendência declarada sem interromper nada?
 - [ ] Achados em contrato pleno (7 campos, tokens canônicos), agrupados por causa?
+- [ ] Gate de evidência aplicado camada a camada: *not enough evidence* virou `not-evaluable` declarado — nenhum achado fabricado, nenhuma camada não verificada dada como avaliada?
 - [ ] Quality Gate presente, com dimensões críticas avaliadas ou `UNKNOWN` justificado?
 - [ ] Nenhuma operação de escrita aconteceu?
 - [ ] Recommended Next Steps priorizados por impacto, incluindo o que destravaria camadas `not-evaluable`?
