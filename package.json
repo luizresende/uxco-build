@@ -7,7 +7,7 @@
   "scripts": {
     "preflight": "node scripts/preflight.mjs",
     "context:load": "node scripts/context-loader.mjs",
-    "test": "node --test \"tests/context-engine/*.test.mjs\" \"tests/critique-engine/*.test.mjs\""
+    "test": "node --test \"tests/context-engine/*.test.mjs\" \"tests/critique-engine/*.test.mjs\" \"tests/review-workflow/*.test.mjs\""
   },
   "engines": {
     "node": ">=18"
