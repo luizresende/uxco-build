@@ -31,7 +31,7 @@ O review aceita como escopo qualquer uma destas unidades: **uma tela · um frame
 4. Ambiguidade → sinalizar e perguntar — nunca inventar
 ```
 
-1. **Escopo explícito do usuário** — quando o pedido nomeia o alvo (argumento do comando, frame citado, fluxo descrito), ele é o escopo. Seleção ativa divergente não o substitui — divergência clara entre pedido e seleção é apontada ao usuário, nunca resolvida em silêncio.
+1. **Escopo explícito do usuário** — quando o pedido nomeia o alvo (argumento do comando, frame citado, fluxo descrito), ele é o escopo. O explícito pode vir como **caminho** (arquivo, fixture) ou como **nome** (ex.: `/uxco-review checkout`): o nome declara a intenção sem ambiguidade, mas seu **referente** ainda é resolvido contra as fontes da sessão — frames do canvas, arquivos citados, conversa; múltiplas correspondências plausíveis caem no degrau 4 (ambiguidade sinalizada com os candidatos). Seleção ativa divergente não substitui o explícito — divergência clara entre pedido e seleção é apontada ao usuário, nunca resolvida em silêncio.
 2. **Seleção ativa no Paper** — sem escopo explícito, havendo canvas como fonte (`PAPER_READY`) e seleção inequívoca, **a seleção tem prioridade**: ela é o escopo, declarado no report com essa origem.
 3. **Contexto disponível** — sem escopo explícito nem seleção inequívoca, tentar identificar o escopo pelo contexto da sessão: artefato único fornecido, fluxo em discussão na conversa, candidato natural no documento ativo (ex.: um único frame no canvas). A identificação é inferência — declarada como tal (`ASSUMPTION` de escopo, revisável pelo usuário). Candidato único de confiança razoável não é ambiguidade: é inferência declarada, e o review prossegue.
 4. **Ambiguidade** — múltiplos candidatos plausíveis (várias telas, seleção ambígua, conversa apontando para mais de um fluxo) cuja escolha errada comprometeria a confiabilidade da análise: o workflow **sinaliza a ambiguidade e pergunta**, com uma pergunta objetiva listando os candidatos (gap blocking — CLAUDE.md §4). **Inventar o escopo nunca é saída**: escopo inventado invalida o review inteiro (Failure Conditions).
@@ -68,7 +68,7 @@ Regras do bloco:
 | 4 | Nem escopo explícito, nem seleção, nem candidato identificável no contexto | Scope `UNKNOWN` + Open Question blocking pedindo a fonte; nenhuma crítica é iniciada |
 | 5 | Múltiplos candidatos plausíveis (telas, fluxos ou artefatos concorrentes) | Scope `UNKNOWN` + `Ambiguities` com os candidatos + Open Question blocking listando-os; nunca escolha por palpite |
 
-Os cinco casos têm cenários comportamentais executáveis em `tests/review-workflow/scope-scenarios.md` (SCP-001..005).
+Os cinco casos têm cenários comportamentais executáveis em `tests/review-workflow/scope-scenarios.md` (SCP-001..006 — o sexto cobre o alvo nomeado, variante dos casos 1 e 5).
 
 ## Context Integration
 

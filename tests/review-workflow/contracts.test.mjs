@@ -362,6 +362,25 @@ test('command file routes to the workflow and has frontmatter', () => {
   assert.ok(cmd.includes('$ARGUMENTS'), 'command must accept arguments');
 });
 
+test('command supports bare, named, and path invocations on the existing mechanism', () => {
+  const cmd = read(COMMAND);
+  // as três formas + a contextual, documentadas no próprio comando
+  assert.ok(cmd.includes('/uxco-review checkout'), 'named-target invocation missing');
+  assert.ok(cmd.includes('fixture.md'), 'path invocation missing');
+  assert.ok(/\/uxco-review\s+escopo pela seleção/.test(cmd), 'bare invocation missing');
+  assert.ok(cmd.includes('pedido contextual'), 'contextual equivalent missing');
+  // regra de resolução do alvo nomeado: intenção explícita, referente resolvido
+  assert.ok(cmd.includes('referente'), 'named-target resolution rule missing');
+  assert.ok(/argument-hint:.*checkout/.test(cmd), 'argument-hint must show the named form');
+  // cenário comportamental do alvo nomeado
+  const sc = read(SCENARIOS);
+  const s6 = sc.split('## SCP-006')[1];
+  assert.ok(s6, 'missing SCP-006 named-target scenario');
+  for (const s of ['### User Request', '### Pass Criteria', '### Fail Criteria']) {
+    assert.ok(s6.includes(s), `SCP-006 missing section: ${s}`);
+  }
+});
+
 test('workflow and command use no non-canonical severity vocabulary', () => {
   // "blocker" fica de fora: é vocabulário legítimo dos gates do quality-framework,
   // não um token de severidade.

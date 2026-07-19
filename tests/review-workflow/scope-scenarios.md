@@ -195,3 +195,39 @@ Caso 5: dois candidatos plausíveis, e a escolha errada comprometeria a análise
 
 - Review de um dos candidatos (ou de ambos) sem a escolha do usuário.
 - Ambiguidade omitida ou "resolvida" com Confidence alta em inferência fraca.
+
+---
+
+## SCP-006 — Alvo nomeado (variante dos casos 1 e 5)
+
+### User Request
+
+> "/uxco-review triagem"
+
+### Context Available
+
+Na sessão, a fixture `examples/review-tests/01-pulse-signal-capture/fixture.md` foi citada anteriormente. Sem Paper. Nenhum outro artefato com "triagem" no nome está em jogo.
+
+### Expected Behavior
+
+O argumento é um **nome**, não um caminho: a intenção é explícita, mas o referente precisa ser resolvido contra as fontes da sessão. Com uma única correspondência plausível (o fluxo de triage da fixture citada), o workflow resolve e declara: Scope block com `Type: flow`, `Source: explicit`, `Name` amarrando o nome dado ao referente encontrado. O review prossegue sem pergunta desnecessária — candidato único razoável não é ambiguidade (anti-pattern 10).
+
+### Must Do
+
+- Resolver o nome contra canvas, arquivos citados e conversa — nessa busca antes de qualquer pergunta.
+- Declarar no Scope block o referente escolhido e de onde veio.
+
+### Must Not Do
+
+- Pedir esclarecimento com um único candidato plausível disponível.
+- Inventar um referente sem correspondência nas fontes (se nada corresponder, é o caso 4: pedir a fonte).
+
+### Pass Criteria
+
+- Scope resolvido para o fluxo de triage da fixture, com a resolução do referente declarada.
+- Nenhuma pergunta desnecessária; nenhuma crítica de alvo inventado.
+
+### Fail Criteria
+
+- Interrogatório diante de candidato único plausível.
+- Nome resolvido para referente que as fontes não sustentam — ou múltiplas correspondências resolvidas por palpite (nesse caso a conduta correta é a do SCP-005).

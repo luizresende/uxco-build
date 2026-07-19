@@ -120,7 +120,14 @@ STEP 6-7  Quality Gate → Design Critique Report
 ```
 
 - **Workflow** — [`workflows/uxco-review.md`](workflows/uxco-review.md): processo em 8 STEPs com gates explícitos; orquestra por referência (nenhum método é redefinido) e é integralmente operação `READ` — review nunca escreve no canvas nem na memória.
-- **Comando** — [`.claude/commands/uxco-review.md`](.claude/commands/uxco-review.md): o slash command real do Claude Code; roteador fino para o workflow.
+- **Comando** — [`.claude/commands/uxco-review.md`](.claude/commands/uxco-review.md): o slash command real do Claude Code; roteador fino para o workflow. Formas de invocação:
+
+```text
+/uxco-review                                   escopo pela seleção do Paper ou pelo contexto da sessão
+/uxco-review checkout                          alvo nomeado — referente resolvido contra canvas, arquivos e conversa
+/uxco-review examples/.../fixture.md           caminho explícito
+"faça o review formal do fluxo de checkout"    pedido contextual equivalente, roteado pela constituição (§9)
+```
 - **Gate de contexto** — a `Execution Recommendation` do Brief governa a passagem: `REQUEST BLOCKING CONTEXT` exige respostas do usuário ou autorização explícita para o modo degradado (cenário C) — nunca respostas inventadas.
 - **Quality Gate sempre presente** — review formal é avaliação formal (`standards/quality-framework.md`): é o que o distingue da crítica pontual via skill.
 
