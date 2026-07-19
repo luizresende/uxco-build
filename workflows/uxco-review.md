@@ -209,6 +209,25 @@ Disciplina por campo:
 - **Confidence** — a escala de `standards/design-output-format.md` aplicada ao review: `High` = evidência direta no canvas e/ou no contexto; `Medium` = evidência razoável com informação importante ausente; `Low` = hipótese que merece validação — e a validação necessária vai na Recommendation.
 - **Recommendation** — responde ao problema identificado, nunca a outro: **específica** (o que mudar, onde), **proporcional** ao problema (correção pontual não vira redesign), **acionável** (o time sabe o que fazer ao ler) e **contextual** (padrões existentes do produto antes de padrões novos — CLAUDE.md §3.5). Recomendação genérica ("melhorar a usabilidade", "deixar mais claro") é falha de contrato.
 
+### Severity Engine
+
+A classificação de severidade vem **integralmente** de `standards/severity-framework.md` — definições dos cinco níveis, quatro lentes (impact × reach × task criticality × recoverability), desempates e pisos. O workflow **não define uma segunda escala concorrente**; o papel dele é fornecer às lentes os insumos que o review produz:
+
+- **task criticality** vem do Brief — a tarefa real do usuário (`CONFIRMED`/`EVIDENCE`); sem esse contexto, o que cai é a Confidence do julgamento, nunca sobe a severidade por suposição;
+- **reach** vem do contexto quando conhecido (fluxo principal diário ≠ configuração rara);
+- **recoverability** vem do observado no artefato/snapshot — estados de erro, undo, caminhos de volta;
+- os **pisos permanecem invioláveis**: violação do baseline de acessibilidade e risco de perda de trabalho/dados nunca abaixo de `High`; excludente → `Critical`;
+- na dúvida entre dois níveis, **o menor** — inflação destrói a escala.
+
+**Severity ≠ Confidence — os conceitos nunca se misturam.** Severidade responde "quão grave é se eu estiver certo"; Confidence responde "quão certo estou" (`standards/design-output-format.md`) — variam de forma independente:
+
+```text
+Severity:   Critical
+Confidence: Low
+```
+
+é combinação legítima: impacto potencial enorme com evidência que ainda precisa ser validada — o achado entra com a validação necessária na Recommendation. Incerteza **jamais rebaixa severidade silenciosamente**, e gravidade jamais inflaciona certeza.
+
 ## Safety Model
 
 1. **O review inteiro é operação `READ`** (CLAUDE.md §6): este workflow nunca escreve no canvas, nunca altera a memória do projeto e nunca corrige o que criticou. Recomendar é o limite — execução de mudanças pertence a workflows futuros, com as aprovações que o Action Safety Model exigir.
@@ -266,6 +285,7 @@ Antes de entregar (etapa `critique` do ciclo aplicada ao workflow):
 - [ ] Contexto incompleto tratado pela Política de bloqueio: review continuou com Confidence rebaixada e limitações declaradas nas conclusões afetadas — e interrupção usada somente diante de análise potencialmente enganosa?
 - [ ] Blocking e non-blocking unknowns distinguidos — blocking no gate, non-blocking como pendência declarada sem interromper nada?
 - [ ] Achados em contrato pleno (7 campos, tokens canônicos, disciplina do Issue Model: evidência citável — nunca só princípio —, dimensão de impacto nomeada, recomendação específica), agrupados por causa?
+- [ ] Severidade pelas quatro lentes do severity-framework, pisos intactos — e ortogonal à Confidence: incerteza expressa em Confidence, nunca rebaixando severidade em silêncio?
 - [ ] Gate de evidência aplicado camada a camada: *not enough evidence* virou `not-evaluable` declarado — nenhum achado fabricado, nenhuma camada não verificada dada como avaliada?
 - [ ] Interaction Design acionada quando o escopo pedia (fluxo, multi-tela, sequência) — e achados das duas skills consolidados: nenhum problema em dois blocos, evidência mais forte preservada, severidade maior mantida só com justificativa?
 - [ ] Quality Gate presente, com dimensões críticas avaliadas ou `UNKNOWN` justificado?

@@ -266,6 +266,29 @@ test('workflow issue model restates the canonical contract without divergence', 
   }
 });
 
+test('workflow severity engine defers to the framework and keeps confidence orthogonal', () => {
+  const wf = read(WORKFLOW);
+  const se = wf.split('### Severity Engine')[1]?.split('\n## ')[0];
+  assert.ok(se, 'missing Severity Engine subsection');
+  // uma escala só: o framework é a fonte integral, sem definição concorrente
+  assert.ok(se.includes('integralmente') && se.includes('severity-framework.md'),
+    'severity must come entirely from the framework');
+  assert.ok(!wf.includes('**Definition:**'),
+    'workflow must not carry competing level definitions');
+  assert.ok(se.includes('impact × reach × task criticality × recoverability'),
+    'must reference the four lenses');
+  // pisos e desempate
+  assert.ok(/perda de trabalho\/dados/.test(se) && se.includes('acessibilidade'),
+    'floors must be named inviolable');
+  assert.ok(se.includes('o menor'), 'tie-break must go down, never up');
+  // ortogonalidade Severity != Confidence, com o exemplo Critical/Low
+  assert.ok(se.includes('Severity ≠ Confidence'), 'orthogonality must be explicit');
+  assert.ok(/Severity: {3}Critical\n\s*Confidence: Low/.test(se.replace(/\r\n/g, '\n')),
+    'Critical/Low must be shown as a legitimate combination');
+  assert.ok(se.includes('jamais rebaixa severidade'),
+    'uncertainty must never silently lower severity');
+});
+
 test('workflow honors the context gate contract of the Brief', () => {
   const wf = read(WORKFLOW);
   for (const token of ['PROCEED', 'PROCEED WITH ASSUMPTIONS', 'REQUEST BLOCKING CONTEXT']) {
