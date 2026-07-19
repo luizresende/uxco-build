@@ -9,7 +9,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadContext, MEMORY_FILES } from '../../scripts/context-loader.mjs';
@@ -220,6 +220,23 @@ test('integration: INT-F keeps the report valid with zero critical issues', () =
     'no seeded problem may be Critical — that is the point of INT-F');
   assert.ok(ex.includes('Oportunidade') && ex.includes('exatamente uma'),
     'the expectation must seed exactly one opportunity');
+});
+
+test('integration: every review fixture is consumed — behavior over file volume, no orphans', () => {
+  // cada fixture de review existe para provar um comportamento: precisa ser
+  // alvo de um cenário INT ou de um cenário RVW do harness, e ter expectation
+  const consumers = read(SCENARIOS) + read(HARNESS);
+  const dirs = readdirSync(join(root, 'examples/review-tests'), { withFileTypes: true })
+    .filter((d) => d.isDirectory()).map((d) => d.name);
+  assert.ok(dirs.length > 0, 'review fixtures must exist');
+  for (const dir of dirs) {
+    const fixture = `examples/review-tests/${dir}/fixture.md`;
+    assert.ok(exists(fixture), `fixture directory without fixture.md: ${dir}`);
+    assert.ok(consumers.includes(fixture),
+      `orphan fixture (no scenario or harness consumes it): ${fixture}`);
+    assert.ok(exists(`benchmarks/review-workflow/expectations/${dir}.md`),
+      `fixture without matching expectation: ${dir}`);
+  }
 });
 
 test('integration: no broken repo references in the integration artifacts', () => {
