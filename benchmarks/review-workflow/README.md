@@ -45,3 +45,5 @@ Além dos cenários E2E acima, duas suítes comportamentais complementares regis
 
 - **SCP-001..006** em `tests/review-workflow/scope-scenarios.md` — o STEP 0 isolado (detecção de escopo: explícito, seleção, contexto, insuficiente, ambíguo, alvo nomeado).
 - **INT-A..INT-F** em `tests/review-workflow/integration-scenarios.md` — a orquestração inteira sem Paper real (tela única, fluxo multi-tela com Interaction Design, contexto incompleto, escopo ambíguo, consolidação de duplicatas, report válido sem Critical).
+
+O primeiro teste comparativo da tese do produto (Control: Claude genérico com contexto equivalente × Experiment: `/uxco-review`) vive em `differential-protocol.md` — caso DIF-001, resultados neste mesmo `results/` (`YYYY-MM-DD-dif-run-N.md`).

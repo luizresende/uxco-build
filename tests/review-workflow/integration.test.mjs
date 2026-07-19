@@ -222,6 +222,44 @@ test('integration: INT-F keeps the report valid with zero critical issues', () =
     'the expectation must seed exactly one opportunity');
 });
 
+test('integration: the differential protocol pits control against /uxco-review on equivalent context', () => {
+  const DIFF = 'benchmarks/review-workflow/differential-protocol.md';
+  assert.ok(exists(DIFF), 'missing differential protocol');
+  const d = read(DIFF);
+
+  // positivo: dois braços com contexto equivalente — o diferencial é o sistema
+  assert.ok(d.includes('Control') && d.includes('Experiment'),
+    'protocol must define the two arms');
+  assert.ok(d.includes('fora do repositório') && d.includes('/uxco-review'),
+    'control runs outside the repo; experiment runs the real command');
+  assert.ok(d.includes('Contexto equivalente'),
+    'equivalent context must be the defining isonomy rule');
+  // os 7 critérios registrados, na ordem pedida
+  const criteria = ['Context awareness', 'Problem relevance', 'Severity accuracy',
+    'Actionability', 'Edge case coverage', 'Noise', 'Rationale quality'];
+  let last = -1;
+  for (const c of criteria) {
+    const i = d.indexOf(`**${c}**`);
+    assert.ok(i !== -1, `missing criterion: ${c}`);
+    assert.ok(i > last, `criterion out of order: ${c}`);
+    last = i;
+  }
+  // caso representativo amarrado à fixture, à memória e ao gabarito reais
+  assert.ok(d.includes(FIXTURE_FLOW) && d.includes('examples/demo-project/'),
+    'DIF-001 must bind to the real fixture and memory');
+  assert.ok(d.includes('01-pulse-signal-capture.md'),
+    'DIF-001 must name its expectation as evaluator-only material');
+  assert.ok(d.includes('results/YYYY-MM-DD-dif-run-N.md'),
+    'runs must be registered append-only');
+  // negativo: cegueira ao gabarito; empate nunca promovido; escopo contido
+  assert.ok(d.includes('Cegueira ao gabarito'), 'blindness rule must hold for both arms');
+  assert.ok(d.includes('nunca promovido a vitória'), 'draws must stay draws');
+  assert.ok(d.includes('Sprint 9'), 'the full benchmark must stay out of this sprint');
+  // o harness aponta o protocolo — nada órfão
+  assert.ok(read(HARNESS).includes('differential-protocol.md'),
+    'harness must reference the differential protocol');
+});
+
 test('integration: every review fixture is consumed — behavior over file volume, no orphans', () => {
   // cada fixture de review existe para provar um comportamento: precisa ser
   // alvo de um cenário INT ou de um cenário RVW do harness, e ter expectation

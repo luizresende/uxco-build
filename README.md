@@ -132,7 +132,24 @@ STEP 6-7  Quality Gate → Design Critique Report
 - **Gate de contexto** — a `Execution Recommendation` do Brief governa a passagem: `REQUEST BLOCKING CONTEXT` exige respostas do usuário ou autorização explícita para o modo degradado (cenário C) — nunca respostas inventadas.
 - **Quality Gate sempre presente** — review formal é avaliação formal (`standards/quality-framework.md`): é o que o distingue da crítica pontual via skill.
 
-**Testes:** contratos determinísticos em [`tests/review-workflow/`](tests/review-workflow/) (`npm test`); fixture E2E com memória em [`examples/review-tests/`](examples/review-tests/); harness de avaliação manual (conduta + substância) em [`benchmarks/review-workflow/`](benchmarks/review-workflow/).
+**Pré-requisitos:** sessão do Claude Code aberta na **raiz deste repositório** (o workflow resolve toda referência contra a constituição e os standards daqui); um **artefato observável** — canvas no Paper, arquivo de descrição (fixture) ou imagem — é a única precondição absoluta. Canvas como fonte exige Paper conectado e `PAPER_READY` verificado por chamada real (`npm run preflight` diagnostica o ambiente local). Memória de projeto é opcional (ausência vira Brief honesto com fontes `MISSING`); o Context Loader pede Node ≥ 18.
+
+**Exemplo mínimo** (sessão nova na raiz do repositório, sem Paper):
+
+```text
+/uxco-review examples/review-tests/02-pulse-new-item/fixture.md
+```
+
+Saída esperada: o Design Critique Report completo — Scope block (`Type: screen · Source: explicit`), Brief com a memória demo do Pulse carregada, issues no contrato de 7 campos ordenadas por severidade e a seção Quality Gate com veredito.
+
+**Limitações atuais:**
+
+- O review é **integralmente `READ`**: analisa e recomenda, mas não corrige — nenhuma escrita em canvas ou memória de projeto, nem mediante aprovação (correção pertence a workflows futuros).
+- A leitura do canvas se limita ao repertório validado no smoke test da Sprint 0 (estrutura, textos, estilos computados, screenshots); comportamento de runtime, ordem de foco real e interações não são observáveis — entram como limitação declarada no report.
+- A qualidade da execução é avaliada manualmente (AGENT EVALUATION nos harnesses); os testes automatizados cobrem contratos e invariantes, não a substância da crítica.
+- Um review por alvo por vez — não há execução em lote nem comparação entre versões de um design.
+
+**Testes:** contratos determinísticos e cenários de integração em [`tests/review-workflow/`](tests/review-workflow/) (`npm test`); fixtures E2E com memória em [`examples/review-tests/`](examples/review-tests/); harness de avaliação manual (conduta + substância) e o primeiro teste comparativo da tese (Control × `/uxco-review`, `differential-protocol.md`) em [`benchmarks/review-workflow/`](benchmarks/review-workflow/).
 
 ### tests/foundation/ — validação comportamental
 
