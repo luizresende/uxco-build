@@ -8,6 +8,7 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- Harness: camada explícita de Harness Engineering sobre a Sprint 4 (Instructions/Tools/Environment/State/Feedback), sem alterar comportamento do `/uxco-review`. `CLAUDE.md` §11 (Runtime, Verification, Hard Constraints operacionais, Session Protocol de início/fim de sessão); `PROGRESS.md` como mecanismo de continuidade entre sessões; `.nvmrc` declarando o Node de desenvolvimento; `npm run verify` orquestrando `preflight` + `test` (sem lógica duplicada); seção `Harness` e `License` em `README.md`.
 - Sprint 4: tratamento explícito de falhas no workflow — seção **Failure Handling** em `workflows/uxco-review.md` com os seis modos previstos (Paper indisponível com a mensagem canônica de bloqueio `Review blocked: / Paper connection unavailable.` quando o canvas é a única fonte; nenhum escopo identificável; contexto incompleto mas suficiente — continuar com `ASSUMPTION` registrada e Confidence rebaixada; contexto crítico ausente — bloquear só quando análise responsável é impossível; skill indisponível — falha explícita, nunca versão genérica improvisada; Paper parcialmente legível — só análises sustentadas pelos dados, limitações registradas), cada modo amarrado ao mecanismo existente que o resolve, distinguido das Failure Conditions (falha de execução ≠ review inválido).
 - Sprint 4: testes unitários de contrato em `tests/review-workflow/units.test.mjs` — 10 unidades (scope detection, scope ambiguity, context integration, issue normalization, severity, confidence, deduplication, prioritização, report formatting, failure handling), cada uma com casos positivos (conduta exigida presente, com consistência cruzada workflow ↔ template ↔ cenários ↔ standards) e negativos (conduta proibida ausente: tokens não canônicos, campos paralelos, severidade/confiança numéricas, seções paralelas no report, variantes da mensagem de bloqueio).
 - Sprint 4: testes de integração ponta a ponta sem Paper real — cenários comportamentais INT-A..INT-F em `tests/review-workflow/integration-scenarios.md` (tela única, fluxo multi-tela com roteamento automático da Interaction Design, contexto incompleto, escopo ambíguo, consolidação de achados duplicados entre skills, report válido sem issues Critical), fixture de tela única `examples/review-tests/02-pulse-new-item/` (3 achados semeados sem nenhum Critical + 1 opportunity; cenário RVW-004 no harness) e `tests/review-workflow/integration.test.mjs` executando o Context Loader real sobre a memória demo e validando a fiação cenários ↔ fixtures ↔ expectations ↔ harness, incluindo guard anti-fixture-órfã (toda fixture precisa provar comportamento).
@@ -48,6 +49,10 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 - Sprint 0: script `preflight` para verificação do ambiente local.
 - Sprint 0: documentação inicial: arquitetura, getting started e escopo da Sprint 0.
 - Sprint 0: plano de smoke test do Paper MCP em `experiments/paper-mcp/`.
+
+### Fixed
+
+- Harness: `tests/review-workflow/units.test.mjs` — o teste do template do report quebrava em checkouts Windows (`core.autocrlf=true`) por comparar contra um separador `\n---\n` literal; trocado por regex tolerante a CRLF. Bug de portabilidade do teste, não do template nem do workflow.
 
 ### Changed
 
