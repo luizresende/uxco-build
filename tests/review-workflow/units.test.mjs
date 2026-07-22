@@ -284,7 +284,7 @@ test('unit: report template mirrors the official contract sections exactly, in o
   }
 
   // positivo + negativo: o esqueleto do template = exatamente essas seções, nessa ordem
-  const skeleton = t.split('\n---\n')[1];
+  const skeleton = t.split(/\r?\n---\r?\n/)[1];
   assert.ok(skeleton, 'template missing the fill-in skeleton');
   const headings = [...skeleton.matchAll(/^## (.+)$/gm)].map(([, h]) => h.trim());
   assert.deepEqual(headings, official,

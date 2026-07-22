@@ -31,7 +31,10 @@ Claude Code  →  UXCO Design Engine  →  Paper MCP  →  Paper Canvas
 O que existe hoje no repositório e a responsabilidade de cada parte:
 
 ```text
-CLAUDE.md               Constituição operacional — sempre carregada
+CLAUDE.md               Constituição operacional — sempre carregada (§11: harness — runtime,
+                        verificação, protocolo de sessão)
+PROGRESS.md             Estado operacional entre sessões — onde estamos, próximo passo
+.nvmrc                  Versão de Node do ambiente de desenvolvimento
 standards/              Critérios compartilhados — consultados por tarefa
 skills/                 product-context (Context Engine) · design-critique ·
                         interaction-design (Critique Engine)
@@ -180,9 +183,23 @@ Os testes são cenários manuais, executados com o Claude Code:
 
 Instruções completas no cabeçalho de [`tests/foundation/scenarios.md`](tests/foundation/scenarios.md).
 
+## Harness
+
+A confiabilidade do desenvolvimento entre sessões do Claude Code é estruturada em cinco subsistemas — o repositório é o system of record; nenhum deles depende de histórico de conversa:
+
+- **Instructions** — `CLAUDE.md` é o entry point sempre carregado (constituição + §11 harness); roteia para `standards/`, `skills/`, `workflows/` em vez de duplicá-los.
+- **Tools** — Node.js, Git, Claude Code e (opcionalmente) Paper MCP; verificados por `npm run preflight`.
+- **Environment** — `.nvmrc` + `engines` em `package.json` declaram o runtime; zero dependências externas por decisão de arquitetura.
+- **State** — [`PROGRESS.md`](PROGRESS.md) registra onde o desenvolvimento está, o que está bloqueado e o próximo passo — sem substituir Git ou o `CHANGELOG.md`.
+- **Feedback** — `npm run preflight` (ambiente pronto?), `npm test` (comportamento correto?) e `npm run verify` (repositório consistente para considerar uma tarefa concluída? — orquestra os dois anteriores).
+
 ## Documentação
 
 - [`docs/getting-started.md`](docs/getting-started.md) — como preparar o ambiente do zero.
 - [`docs/architecture.md`](docs/architecture.md) — visão da arquitetura da v0, preflight em dois níveis e state machine de prontidão do Paper.
 - [`docs/sprint-0.md`](docs/sprint-0.md) — escopo e critérios de saída da Sprint 0 (registro histórico).
 - [`experiments/paper-mcp/`](experiments/paper-mcp/) — experimentos de validação do Paper MCP (smoke test — registro histórico).
+
+## License
+
+`UNLICENSED` — projeto privado, sem licença de código aberto.
