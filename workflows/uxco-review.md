@@ -1,15 +1,17 @@
 # Workflow — UXCO Review (`/uxco-review`)
 
-> **Propósito:** o processo executável do review formal de design — conecta o Context Engine e o Critique Engine em uma sequência única com gates explícitos: contexto → crítica → quality gate → report.
+> **Propósito:** o processo executável do review formal de design — conecta o Context Engine, o Critique Engine e o Adversarial Quality Engine em uma sequência única com gates explícitos: contexto → análise inicial → crítica adversarial → revisão → QA → quality gate → report.
 > **Quando consultar:** ao executar o comando `/uxco-review`, ou sempre que o usuário pedir um review formal de uma interface, tela ou fluxo.
 
-Este workflow opera sob a constituição (CLAUDE.md) e **orquestra** capacidades existentes — não redefine método algum: o contexto vem de `skills/product-context/SKILL.md`, a crítica de `skills/design-critique/SKILL.md` e `skills/interaction-design/SKILL.md`, e os contratos de fronteira dos standards (`standards/product-context-brief.md`, `standards/critique-framework.md`, `standards/quality-framework.md`, `standards/severity-framework.md`, `standards/design-output-format.md`, `standards/accessibility-baseline.md`). Qualquer conflito aparente se resolve a favor da camada mais alta (CLAUDE.md §9.2).
+Este workflow opera sob a constituição (CLAUDE.md) e **orquestra** capacidades existentes — não redefine método algum: o contexto vem de `skills/product-context/SKILL.md`, a crítica de `skills/design-critique/SKILL.md` e `skills/interaction-design/SKILL.md`, o desafio adversarial e a auditoria do review de `agents/design-critic.md` e `agents/design-qa.md`, e os contratos de fronteira dos standards (`standards/product-context-brief.md`, `standards/critique-framework.md`, `standards/adversarial-quality.md`, `standards/quality-framework.md`, `standards/severity-framework.md`, `standards/design-output-format.md`, `standards/accessibility-baseline.md`). Qualquer conflito aparente se resolve a favor da camada mais alta (CLAUDE.md §9.2).
 
 ## Purpose
 
 Responder: **"este design está pronto — e, se não está, o que precisa mudar, em que ordem?"**
 
-`/uxco-review` é o rito **formal**: Brief de contexto, varredura completa de crítica e Quality Gate com veredito. Crítica pontual de um detalhe não passa por aqui — usa a Design Critique Skill diretamente, com a proporcionalidade da constituição (§2).
+`/uxco-review` é o rito **formal**: Brief de contexto, varredura completa de crítica, **o diagnóstico desafiado e revisado antes de virar conclusão**, auditoria da qualidade do próprio review e Quality Gate com veredito. Crítica pontual de um detalhe não passa por aqui — usa a Design Critique Skill diretamente, com a proporcionalidade da constituição (§2).
+
+A diferença entre este workflow e uma crítica direta não é só a formalidade do report: é que **o primeiro diagnóstico não é entregue como conclusão**. Ele é atacado primeiro (STEP 6), consolidado depois (STEP 7) e auditado antes de sair (STEP 8).
 
 ## Trigger
 
@@ -254,9 +256,72 @@ Confidence: Low
 
 é combinação legítima: impacto potencial enorme com evidência que ainda precisa ser validada — o achado entra com a validação necessária na Recommendation. Incerteza **jamais rebaixa severidade silenciosamente**, e gravidade jamais inflaciona certeza.
 
+## Adversarial Quality Engine
+
+O diagnóstico consolidado do STEP 5 **não é a conclusão do review** — é o material que a camada adversarial vai atacar. Contratos em `standards/adversarial-quality.md` (records, marcadores, escalas); responsabilidades em `agents/design-critic.md` e `agents/design-qa.md`. Esta seção orquestra; não redefine método algum.
+
+### Fronteira — quem pergunta o quê
+
+Quatro responsabilidades encadeadas, não quatro personas. Cada uma recebe um artefato e produz um artefato:
+
+| Estágio | Objeto | Pergunta | Produz |
+| --- | --- | --- | --- |
+| **Initial Analysis** (STEP 4–5) | O design | Quais problemas existem neste design? | Conjunto consolidado de achados |
+| **Adversarial Critique** (STEP 6) | O diagnóstico | Onde ele está errado, incompleto, superficial ou confiante demais? | Adversarial Critique Record |
+| **Revision** (STEP 7) | Os vereditos | Qual é o diagnóstico único que sobrevive? | Diagnóstico revisado |
+| **Review QA** (STEP 8) | O review | Ele é confiável o suficiente para ser entregue? | Review QA Record |
+
+A separação que importa: a Design Critique olha a interface; o Critic olha a Design Critique; o QA olha o resultado dos dois. **O Critic não repete a varredura L0–L8** e **o QA não produz crítica de design** — violar isso transforma a camada em três reviews empilhados, que é exatamente o que ela existe para evitar.
+
+### Ciclo único
+
+```text
+MÁXIMO: 1 adversarial critique · 1 revision · 1 final QA
+```
+
+Invariante, não configuração (`standards/adversarial-quality.md`): nenhuma recursão, nenhum agente debatendo, nenhum número variável de passadas. QA reprovando **não** dispara novo ciclo — o blocker de qualidade é declarado no report e a decisão volta ao usuário. Diagnóstico inicial vazio **não** dispensa o ciclo: é o caso em que a pergunta do Critic mais importa.
+
+### Observabilidade — stage trace
+
+Cada estágio registra o seu marcador canônico, e o conjunto sobe ao report como `Stage trace`:
+
+```text
+INITIAL_ANALYSIS → ADVERSARIAL_REVIEW → REVISION → FINAL_QA
+```
+
+Marcador é registro de estágio **executado**, nunca pretendido: declarar `ADVERSARIAL_REVIEW` sem ter desafiado o diagnóstico é fabricação de evidência de processo — Failure Condition 9. O trace declara que o estágio aconteceu e o que ele mudou em números; **não expõe raciocínio interno** (regra 6 do record).
+
+### Revision — um diagnóstico só
+
+O STEP 7 é o estágio que impede o pior resultado possível desta camada: **entregar duas análises contraditórias e deixar a reconciliação para o usuário**. A Revision consome os vereditos e produz um único conjunto de issues:
+
+| `Verdict` do record | Efeito na Revision |
+| --- | --- |
+| `confirmed` | O achado permanece como está — resistir ao desafio é preservação, não inércia |
+| `revised` | Os campos mudam conforme `Change`, na notação `Campo: antes → depois`; a issue continua sendo uma |
+| `rejected` | A issue **sai de Issues**; havendo suspeita legítima sem evidência, reaparece em `Unknowns and Assumptions` como Open Question — nunca como problema afirmado |
+| `added` | A omissão entra como issue nova, no contrato pleno de 7 campos — sem desconto de evidência |
+
+Depois de incorporar os vereditos, a Revision **reaplica os mecanismos existentes ao conjunto resultante**, porque ele mudou: a Consolidação (dedupe por causa, `Low` agregados) e a ordenação por prioridade do STEP 5, com severidade pelas quatro lentes do `standards/severity-framework.md`. Reaplicar não é um segundo ciclo adversarial — é o mesmo estágio determinístico sobre um conjunto novo.
+
+Falsificadores registrados pelo Critic (todo achado que sobrevive com `Confidence` abaixo de `High`) viram **validação pendente**: na Recommendation do achado ou em Recommended Next Steps. O que o Critic descobriu nunca fica só no record.
+
+### Review QA — gate de qualidade do review
+
+O STEP 8 audita o review pelas sete dimensões do `standards/adversarial-quality.md` — Context Grounding · Evidence Quality · Severity Calibration · Actionability · Completeness · Accessibility Coverage · System Consistency —, em `PASS | PARTIAL | FAIL | UNKNOWN`, **sem nenhum score composto**: média de tokens de conduta seria exatamente a falsa precisão que esta camada combate.
+
+Os dois blockers que o review carrega **nunca se confundem**:
+
+| Blocker | O que reprova | Onde vive |
+| --- | --- | --- |
+| **Design blocker** | O design avaliado (achado `Critical`, piso de acessibilidade violado) | Quality Gate — STEP 9, `standards/quality-framework.md` |
+| **QA blocker** | O **review** (dimensão em `FAIL`) | `QA Blockers` do Review QA Record — STEP 8 |
+
+Review impecável sobre design reprovado é `REVIEW READY` com gate reprovado. Review frágil sobre design bom é `REVIEW NOT READY` com gate aprovado — e aí o próprio veredito do gate sai qualificado pela ressalva, porque foi produzido por um review que não se sustenta.
+
 ## Safety Model
 
-1. **O review inteiro é operação `READ`** (CLAUDE.md §6): este workflow nunca escreve no canvas, nunca altera a memória do projeto e nunca corrige o que criticou. Recomendar é o limite — execução de mudanças pertence a workflows futuros, com as aprovações que o Action Safety Model exigir.
+1. **O review inteiro é operação `READ`** (CLAUDE.md §6): este workflow nunca escreve no canvas, nunca altera a memória do projeto e nunca corrige o que criticou. Recomendar é o limite — execução de mudanças pertence a workflows futuros, com as aprovações que o Action Safety Model exigir. A camada adversarial **não abre exceção**: Critic e QA também são integralmente `READ` — eles revisam o diagnóstico, nunca o design.
 2. Canvas como fonte exige `PAPER_READY` verificado por chamada real (CLAUDE.md §6.1; state machine em `docs/architecture.md`). Canvas indisponível **não aborta o review**: a limitação é registrada e o review prossegue com as fontes restantes — ou pede ao usuário uma fonte observável alternativa quando o canvas era a única.
 3. Registro de decisão relevante nascida do review (ex.: aceite explícito de risco de um blocker) segue o §3.12 da constituição — bloco Design Decision, nunca escrita silenciosa em memória alheia.
 
@@ -269,11 +334,14 @@ Tudo consumido **por referência** — nada redefinido (CLAUDE.md §9.2):
 | `skills/product-context/SKILL.md` | Context Engine — produz o Brief (STEPs 2–3) |
 | `skills/design-critique/SKILL.md` | Varredura L0–L8 e report (STEP 4) |
 | `skills/interaction-design/SKILL.md` | Decomposição comportamental (STEP 4, via Roteamento) |
+| `agents/design-critic.md` | Responsabilidade adversarial — desafia o diagnóstico (STEP 6) |
+| `agents/design-qa.md` | Auditoria da qualidade do review (STEP 8) |
 | `scripts/context-loader.mjs` | Inventário mecânico da memória (`npm run context:load`) |
 | `standards/product-context-brief.md` | Contrato do Brief e do seu consumo |
 | `standards/critique-framework.md` | Camadas, contrato do achado, contrato do report |
+| `standards/adversarial-quality.md` | Records, marcadores de estágio, escala do QA e ciclo único (STEPs 6–8) |
 | `standards/severity-framework.md` | Escala e lentes de severidade |
-| `standards/quality-framework.md` | Dimensões, notas e gates de aprovação (STEP 6) |
+| `standards/quality-framework.md` | Dimensões, notas e gates de aprovação do design (STEP 9) |
 | `standards/design-output-format.md` | Blocos de saída e escala de Confidence |
 | `standards/accessibility-baseline.md` | Piso de acessibilidade (L7) e limites de verificação |
 | `standards/uxco-design-principles.md` | Princípios que qualificam evidência e recomendações |
@@ -287,13 +355,16 @@ STEP 0  Resolve scope and target
 STEP 1  Preflight & Paper Inspection (condicional — apenas quando o canvas é fonte)
 STEP 2  Context phase — Product Context Skill → Product Context Brief
 STEP 3  Context gate — aplicar a Execution Recommendation do Brief
-STEP 4  Critique phase — Design Critique (+ Interaction Design) → achados
-STEP 5  Consolidation — deduplicar, agrupar, priorizar (sinal sobre volume)
-STEP 6  Quality Gate — avaliação formal pelo quality-framework
-STEP 7  Report — Design Critique Report completo, com Quality Gate
+STEP 4  Initial Analysis — Design Critique (+ Interaction Design) → achados   [INITIAL_ANALYSIS]
+STEP 5  Consolidation — deduplicar, agrupar, priorizar (sinal sobre volume)   [INITIAL_ANALYSIS]
+STEP 6  Adversarial Critique — Design Critic desafia o diagnóstico          [ADVERSARIAL_REVIEW]
+STEP 7  Revision — vereditos incorporados em um diagnóstico só                       [REVISION]
+STEP 8  Review QA — Design QA audita a qualidade do review                           [FINAL_QA]
+STEP 9  Quality Gate — avaliação formal do design pelo quality-framework
+STEP 10 Report — Design Critique Report completo, com Quality Gate e Review Assurance
 ```
 
-### Pipeline canônico — mapa dos 14 estágios
+### Pipeline canônico — mapa dos 17 estágios
 
 Os STEPs implementam o pipeline canônico do review. O mapa preserva as dependências reais, não a numeração literal — em particular, a inspeção do Paper precede a construção do Brief porque o Canvas Snapshot é evidência de canvas do próprio Brief:
 
@@ -311,8 +382,11 @@ Os STEPs implementam o pipeline canônico do review. O mapa preserva as dependê
 | 10. Assign confidence | STEP 4 (Issue Model — ortogonal à severidade) |
 | 11. Deduplicate findings | STEP 5 (Consolidação) |
 | 12. Prioritize issues | STEP 5 (ordenação: severidade → impacto → confiança → alcance) |
-| 13. Generate report | STEP 6–7 (Quality Gate + Composição do report) |
-| 14. Present next steps | STEP 7 (Recommended Next Steps amarrados às issues) |
+| 13. Challenge the diagnosis | STEP 6 (Design Critic → Adversarial Critique Record) |
+| 14. Revise the diagnosis | STEP 7 (Revision — vereditos incorporados, mecanismos do STEP 5 reaplicados) |
+| 15. Audit review quality | STEP 8 (Design QA → Review QA Record) |
+| 16. Generate report | STEP 9–10 (Quality Gate + Composição do report) |
+| 17. Present next steps | STEP 10 (Recommended Next Steps amarrados às issues) |
 
 - **STEP 0 — Resolve scope and target.** Identificar o artefato observável e resolver o escopo pela ordem de precedência de Scope Resolution (explícito → seleção ativa → contexto → ambiguidade sinalizada). Dois gaps blocking possíveis aqui: artefato ausente (pedir a fonte, nunca reviewar de memória) e ambiguidade de escopo entre múltiplos candidatos plausíveis (perguntar listando os candidatos, nunca escolher por palpite).
 - **STEP 1 — Preflight & Paper Inspection (condicional).** Somente quando o canvas for fonte: percorrer o Agent Preflight até `PAPER_READY` (docs/architecture.md); qualquer outro estado bloqueia a leitura do canvas e é reportado com a ação de correção. Com `PAPER_READY`, executar a inspeção e consolidar o **Canvas Snapshot** (seção Paper Inspection), com `Limitations` preenchido. Fontes textuais e imagens não exigem preflight.
@@ -320,14 +394,19 @@ Os STEPs implementam o pipeline canônico do review. O mapa preserva as dependê
 - **STEP 3 — Context gate.** Ler o Context Status do Brief e aplicar o contrato de consumo (`standards/product-context-brief.md`) sob a Política de bloqueio (Context Integration):
   - `PROCEED` ou `PROCEED WITH ASSUMPTIONS` → seguir ao STEP 4, herdando as premissas como premissas (nunca promovidas a fato).
   - `REQUEST BLOCKING CONTEXT` → apresentar as blocking questions — e, **por padrão, continuar mesmo assim**: a crítica prossegue nas camadas que não dependem das respostas (cenário C da Design Critique Skill: L0 `not-evaluable`, Confidence rebaixada onde depender de task criticality), com as perguntas abertas visíveis no report. Isso respeita o contrato do Brief: o que as blocking questions bloqueiam é o julgamento que depende delas, não as camadas observáveis. **Interromper é exceção**: reservada a quando a ausência tornaria a análise potencialmente enganosa mesmo com limitações declaradas — nesse caso o review para nas perguntas, explicando por que prosseguir seria pior que esperar. **Inventar respostas nunca é saída.**
-- **STEP 4 — Critique phase.** Executar a Design Critique Skill sobre o artefato — o Canvas Snapshot, quando a fonte for o Paper —, com o Brief como contexto (Context Integration da skill), varrendo L0–L8 sob o Gate de evidência por camada (Critique Orchestration). A Interaction Design Skill entra pelo Roteamento da Critique Orchestration — automática para escopo de fluxo, tarefa multi-tela ou sequência de interação; sob demanda diante de cheiro comportamental — e os achados das duas skills passam pela Consolidação: um problema, um achado, no mesmo contrato de 7 campos.
-- **STEP 5 — Consolidation.** Antes de qualquer nota ou relatório, o conjunto bruto de achados passa pela Consolidação (contrato em Critique Orchestration): duplicatas removidas, equivalentes agrupados pela causa, conflitos de severidade resolvidos pelas lentes, evidência mais forte preservada, `Low` não acionáveis agregados e o conjunto ordenado por prioridade. O Quality Gate pontua o conjunto **consolidado**, nunca o bruto.
-- **STEP 6 — Quality Gate.** Review formal é avaliação formal: aplicar o `quality-framework.md` — nota por dimensão derivada do pior achado, dimensões críticas (★) avaliadas no nível do escopo, `UNKNOWN` onde não houver informação, e o veredito dos três gates (média ≥ 4; críticas ≥ 3; nenhum blocker aberto). Blocker aberto reprova independentemente da média; só sai por correção verificada ou aceite explícito de risco registrado como `DECISION`.
-- **STEP 7 — Report.** Emitir o **Design Critique Report** completo (`standards/critique-framework.md`), incluindo a seção Quality Gate com o veredito, o Context citando o Brief e seu Context Status, Layer Coverage integral e Recommended Next Steps priorizados por impacto. Autocrítica antes da entrega: as Quality Checklists das skills envolvidas e o Quality Gate da constituição (§8).
+- **STEP 4 — Initial Analysis (`INITIAL_ANALYSIS`).** Executar a Design Critique Skill sobre o artefato — o Canvas Snapshot, quando a fonte for o Paper —, com o Brief como contexto (Context Integration da skill), varrendo L0–L8 sob o Gate de evidência por camada (Critique Orchestration). A Interaction Design Skill entra pelo Roteamento da Critique Orchestration — automática para escopo de fluxo, tarefa multi-tela ou sequência de interação; sob demanda diante de cheiro comportamental — e os achados das duas skills passam pela Consolidação: um problema, um achado, no mesmo contrato de 7 campos.
+- **STEP 5 — Consolidation (`INITIAL_ANALYSIS`).** Antes de qualquer desafio, nota ou relatório, o conjunto bruto de achados passa pela Consolidação (contrato em Critique Orchestration): duplicatas removidas, equivalentes agrupados pela causa, conflitos de severidade resolvidos pelas lentes, evidência mais forte preservada, `Low` não acionáveis agregados e o conjunto ordenado por prioridade. O que sai daqui é o **diagnóstico inicial** — o objeto do STEP 6, não a conclusão do review. O Quality Gate pontua o conjunto **consolidado**, nunca o bruto.
+- **STEP 6 — Adversarial Critique (`ADVERSARIAL_REVIEW`).** Acionar o **Design Critic** (`agents/design-critic.md`) sobre o diagnóstico inicial, com o mesmo artefato e o mesmo Brief em mãos: os dez eixos de desafio perguntados, veredito por achado (`confirmed | revised | rejected | added`) e saída no **Adversarial Critique Record** (`standards/adversarial-quality.md`). **Confirmar tudo é resultado válido** — não há cota de mudanças, e fabricar revisão para o estágio parecer produtivo é Failure Condition 10. Diagnóstico inicial vazio não dispensa o estágio: a pergunta vira "o que deixamos de ver?".
+- **STEP 7 — Revision (`REVISION`).** Incorporar os vereditos em **um único** diagnóstico (contrato na seção Revision — um diagnóstico só): confirmados preservados, revisados alterados campo a campo, rejeitados removidos de Issues (e devolvidos a `Unknowns and Assumptions` quando restar suspeita legítima), omissões incluídas no contrato pleno de 7 campos. O conjunto resultante mudou, então os mecanismos do STEP 5 são **reaplicados** a ele — consolidação e ordenação por prioridade —, e os falsificadores registrados pelo Critic viram validação pendente na Recommendation ou nos next steps. **O usuário nunca recebe dois diagnósticos:** análise contraditória lado a lado é Failure Condition 11.
+- **STEP 8 — Review QA (`FINAL_QA`).** Acionar o **Design QA** (`agents/design-qa.md`) sobre o review pronto: sete dimensões em `PASS | PARTIAL | FAIL | UNKNOWN`, sem score composto, QA Blockers em lista própria e veredito (`REVIEW READY | REVIEW READY WITH RESERVATIONS | REVIEW NOT READY`). Reprovação **não dispara novo ciclo** (Ciclo único): é declarada no report. O QA não varre L0–L8 e não abre issue de design — lacuna encontrada é falha de `Completeness` nomeada.
+- **STEP 9 — Quality Gate.** Review formal é avaliação formal: aplicar o `quality-framework.md` ao **design** — nota por dimensão derivada do pior achado do diagnóstico **revisado**, dimensões críticas (★) avaliadas no nível do escopo, `UNKNOWN` onde não houver informação, e o veredito dos três gates (média ≥ 4; críticas ≥ 3; nenhum blocker aberto). Blocker aberto reprova independentemente da média; só sai por correção verificada ou aceite explícito de risco registrado como `DECISION`. Design blocker e QA blocker permanecem separados (seção Review QA).
+- **STEP 10 — Report.** Emitir o **Design Critique Report** completo (`standards/critique-framework.md`), incluindo a seção Quality Gate com o veredito, a seção **Review Assurance** com o stage trace e o veredito do QA, o Context citando o Brief e seu Context Status, Layer Coverage integral e Recommended Next Steps priorizados por impacto. As Issues são **as revisadas, e só elas**. Autocrítica antes da entrega: as Quality Checklists das skills e das responsabilidades envolvidas, e o Quality Gate da constituição (§8).
 
 ## Output
 
-A saída é **exclusivamente** o Design Critique Report no contrato de `standards/critique-framework.md`, com a seção **Quality Gate sempre presente** (é o que distingue o review formal da crítica pontual). O Brief que o alimentou acompanha o report — íntegro ou referenciado, quando já entregue na sessão. Resumo conversacional pode acompanhar, nunca substituir.
+A saída é **exclusivamente** o Design Critique Report no contrato de `standards/critique-framework.md`, com as seções **Quality Gate** e **Review Assurance** sempre presentes (é o que distingue o review formal da crítica pontual). O Brief que o alimentou acompanha o report — íntegro ou referenciado, quando já entregue na sessão —, e os dois records da camada adversarial seguem a mesma regra: acompanham ou ficam referenciados, **nunca colados dentro das Issues**. Resumo conversacional pode acompanhar, nunca substituir.
+
+O report não cresce porque a camada adversarial existe: ela entrega um diagnóstico **melhor**, não um diagnóstico maior. O que sobe ao report é o bloco compacto de `Review Assurance`; o detalhe vive nos records.
 
 ### Composição do report
 
@@ -342,6 +421,7 @@ O output canônico do `/uxco-review` é o contrato oficial — nenhuma seção p
 | Opportunities | `## Opportunities` |
 | Recommended Next Steps | `## Recommended Next Steps` |
 | Review Limitations | `## Unknowns and Assumptions` + `## Layer Coverage` |
+| Review Assurance (stage trace · contagens do desafio · veredito e blockers do QA) | `## Review Assurance` |
 
 Disciplinas por seção:
 
@@ -359,17 +439,21 @@ Disciplinas por seção:
 
   "Fazer testes de usabilidade" sem objeto não é next step — é ruído.
 - **Review Limitations** — declaradas honestamente, cobrindo quatro origens: **contexto ausente** (do Brief), **dados não disponíveis pela integração** (as `Limitations` do Canvas Snapshot sobem ao report — nunca ficam só no snapshot), **suposições adotadas** (blocos Assumption) e **áreas que exigem validação humana** (achados `Low` confidence, pendências não validáveis do baseline de acessibilidade).
+- **Review Assurance** — o bloco compacto de `standards/adversarial-quality.md`, nunca os records inteiros: stage trace, contagens do desafio (`N confirmed · N revised · N rejected · N added`), veredito do QA, QA blockers e reservas. As contagens precisam **fechar com o record real** — número que não corresponde a entradas existentes é fabricação de processo. Estágio que não rodou aparece declarado, com o porquê.
 
 ## Completion Criteria
 
 O review está **completo** somente quando, simultaneamente:
 
-1. Os 8 STEPs executados — ou o desvio declarado com o porquê (proporcionalidade ajusta profundidade, nunca pula gates).
+1. Os 11 STEPs executados — ou o desvio declarado com o porquê (proporcionalidade ajusta profundidade, nunca pula gates).
 2. Report emitido na Composição canônica, com Quality Gate presente e veredito dos gates.
 3. Scope block íntegro no report, com a origem da resolução.
 4. Review Limitations cobrindo as quatro origens (contexto ausente · dados não expostos pela integração · suposições · validação humana pendente).
 5. Quality Checklist aprovada (a autocrítica do ciclo — CLAUDE.md §2, §8).
 6. Nenhuma escrita realizada em canvas ou memória de projeto.
+7. **Ciclo adversarial completo e observável:** os quatro marcadores registrados uma vez cada (`INITIAL_ANALYSIS → ADVERSARIAL_REVIEW → REVISION → FINAL_QA`), com as contagens do desafio fechando com o Adversarial Critique Record.
+8. **Um diagnóstico só:** as Issues do report são as revisadas — nenhum achado rejeitado permanece como problema afirmado, nenhuma omissão aceita ficou fora.
+9. **Veredito do QA presente**, com QA Blockers explícitos quando houver — `REVIEW NOT READY` entregue como tal, nunca maquiado.
 
 **Gate reprovado não é review incompleto:** o review que reporta a reprovação com os achados explícitos está completo — o que volta ao ciclo é o *design avaliado*, não o review.
 
@@ -392,9 +476,13 @@ seguido da ação de correção (`npm run preflight` / Agent Preflight de `docs/
 
 **Falha 4 — Contexto crítico ausente.** Bloquear é exceção, não reflexo: somente quando, **mesmo com limitações declaradas, uma análise responsável não é possível** — o review provavelmente apontaria os problemas errados ou calibraria severidades sem sentido (STEP 3; critério de blocking do CLAUDE.md §4). Nesse caso o review para nas blocking questions, explicando por que prosseguir seria pior que esperar. Inventar respostas nunca é saída; bloquear por ausência que não tornaria a análise enganosa é anti-pattern 10.
 
-**Falha 5 — Skill indisponível.** Dependência de Skill Dependencies ausente ou ilegível (skill, standard ou loader): falha **explícita** — nomear a dependência quebrada, o STEP que ela impediria e o que a restauraria. **Proibido executar silenciosamente uma versão genérica improvisada** do método: review sem o Critique Engine real não é review degradado, é simulação de componente — violação direta do CLAUDE.md §9.3 ("dizer que não existe — nunca simular"). A exceção já prevista permanece a única: Context Loader indisponível degrada para inventário por leitura direta, **declarado no Brief** (Preconditions).
+**Falha 5 — Skill ou responsabilidade indisponível.** Dependência de Skill Dependencies ausente ou ilegível (skill, **agente**, standard ou loader): falha **explícita** — nomear a dependência quebrada, o STEP que ela impediria e o que a restauraria. **Proibido executar silenciosamente uma versão genérica improvisada** do método: review sem o Critique Engine real não é review degradado, é simulação de componente — violação direta do CLAUDE.md §9.3 ("dizer que não existe — nunca simular"). A exceção já prevista permanece a única: Context Loader indisponível degrada para inventário por leitura direta, **declarado no Brief** (Preconditions).
 
 **Falha 6 — Paper parcialmente legível.** `PAPER_READY` alcançado, mas leituras parciais — chamadas recusadas, propriedades ilegíveis, screenshot indisponível. Executar **apenas as análises sustentadas pelos dados realmente obtidos**: o Gate de evidência por camada decide o destino de cada uma (`evaluated` · Confidence reduzida · `not-evaluable — [o que faltou]`), e dado que a integração não retornou jamais é inventado (Paper Inspection). As limitações são registradas em `Limitations` do Canvas Snapshot e **sobem às Review Limitations do report** — nunca ficam só no snapshot.
+
+**Falha 7 — Diagnóstico inicial vazio.** O STEP 5 entrega zero achados. Isso **não encerra o review** nem dispensa a camada adversarial: o STEP 6 roda com a pergunta invertida — "o que a varredura deixou de ver?" —, e `Missing Findings` é a saída esperada. Se o Critic também não encontrar nada, o report sai com zero issues, `Nenhuma issue identificada` declarado no Executive Summary e o Layer Coverage mostrando **por que** cada camada não produziu achado (`evaluated` sem achado é diferente de `not-evaluable`). Ausência de achados declarada com cobertura honesta é resultado legítimo; ausência de achados por varredura cega é Failure Condition 8.
+
+**Falha 8 — QA reprovando o review.** `REVIEW NOT READY` com QA Blocker aberto. O comportamento é **declarar, não reprocessar** (Ciclo único): o report é entregue com o blocker visível em `Review Assurance`, e o veredito do Quality Gate sai explicitamente qualificado — produzido por um review que o próprio QA considera não confiável naquela dimensão. Nenhum segundo ciclo é iniciado, nenhuma reprovação é escondida, e a decisão sobre o que fazer volta ao usuário.
 
 ## Failure Conditions
 
@@ -408,12 +496,17 @@ O review é **inválido** — refazer, não entregar — se:
 6. Report formal sem a seção Quality Gate, ou gate reprovado entregue como aprovado / com ressalvas escondidas (CLAUDE.md §8).
 7. Qualquer Failure Condition das skills consumidas (elas permanecem válidas dentro do workflow).
 8. Falsa precisão no Layer Coverage: achado fabricado para camada sem evidência suficiente, ou camada não verificada apresentada como avaliada ou aprovada (violação do Gate de evidência por camada).
+9. **Ciclo adversarial pulado ou fabricado:** report formal sem `Review Assurance`; marcador registrado sem o estágio ter acontecido; ou contagens que não fecham com o Adversarial Critique Record.
+10. **Mudança fabricada pelo Critic:** achado revisado, rejeitado ou adicionado sem base observável — inclusive rejeição que não nomeia qual evidência falta, e omissão afirmada como issue sem evidência citável. Simétrico: ressalva de QA inventada para o estágio parecer produtivo.
+11. **Diagnóstico contraditório entregue:** duas análises anexadas lado a lado, achado rejeitado sobrevivendo como problema afirmado, ou Issues do report divergindo do conjunto revisado do STEP 7.
+12. **Mais de um ciclo adversarial:** segunda passada de Critic, Revision ou QA; QA reabrindo o Critic; ou qualquer forma de reflexão recursiva (violação do Ciclo único).
+13. **Confusão entre os dois blockers:** QA blocker apresentado como reprovação do design, design blocker apresentado como falha do review, ou `REVIEW NOT READY` entregue como se o review estivesse pronto.
 
 ## Quality Checklist
 
 Antes de entregar (etapa `critique` do ciclo aplicada ao workflow):
 
-- [ ] Os 8 STEPs aconteceram — ou o desvio está declarado com o porquê?
+- [ ] Os 11 STEPs aconteceram — ou o desvio está declarado com o porquê?
 - [ ] Escopo resolvido pela ordem de precedência (explícito → seleção → contexto) e declarado no report com a origem — ambiguidade real sinalizada em vez de resolvida por palpite?
 - [ ] O Brief existe, tem Context Status e o gate do STEP 3 foi aplicado como o contrato manda?
 - [ ] Contexto incompleto tratado pela Política de bloqueio: review continuou com Confidence rebaixada e limitações declaradas nas conclusões afetadas — e interrupção usada somente diante de análise potencialmente enganosa?
@@ -423,6 +516,13 @@ Antes de entregar (etapa `critique` do ciclo aplicada ao workflow):
 - [ ] Gate de evidência aplicado camada a camada: *not enough evidence* virou `not-evaluable` declarado — nenhum achado fabricado, nenhuma camada não verificada dada como avaliada?
 - [ ] Interaction Design acionada quando o escopo pedia (fluxo, multi-tela, sequência) — e achados das duas skills consolidados: nenhum problema em dois blocos, evidência mais forte preservada, severidade maior mantida só com justificativa?
 - [ ] STEP 5 aplicado ao conjunto inteiro: sem duplicatas, `Low` agregados, ordenado por prioridade — o report entrega sinal, não volume?
+- [ ] O Critic rodou sobre o diagnóstico consolidado, perguntou os dez eixos e emitiu veredito com base observável em cada entrada — sem mudança fabricada e sem cota de revisões?
+- [ ] A Revision entregou **um** diagnóstico: confirmados preservados, revisados alterados campo a campo, rejeitados fora de Issues (com suspeita legítima devolvida a Open Question), omissões incluídas no contrato pleno — e os mecanismos do STEP 5 reaplicados ao conjunto novo?
+- [ ] Falsificadores dos achados com `Confidence` abaixo de `High` viraram validação pendente na Recommendation ou nos next steps?
+- [ ] O QA auditou as sete dimensões do review — sem score composto, com QA Blockers em lista própria — e o veredito corresponde à tabela?
+- [ ] Design blocker e QA blocker estão separados, cada um no seu lugar, nenhum apresentado como o outro?
+- [ ] Ciclo único respeitado: uma passada de cada, nenhuma recursão, QA reprovando declarado em vez de reprocessado?
+- [ ] `Review Assurance` presente e compacto, com contagens que fecham com o record — e os records acompanhando ou referenciados, nunca dentro das Issues?
 - [ ] Quality Gate presente, com dimensões críticas avaliadas ou `UNKNOWN` justificado?
 - [ ] Report composto pelo mapa canônico: Executive Summary com diagnóstico (nunca só contagem), Scope block íntegro, Context Snapshot mínimo, issues em ordem estrita, next steps amarrados às issues, limitações das quatro origens consolidadas?
 - [ ] Falhas de execução tratadas pela Failure Handling: canvas indisponível sem análise inventada (bloqueio canônico quando era a única fonte), skill ausente com falha explícita — nunca versão genérica improvisada —, leitura parcial limitada ao sustentável pelos dados?

@@ -7,7 +7,7 @@
 
 1. **Seções fixas nunca somem em silêncio.** Toda seção `##` do report aparece; sem conteúdo, carrega uma linha de declaração explícita (ex.: `Nenhum padrão detectado.` · `Nenhuma Opportunity identificada.`) — ausência é informação, a mesma regra do Layer Coverage e do inventário do Brief.
 2. **Dentro de Issues, só severidades com achados.** Subtítulos por severidade existem apenas para níveis com issues — nível vazio não gera subtítulo vazio; a contagem completa (incluindo zeros relevantes, ex.: `Nenhuma issue Critical identificada`) vive no Executive Summary.
-3. **Tokens canônicos sempre:** Severity (`Critical | High | Medium | Low | Opportunity`), Confidence (`High | Medium | Low`), `Category` `L0`–`L8`, status de cobertura (`evaluated` · `not-evaluable — [o que faltou]` · `out-of-scope — [por quê]`) e os campos do Scope block.
+3. **Tokens canônicos sempre:** Severity (`Critical | High | Medium | Low | Opportunity`), Confidence (`High | Medium | Low`), `Category` `L0`–`L8`, status de cobertura (`evaluated` · `not-evaluable — [o que faltou]` · `out-of-scope — [por quê]`), os campos do Scope block e, em Review Assurance, os marcadores de estágio (`INITIAL_ANALYSIS` · `ADVERSARIAL_REVIEW` · `REVISION` · `FINAL_QA`) e o veredito do QA.
 4. **Sem preenchimento vazio:** campo sem conteúdo real é `UNKNOWN` ou declaração de ausência — nunca generalidade para parecer completo (`standards/design-output-format.md`, regra 4).
 5. **Proporcionalidade:** a extensão de cada seção segue o escopo — seção de uma linha é seção válida.
 
@@ -36,7 +36,7 @@ Scope:
 
 ## Issues
 
-[Blocos Design Issue completos — 7 campos, tokens canônicos — em ordem estrita: severidade, e dentro dela impacto → confiança → alcance. Subtítulos apenas para níveis com achados:]
+[Blocos Design Issue completos — 7 campos, tokens canônicos — em ordem estrita: severidade, e dentro dela impacto → confiança → alcance. **São as issues revisadas (STEP 7), e só elas:** achado rejeitado pelo Critic não aparece aqui (vai a Unknowns and Assumptions quando restar suspeita legítima), e omissão aceita entra com evidência citável como qualquer outra. Nenhum record adversarial é colado dentro desta seção. Subtítulos apenas para níveis com achados:]
 
 ### Critical
 
@@ -84,7 +84,19 @@ L8: [...]
 
 ## Quality Gate
 
-[Sempre presente no review formal: nota por dimensão — ou `UNKNOWN` justificado — e o veredito dos três gates de `standards/quality-framework.md`. Blocker aberto reprova independentemente da média.]
+[Sempre presente no review formal: nota por dimensão — ou `UNKNOWN` justificado — e o veredito dos três gates de `standards/quality-framework.md`. Blocker aberto reprova independentemente da média. Este gate avalia o **design**.]
+
+## Review Assurance
+
+[Sempre presente no review formal, e sempre compacto — o bloco de `standards/adversarial-quality.md`, nunca os records inteiros. Este bloco registra que o diagnóstico foi desafiado e auditado; avalia o **review**:]
+
+```text
+Stage trace:  INITIAL_ANALYSIS → ADVERSARIAL_REVIEW → REVISION → FINAL_QA
+Adversarial:  [N confirmed · N revised · N rejected · N added]
+QA verdict:   [REVIEW READY | REVIEW READY WITH RESERVATIONS | REVIEW NOT READY]
+QA blockers:  [None | um por linha, com a dimensão e o que o resolveria]
+Reservations: [None | o que o QA limitou, uma linha cada]
+```
 
 ## Recommended Next Steps
 

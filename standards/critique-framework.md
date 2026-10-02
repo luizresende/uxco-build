@@ -118,6 +118,12 @@ L2: out-of-scope — [por quê]
 [Quando avaliação formal for pedida: notas por dimensão e veredito dos gates,
 conforme quality-framework.md]
 
+## Review Assurance
+
+[Quando o diagnóstico passar pela camada adversarial: o bloco compacto de
+standards/adversarial-quality.md — stage trace, contagens do desafio, veredito
+do Review QA, QA blockers e reservas. Crítica pontual não tem esta seção]
+
 ## Recommended Next Steps
 
 [Priorizados por impacto: correções na ordem de ataque, validações pendentes dos
@@ -125,6 +131,8 @@ achados Confidence Low, e o que destravaria as camadas not-evaluable]
 ```
 
 O campo **Context** é obrigatório: crítica sem contexto declarado esconde a própria limitação. `Layer Coverage` cumpre para a crítica o papel que o inventário de fontes cumpre no Brief — ausência declarada, nunca silenciosa.
+
+`Quality Gate` e `Review Assurance` respondem a perguntas diferentes e **nunca se substituem**: o primeiro é o veredito sobre o **design** avaliado (`quality-framework.md`); o segundo, o registro de que o próprio diagnóstico foi desafiado e auditado, com o veredito sobre o **review** (`adversarial-quality.md`). As duas seções aparecem apenas quando o rito formal as pede — a crítica pontual entrega Issues + Context, como sempre.
 
 ## Regras comuns de crítica
 

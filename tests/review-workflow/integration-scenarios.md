@@ -31,7 +31,7 @@ O repositório (fixture de tela única e memória demo `examples/demo-project/` 
 
 ### Expected Behavior
 
-O workflow percorre os 8 STEPs sobre uma tela única com contexto suficiente. Escopo identificado (`Type: screen`, `Source: explicit`, `Confidence: High`); memória do Pulse carregada no STEP 2 (Brief real, 7 fontes com status); crítica no cenário D (tela isolada); issues estruturadas no contrato de 7 campos; ordenação por severidade com desempate declarado; report completo na Composição canônica, com Quality Gate. Substância: `benchmarks/review-workflow/expectations/02-pulse-new-item.md` (3 Essential + 1 Opportunity).
+O workflow percorre os 11 STEPs sobre uma tela única com contexto suficiente. Escopo identificado (`Type: screen`, `Source: explicit`, `Confidence: High`); memória do Pulse carregada no STEP 2 (Brief real, 7 fontes com status); crítica no cenário D (tela isolada); issues estruturadas no contrato de 7 campos; ordenação por severidade com desempate declarado; report completo na Composição canônica, com Quality Gate. Substância: `benchmarks/review-workflow/expectations/02-pulse-new-item.md` (3 Essential + 1 Opportunity).
 
 ### Must Do
 

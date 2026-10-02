@@ -270,7 +270,8 @@ test('unit: report template mirrors the official contract sections exactly, in o
   const t = read(TEMPLATE);
   const fw = read(FRAMEWORK);
   const official = ['Executive Summary', 'Issues', 'Patterns Detected', 'Opportunities',
-    'Unknowns and Assumptions', 'Layer Coverage', 'Quality Gate', 'Recommended Next Steps'];
+    'Unknowns and Assumptions', 'Layer Coverage', 'Quality Gate', 'Review Assurance',
+    'Recommended Next Steps'];
 
   // positivo: o contrato oficial declara as mesmas seções, na mesma ordem
   const contract = fw.split('## Contrato do report')[1];

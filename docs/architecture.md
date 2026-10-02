@@ -30,7 +30,7 @@ Executa o loop do agente: carrega contexto, chama tools, conecta servidores MCP,
 
 ### UXCO Design Engine
 
-O moat do produto. Composto por instruções globais (`CLAUDE.md`), skills, workflows, agentes, standards de qualidade e memória estruturada de projeto. **Na Sprint 0 ele ainda não existe** — apenas o `CLAUDE.md` mínimo de segurança operacional.
+O moat do produto. Composto por instruções globais (`CLAUDE.md`), skills, workflows, agentes, standards de qualidade e memória estruturada de projeto. **Na Sprint 0 ele ainda não existia** — apenas o `CLAUDE.md` mínimo de segurança operacional; o estado construído desde então está em [Camadas de inteligência do Engine](#camadas-de-inteligência-do-engine), e o inventário canônico do que existe, na §9.3 da constituição.
 
 ### Paper MCP
 
@@ -45,6 +45,67 @@ Onde o design vive: frames, componentes, layout. É o destino final das alteraç
 1. **Engine agnóstico de canvas** — o UXCO Design Engine deve ser separável do Paper (adapter de canvas), mitigando dependência de uma única ferramenta.
 2. **Markdown como camada de inteligência** — skills, workflows e standards são arquivos versionados em Git, o que dá auditabilidade, diff e evolução incremental.
 3. **Segurança operacional por padrão** — alterações destrutivas exigem aprovação; preferimos duplicar frames a modificar originais; nesta sprint, escrita só em documento de teste.
+
+## Camadas de inteligência do Engine
+
+O UXCO Design Engine foi construído em camadas, uma por sprint. Cada uma consome a anterior **por contrato publicado** — nunca por acoplamento interno —, o que permite substituir ou remover uma camada sem reescrever as outras.
+
+```text
+Project Memory
+      ↓
+Context Engine          (Sprint 2)  skills/product-context → Product Context Brief
+      ↓
+Critique Engine         (Sprint 3)  skills/design-critique + interaction-design → achados
+      ↓
+Adversarial Quality     (Sprint 5)  agents/design-critic → vereditos
+Engine                              → Revision → agents/design-qa → Review QA Record
+      ↓
+Quality Gate                        standards/quality-framework → veredito do design
+      ↓
+Design Critique Report
+```
+
+O **Review Workflow** (Sprint 4, `workflows/uxco-review.md`) é o orquestrador dessa pilha; o comando `/uxco-review` é um roteador fino para ele. Nenhuma camada chama outra diretamente: o workflow aciona cada uma e passa adiante o artefato que ela produziu.
+
+### Por que a camada adversarial existe
+
+Até a Sprint 4, o pipeline era:
+
+```text
+Context → Paper inspection → Design Critique → Report
+```
+
+O primeiro diagnóstico produzido era o diagnóstico entregue. Isso carrega os vieses de quem o produziu — suposição que passou por fato, severidade inflada, recomendação que trata o sintoma, camada que ninguém notou que faltou. A constituição já exigia autocrítica antes de concluir (§3.11), mas regra sem momento próprio degenera em releitura do próprio texto.
+
+A partir da Sprint 5:
+
+```text
+Context → Paper inspection → Initial Analysis → Adversarial Critique
+        → Revision → Review QA → Final Report
+```
+
+A mudança é de **responsabilidade**, não de quantidade de agentes: três estágios novos, cada um com um objeto diferente.
+
+| Estágio | Objeto | Pergunta | Produz |
+| --- | --- | --- | --- |
+| Initial Analysis | O design | Quais problemas existem? | Achados consolidados |
+| Adversarial Critique | O diagnóstico | Onde ele não se sustenta? | Vereditos (`confirmed · revised · rejected · added`) |
+| Revision | Os vereditos | Qual diagnóstico sobrevive? | **Um** conjunto de issues |
+| Review QA | O review | É confiável para entregar? | Veredito + QA blockers |
+
+Decisões de arquitetura que delimitam a camada:
+
+1. **Ciclo único, como invariante.** Uma passada de cada estágio. Reflexão recursiva e agentes debatendo estão fora por decisão explícita: o ganho marginal da segunda passada não paga latência, verbosidade do report nem risco de diagnósticos divergentes. QA reprovando **declara** o blocker; não reprocessa.
+2. **Dois blockers que nunca se confundem.** O Quality Gate reprova o **design**; o QA reprova o **review**. Um review impecável sobre um design ruim é `REVIEW READY` com gate reprovado — e o inverso também é representável.
+3. **Nenhuma escala nova.** Severidade, Confidence e camadas continuam nos seus standards; o Critic desafia a *aplicação* delas. O QA usa `PASS/PARTIAL/FAIL/UNKNOWN` (a convenção dos harnesses de avaliação), **sem score composto** — somar tokens de conduta produziria a falsa precisão que a camada existe para combater.
+4. **`agents/` em vez de `skills/`.** Critic e QA não são capacidades de uso livre: só existem acoplados a um estágio do review, com um artefato de entrada obrigatório. A camada `agents/` já estava declarada na hierarquia da constituição (§9) e esta é a sua primeira instância.
+5. **Observabilidade sem chain-of-thought.** Cada estágio registra um marcador canônico (`INITIAL_ANALYSIS` · `ADVERSARIAL_REVIEW` · `REVISION` · `FINAL_QA`), e o report carrega um bloco compacto (`## Review Assurance`) com o trace, as contagens do desafio e o veredito do QA. O trace declara **que** o estágio aconteceu e o que mudou em números — nunca como se chegou lá.
+
+Contratos completos em `standards/adversarial-quality.md`; o processo executável, nos STEPs 6–8 de `workflows/uxco-review.md`.
+
+### O que ainda não está medido
+
+O ganho da camada adversarial é, hoje, **arquitetural**: há contratos, invariantes testadas e cenários de conduta definidos, mas nenhuma execução comparativa registrada. O protocolo que decide se a camada fica, simplifica ou sai (BEFORE × AFTER, com contagens de ganho e de custo) está em `benchmarks/review-workflow/adversarial-protocol.md` e aguarda execução manual. Tratar a camada como validada antes disso seria exatamente o tipo de falsa precisão que ela existe para combater.
 
 ## Preflight em dois níveis
 

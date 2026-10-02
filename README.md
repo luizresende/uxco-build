@@ -1,6 +1,6 @@
 # UXCO Build
 
-> Projeto privado — Sprint 4: Review Workflow (`/uxco-review`) do UXCO Design Engine.
+> Projeto privado — Sprint 5: Adversarial Quality Engine do UXCO Design Engine.
 
 O **UXCO Build** é um agente especializado em Product Design, capaz de transformar contexto de produto em decisões, análises e alterações de design executadas diretamente no canvas.
 
@@ -15,7 +15,7 @@ Claude Code  →  UXCO Design Engine  →  Paper MCP  →  Paper Canvas
 ```
 
 - **Claude Code** — runtime do agente: loop de execução, contexto, tools e subagentes.
-- **UXCO Design Engine** — ativo proprietário: instruções globais, skills, workflows, agentes, standards e memória de projeto (a fundação foi construída na Sprint 1; skills, workflows e agentes vêm nas próximas sprints).
+- **UXCO Design Engine** — ativo proprietário: instruções globais, skills, agentes, workflows, standards e memória de projeto (fundação na Sprint 1; skills nas Sprints 2–3; workflow na Sprint 4; agentes na Sprint 5).
 - **Paper MCP** — ponte de leitura e escrita entre o agente e o canvas do Paper.
 
 ## Estado do projeto
@@ -24,7 +24,9 @@ Claude Code  →  UXCO Design Engine  →  Paper MCP  →  Paper Canvas
 - **Sprint 1 — concluída:** fundação comportamental do UXCO Design Engine — constituição, standards, templates de memória de projeto e suíte de validação comportamental.
 - **Sprint 2 — concluída:** Context Engine — a primeira camada de inteligência contextual, descrita na seção [Context Engine](#context-engine).
 - **Sprint 3 — concluída:** Critique Engine — análise crítica de interfaces e fluxos, descrita na seção [Critique Engine](#critique-engine).
-- **Sprint 4 — atual:** Review Workflow — o primeiro workflow e o primeiro comando real (`/uxco-review`), descrito na seção [Review Workflow](#review-workflow).
+- **Sprint 4 — concluída:** Review Workflow — o primeiro workflow e o primeiro comando real (`/uxco-review`), descrito na seção [Review Workflow](#review-workflow).
+- **Harness — concluído:** camada explícita de Harness Engineering (Instructions/Tools/Environment/State/Feedback), descrita na seção [Harness](#harness).
+- **Sprint 5 — atual:** Adversarial Quality Engine — o sistema passa a desafiar o próprio diagnóstico antes de apresentá-lo, descrito na seção [Adversarial Quality Engine](#adversarial-quality-engine).
 
 ## Architecture
 
@@ -38,14 +40,16 @@ PROGRESS.md             Estado operacional entre sessões — onde estamos, pró
 standards/              Critérios compartilhados — consultados por tarefa
 skills/                 product-context (Context Engine) · design-critique ·
                         interaction-design (Critique Engine)
+agents/                 design-critic · design-qa (Adversarial Quality Engine)
 workflows/              uxco-review (Review Workflow — orquestra os engines)
 .claude/commands/       Comandos reais do Claude Code — /uxco-review
 templates/              project/ (memória de projeto, copiada por projeto) ·
                         reports/ (molde do Design Critique Report do /uxco-review)
 examples/               Memória demo (Pulse) e fixtures de teste dos engines e do workflow
+                        (inclui adversarial-tests/ — diagnósticos, não designs)
 scripts/                Machine Preflight e Context Loader
 tests/                  foundation/ · context-engine/ · critique-engine/ ·
-                        review-workflow/ (determinísticos)
+                        review-workflow/ (determinísticos, inclui a camada adversarial)
 benchmarks/             Harnesses de avaliação manual (engines e review workflow)
 docs/                   Arquitetura, getting started, registros de sprint
 experiments/paper-mcp/  Evidência do smoke test da Sprint 0 (histórico)
@@ -64,6 +68,7 @@ Conhecimento profundo, um tópico por arquivo, consultado sob demanda (cada arqu
 - [`severity-framework.md`](standards/severity-framework.md) — escala `Critical`–`Opportunity`, pela lente impact × reach × task criticality × recoverability.
 - [`accessibility-baseline.md`](standards/accessibility-baseline.md) — piso prático de acessibilidade em 10 áreas, com limites de verificação declarados (sem alegação de conformidade normativa).
 - [`design-output-format.md`](standards/design-output-format.md) — blocos padronizados de saída (Design Issue, Design Decision, Assumption, Open Question) e escala de Confidence.
+- [`adversarial-quality.md`](standards/adversarial-quality.md) — contratos da camada adversarial: Adversarial Critique Record, Review QA Record, marcadores de estágio e o invariante de ciclo único.
 
 ### templates/project/ — memória de projeto
 
@@ -118,12 +123,14 @@ workflows/uxco-review.md
       ↓
 STEP 0-1  escopo · preflight condicional (canvas → PAPER_READY)
 STEP 2-3  Product Context Skill → Brief → gate de contexto
-STEP 4    Design Critique (+ Interaction Design) → achados
-STEP 5    Consolidation — deduplicação, agrupamento, prioridade
-STEP 6-7  Quality Gate → Design Critique Report
+STEP 4-5  Initial Analysis — Design Critique (+ Interaction Design) → consolidação
+STEP 6    Adversarial Critique — Design Critic desafia o diagnóstico
+STEP 7    Revision — vereditos incorporados em um diagnóstico só
+STEP 8    Review QA — Design QA audita a qualidade do review
+STEP 9-10 Quality Gate do design → Design Critique Report
 ```
 
-- **Workflow** — [`workflows/uxco-review.md`](workflows/uxco-review.md): processo em 8 STEPs com gates explícitos; orquestra por referência (nenhum método é redefinido) e é integralmente operação `READ` — review nunca escreve no canvas nem na memória.
+- **Workflow** — [`workflows/uxco-review.md`](workflows/uxco-review.md): processo em 11 STEPs com gates explícitos; orquestra por referência (nenhum método é redefinido) e é integralmente operação `READ` — review nunca escreve no canvas nem na memória.
 - **Comando** — [`.claude/commands/uxco-review.md`](.claude/commands/uxco-review.md): o slash command real do Claude Code; roteador fino para o workflow. Formas de invocação:
 
 ```text
@@ -154,13 +161,37 @@ Saída esperada: o Design Critique Report completo — Scope block (`Type: scree
 
 **Testes:** contratos determinísticos e cenários de integração em [`tests/review-workflow/`](tests/review-workflow/) (`npm test`); fixtures E2E com memória em [`examples/review-tests/`](examples/review-tests/); harness de avaliação manual (conduta + substância) e o primeiro teste comparativo da tese (Control × `/uxco-review`, `differential-protocol.md`) em [`benchmarks/review-workflow/`](benchmarks/review-workflow/).
 
+### Adversarial Quality Engine
+
+A camada que impede o sistema de entregar o próprio primeiro diagnóstico como conclusão (Sprint 5): depois da análise inicial, o diagnóstico é **atacado**, **revisado** e **auditado** antes de sair.
+
+```text
+Initial Analysis ──▶ Adversarial Critique ──▶ Revision ──▶ Review QA ──▶ Final Report
+   (o design)          (o diagnóstico)        (um só)      (o review)
+```
+
+Quatro responsabilidades encadeadas — **não quatro personas**: a primeira olha o design, a segunda olha a primeira, a terceira consolida, a quarta audita o resultado das três.
+
+- **Design Critic** — [`agents/design-critic.md`](agents/design-critic.md): a responsabilidade adversarial. Pergunta "onde o nosso diagnóstico pode estar errado, incompleto, superficial ou excessivamente confiante?" por dez eixos (assumptions, evidência, severidade, confidence, causalidade, estados e edge cases omitidos, encaixe no contexto, recomendações, complexidade desnecessária) e dez sondas obrigatórias — incluindo "what would falsify this diagnosis?". Emite veredito por achado: `confirmed · revised · rejected · added`. **Não repete a varredura L0–L8** e **pode concluir que o diagnóstico inicial estava correto**: confirmar tudo é resultado válido, e não existe cota de mudanças.
+- **Revision** — o estágio de consolidação no workflow (STEP 7): rejeitados saem de Issues (suspeita legítima volta como Open Question), revisados mudam campo a campo, omissões entram no contrato pleno de 7 campos, e os mecanismos de consolidação e ordenação são reaplicados ao conjunto novo. **O usuário recebe uma conclusão, nunca duas análises contraditórias.**
+- **Design QA** — [`agents/design-qa.md`](agents/design-qa.md): audita a **qualidade do review**, não o design. Sete dimensões (Context Grounding · Evidence Quality · Severity Calibration · Actionability · Completeness · Accessibility Coverage · System Consistency) em `PASS/PARTIAL/FAIL/UNKNOWN`, **sem score composto** — média de tokens de conduta seria falsa precisão. Blockers ficam em lista própria, e o **QA blocker** (o review não é confiável) nunca se confunde com o **design blocker** (o design está reprovado).
+- **Contratos** — [`standards/adversarial-quality.md`](standards/adversarial-quality.md): os dois records, os marcadores de estágio (`INITIAL_ANALYSIS` → `ADVERSARIAL_REVIEW` → `REVISION` → `FINAL_QA`) e o **ciclo único**: 1 crítica, 1 revisão, 1 QA. Nenhuma recursão, nenhum agente debatendo; QA reprovando declara o blocker em vez de reprocessar.
+
+O que chega ao report é um bloco compacto (`## Review Assurance`) — stage trace, contagens do desafio, veredito do QA. A camada melhora o diagnóstico; ela não aumenta o relatório, e os records acompanham ou são referenciados, nunca colados dentro das Issues.
+
+**Limitação honesta:** o ganho desta camada é **arquitetural, ainda não medido**. O protocolo que o mede (BEFORE × AFTER, cinco contagens verificáveis) está em [`benchmarks/review-workflow/adversarial-protocol.md`](benchmarks/review-workflow/adversarial-protocol.md) e **não foi executado** — `NOT SUPPORTED` é um resultado possível e seria informação valiosa.
+
+**Testes:** 23 testes determinísticos em [`tests/review-workflow/adversarial.test.mjs`](tests/review-workflow/adversarial.test.mjs); cenários comportamentais ADV-A..ADV-G em [`tests/review-workflow/adversarial-scenarios.md`](tests/review-workflow/adversarial-scenarios.md); fixture de diagnóstico falho em [`examples/adversarial-tests/`](examples/adversarial-tests/).
+
 ### tests/foundation/ — validação comportamental
 
 Dez cenários manuais em [`tests/foundation/scenarios.md`](tests/foundation/scenarios.md) que validam a conduta do agente sob a constituição (agir sem contexto, gaps bloqueantes, ações destrutivas, contradições, estética vs. problema, registro de decisões etc.). Resultados de execução são registrados em `tests/foundation/results/` (append-only).
 
 ### Ainda não implementado
 
-**Agents e os demais comandos `/uxco-*` não existem ainda** — `/uxco-new-feature`, `/uxco-improve-flow`, `/uxco-explore`, `/uxco-design-qa` e `/uxco-status` estão previstos para as próximas sprints (as três skills vieram das Sprints 2–3; o workflow de review e o comando `/uxco-review`, da Sprint 4). Nada neste repositório deve ser lido como se eles existissem; a própria constituição (§9.3) proíbe o agente de simular componentes inexistentes.
+**Os demais comandos `/uxco-*` não existem ainda** — `/uxco-new-feature`, `/uxco-improve-flow`, `/uxco-explore`, `/uxco-design-qa` e `/uxco-status` estão previstos para as próximas sprints (as três skills vieram das Sprints 2–3; o workflow de review e o comando `/uxco-review`, da Sprint 4; os dois agents, da Sprint 5). Nada neste repositório deve ser lido como se eles existissem; a própria constituição (§9.3) proíbe o agente de simular componentes inexistentes.
+
+Em particular: a camada de QA da Sprint 5 é um **estágio interno** do `/uxco-review` (STEP 8), **não** o comando `/uxco-design-qa`. Um futuro comando poderá rotear para `agents/design-qa.md` sem retrabalho — mas ele ainda não existe.
 
 ## Como executar o preflight
 
@@ -187,7 +218,7 @@ Instruções completas no cabeçalho de [`tests/foundation/scenarios.md`](tests/
 
 A confiabilidade do desenvolvimento entre sessões do Claude Code é estruturada em cinco subsistemas — o repositório é o system of record; nenhum deles depende de histórico de conversa:
 
-- **Instructions** — `CLAUDE.md` é o entry point sempre carregado (constituição + §11 harness); roteia para `standards/`, `skills/`, `workflows/` em vez de duplicá-los.
+- **Instructions** — `CLAUDE.md` é o entry point sempre carregado (constituição + §11 harness); roteia para `standards/`, `skills/`, `agents/`, `workflows/` em vez de duplicá-los.
 - **Tools** — Node.js, Git, Claude Code e (opcionalmente) Paper MCP; verificados por `npm run preflight`.
 - **Environment** — `.nvmrc` + `engines` em `package.json` declaram o runtime; zero dependências externas por decisão de arquitetura.
 - **State** — [`PROGRESS.md`](PROGRESS.md) registra onde o desenvolvimento está, o que está bloqueado e o próximo passo — sem substituir Git ou o `CHANGELOG.md`.
