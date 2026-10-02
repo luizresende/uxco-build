@@ -42,19 +42,20 @@ test('workflow has all mandatory sections', () => {
   const sections = [
     '## Purpose', '## Trigger', '## Inputs', '## Preconditions',
     '## Scope Resolution', '## Context Integration', '## Paper Inspection',
-    '## Critique Orchestration', '## Issue Model', '## Safety Model',
-    '## Skill Dependencies', '## Process', '## Output',
+    '## Critique Orchestration', '## Issue Model', '## Adversarial Quality Engine',
+    '## Safety Model', '## Skill Dependencies', '## Process', '## Output',
     '## Completion Criteria', '## Failure Handling', '## Failure Conditions',
     '## Quality Checklist',
   ];
   for (const s of sections) assert.ok(wf.includes(s), `missing section: ${s}`);
 });
 
-test('workflow defines the eight steps in order', () => {
+test('workflow defines the eleven steps in order', () => {
   const wf = read(WORKFLOW);
   const process = wf.split('## Process')[1];
   assert.ok(process, 'missing Process section');
-  const steps = ['STEP 0', 'STEP 1', 'STEP 2', 'STEP 3', 'STEP 4', 'STEP 5', 'STEP 6', 'STEP 7'];
+  const steps = ['STEP 0', 'STEP 1', 'STEP 2', 'STEP 3', 'STEP 4', 'STEP 5',
+    'STEP 6', 'STEP 7', 'STEP 8', 'STEP 9', 'STEP 10'];
   let last = -1;
   for (const s of steps) {
     const i = process.indexOf(s);
@@ -344,7 +345,7 @@ test('workflow report composition maps every canonical section to the official c
   }
 });
 
-test('workflow maps the canonical fourteen-stage pipeline onto its steps', () => {
+test('workflow maps the canonical seventeen-stage pipeline onto its steps', () => {
   const wf = read(WORKFLOW);
   const process = wf.split('## Process')[1]?.split('\n## ')[0];
   assert.ok(process.includes('Pipeline canônico'), 'missing canonical pipeline map');
@@ -352,6 +353,7 @@ test('workflow maps the canonical fourteen-stage pipeline onto its steps', () =>
     'Inspect Paper', 'Build Context Brief', 'Run Design Critique',
     'Run Interaction Design when relevant', 'Normalize findings', 'Classify severity',
     'Assign confidence', 'Deduplicate findings', 'Prioritize issues',
+    'Challenge the diagnosis', 'Revise the diagnosis', 'Audit review quality',
     'Generate report', 'Present next steps'];
   let last = -1;
   for (const s of stages) {
@@ -377,7 +379,7 @@ test('workflow documentation sections carry their required substance', () => {
     assert.ok(deps.includes(d), `Skill Dependencies missing: ${d}`);
   }
   const done = section('Completion Criteria');
-  assert.ok(done.includes('8 STEPs') && done.includes('Quality Gate'),
+  assert.ok(done.includes('11 STEPs') && done.includes('Quality Gate'),
     'Completion Criteria must bind steps and gate');
   assert.ok(done.includes('Gate reprovado não é review incompleto'),
     'failed gate must not equal incomplete review');
@@ -410,14 +412,15 @@ test('report template materializes the official contract with explicit-absence r
   assert.ok(read(WORKFLOW).includes(TEMPLATE), 'workflow must reference the template');
 });
 
-test('workflow treats the six failure modes explicitly', () => {
+test('workflow treats the eight failure modes explicitly', () => {
   const wf = read(WORKFLOW);
   const fh = wf.split('## Failure Handling')[1]?.split('\n## ')[0];
   assert.ok(fh, 'missing Failure Handling section');
-  // os seis modos, na ordem canônica
+  // os oito modos, na ordem canônica (7–8 chegaram com a camada adversarial)
   const modes = ['Paper indisponível', 'Nenhum escopo identificável',
     'Contexto incompleto, mas suficiente', 'Contexto crítico ausente',
-    'Skill indisponível', 'Paper parcialmente legível'];
+    'Skill ou responsabilidade indisponível', 'Paper parcialmente legível',
+    'Diagnóstico inicial vazio', 'QA reprovando o review'];
   let last = -1;
   for (const m of modes) {
     const i = fh.indexOf(m);
