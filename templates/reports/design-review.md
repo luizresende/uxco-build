@@ -91,6 +91,7 @@ L8: [...]
 [Sempre presente no review formal, e sempre compacto — o bloco de `standards/adversarial-quality.md`, nunca os records inteiros. Este bloco registra que o diagnóstico foi desafiado e auditado; avalia o **review**:]
 
 ```text
+Skills:       [competência [motivo] · ... | escalated: ... | not routed: ... — standards/skill-routing.md]
 Stage trace:  INITIAL_ANALYSIS → ADVERSARIAL_REVIEW → REVISION → FINAL_QA
 Adversarial:  [N confirmed · N revised · N rejected · N added]
 QA verdict:   [REVIEW READY | REVIEW READY WITH RESERVATIONS | REVIEW NOT READY]

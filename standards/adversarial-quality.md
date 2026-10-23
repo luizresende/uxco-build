@@ -185,6 +185,7 @@ Um review impecável sobre um design reprovado é `REVIEW READY` com Quality Gat
 O report final **não anexa duas análises**. Dos dois records sobe um bloco compacto, na seção `## Review Assurance` do contrato do report (`critique-framework.md`):
 
 ```text
+Skills:       [competências selecionadas, com motivo — formato de standards/skill-routing.md]
 Stage trace:  INITIAL_ANALYSIS → ADVERSARIAL_REVIEW → REVISION → FINAL_QA
 Adversarial:  [N confirmed · N revised · N rejected · N added]
 QA verdict:   [REVIEW READY | REVIEW READY WITH RESERVATIONS | REVIEW NOT READY]

@@ -3,7 +3,7 @@
 > **Propósito:** o processo executável do review formal de design — conecta o Context Engine, o Critique Engine e o Adversarial Quality Engine em uma sequência única com gates explícitos: contexto → análise inicial → crítica adversarial → revisão → QA → quality gate → report.
 > **Quando consultar:** ao executar o comando `/uxco-review`, ou sempre que o usuário pedir um review formal de uma interface, tela ou fluxo.
 
-Este workflow opera sob a constituição (CLAUDE.md) e **orquestra** capacidades existentes — não redefine método algum: o contexto vem de `skills/product-context/SKILL.md`, a crítica de `skills/design-critique/SKILL.md` e `skills/interaction-design/SKILL.md`, o desafio adversarial e a auditoria do review de `agents/design-critic.md` e `agents/design-qa.md`, e os contratos de fronteira dos standards (`standards/product-context-brief.md`, `standards/critique-framework.md`, `standards/adversarial-quality.md`, `standards/quality-framework.md`, `standards/severity-framework.md`, `standards/design-output-format.md`, `standards/accessibility-baseline.md`). Qualquer conflito aparente se resolve a favor da camada mais alta (CLAUDE.md §9.2).
+Este workflow opera sob a constituição (CLAUDE.md) e **orquestra** capacidades existentes — não redefine método algum: o contexto vem de `skills/product-context/SKILL.md`, a crítica de `skills/design-critique/SKILL.md` e das skills de profundidade (`skills/interaction-design/SKILL.md`, `skills/ux-writing/SKILL.md`, `skills/visual-hierarchy/SKILL.md`, `skills/design-systems/SKILL.md`, `skills/accessibility/SKILL.md`), selecionadas por `standards/skill-routing.md`, o desafio adversarial e a auditoria do review de `agents/design-critic.md` e `agents/design-qa.md`, e os contratos de fronteira dos standards (`standards/product-context-brief.md`, `standards/critique-framework.md`, `standards/adversarial-quality.md`, `standards/quality-framework.md`, `standards/severity-framework.md`, `standards/design-output-format.md`, `standards/accessibility-baseline.md`). Qualquer conflito aparente se resolve a favor da camada mais alta (CLAUDE.md §9.2).
 
 ## Purpose
 
@@ -189,6 +189,24 @@ A Interaction Design Skill (`skills/interaction-design/SKILL.md`) entra em dois 
 
 O que ela decompõe — pelo método dela (cadeia de interação e Flow Analysis; nada é replicado aqui): sequência · continuidade da tarefa · feedback · estados · transições · reversibilidade · prevenção de erro · recuperação · dependências · permissões · gargalos · redundâncias.
 
+### Seleção das competências especializadas
+
+As demais skills de profundidade entram pelo mesmo desenho de dois regimes da Interaction Design, com a seleção governada por `standards/skill-routing.md` (perfil `full-review`) — o workflow não mantém uma tabela própria:
+
+| Skill | Camada | Regime no review formal |
+| --- | --- | --- |
+| `skills/accessibility/SKILL.md` | L7 | **Sempre** — Accessibility é dimensão crítica ★ do Quality Gate; a skill é o que impede conformidade presumida |
+| `skills/ux-writing/SKILL.md` | L4 | Pelo escopo (formulário, mensagens, telas cujo texto decide a tarefa) ou pelo sinal na varredura |
+| `skills/visual-hierarchy/SKILL.md` | L5 | Pelo sinal na varredura — e só com artefato visual observável |
+| `skills/design-systems/SKILL.md` | L6 | Pelo escopo multi-tela/componentes, pelo sinal na varredura, ou quando **qualquer** recomendação propuser componente ou padrão novo |
+
+Regras:
+
+1. **Seleção antes da análise, escalada durante.** O conjunto inicial sai do Scope block e do Brief; o sinal encontrado na varredura escala uma skill no meio do STEP 4, declarado. Nenhuma skill entra sem sinal; nenhuma é obrigada a produzir (o Gate de evidência por camada prevalece).
+2. **Cada skill aprofunda a sua camada pelo seu método** — o workflow não replica dimensões nem classificações delas.
+3. **A seleção é registrada** na linha `Skills:` do `## Review Assurance` (formato em `standards/skill-routing.md`), para que o Design QA possa auditá-la.
+
+
 ### Consolidação — um problema, um achado
 
 A consolidação é o **STEP 5**: o conjunto bruto de achados — das duas skills, de todas as camadas e telas — é depurado antes do Quality Gate e do report. Crítica automatizada tende a inflar listas; este estágio existe para impedir isso: **uma boa revisão com 8 problemas relevantes vale mais que uma revisão artificial com 37 observações repetitivas — sinal sobre volume, sempre; volume não é rigor** (regra 7 do critique-framework).
@@ -198,7 +216,7 @@ Quando as duas skills identificam o mesmo problema:
 1. **Um diagnóstico só:** consolidar na camada causal — cada achado tem exatamente uma Category (contrato do achado); as manifestações vistas por cada skill entram como evidência do mesmo bloco. Duas issues iguais no report é falha de consolidação, não rigor dobrado.
 2. **Evidência mais forte preservada:** o campo Evidence cita primeiro a evidência mais forte (observação direta > inferência > hipótese); a mais fraca complementa, nunca substitui. A Confidence do achado consolidado deriva da evidência mais forte preservada.
 3. **A maior severidade só permanece se justificada** pelas quatro lentes do `standards/severity-framework.md`; sem justificativa que sobreviva às lentes, vale a menor — regra de desempate do próprio framework (inflação destrói a escala).
-4. Os campos de extensão comportamental (Trigger, Current/Expected Behavior, Missing State) enriquecem o achado consolidado quando esclarecem — nunca justificam um segundo bloco para o mesmo problema.
+4. Os campos de extensão comportamental (Trigger, Current/Expected Behavior, Missing State) enriquecem o achado consolidado quando esclarecem — nunca justificam um segundo bloco para o mesmo problema. O mesmo vale para os campos de extensão das demais skills de profundidade (`Original`/`Proposed Copy`, `Task Priority`/`Observed Emphasis`, `System Action`, `A11y Status`/`Applicable Criterion`/`Verification Needed`): um CTA sem destaque **e** com rótulo vago **e** fora da variante do sistema é um achado na camada causal com as três contribuições — ou dois, apenas se as correções forem independentes.
 
 E sobre o conjunto inteiro, independentemente da origem:
 
@@ -334,6 +352,11 @@ Tudo consumido **por referência** — nada redefinido (CLAUDE.md §9.2):
 | `skills/product-context/SKILL.md` | Context Engine — produz o Brief (STEPs 2–3) |
 | `skills/design-critique/SKILL.md` | Varredura L0–L8 e report (STEP 4) |
 | `skills/interaction-design/SKILL.md` | Decomposição comportamental (STEP 4, via Roteamento) |
+| `skills/ux-writing/SKILL.md` | Profundidade de L4 — conteúdo e microcopy (STEP 4, via Seleção) |
+| `skills/visual-hierarchy/SKILL.md` | Profundidade de L5 — hierarquia visual (STEP 4, via Seleção) |
+| `skills/design-systems/SKILL.md` | Profundidade de L6 — reuso e consistência; `System Action` (STEP 4, via Seleção) |
+| `skills/accessibility/SKILL.md` | Profundidade de L7 — barreiras e grau de verificação (STEP 4, sempre) |
+| `standards/skill-routing.md` | Registro das competências e regras de seleção (STEP 4) |
 | `agents/design-critic.md` | Responsabilidade adversarial — desafia o diagnóstico (STEP 6) |
 | `agents/design-qa.md` | Auditoria da qualidade do review (STEP 8) |
 | `scripts/context-loader.mjs` | Inventário mecânico da memória (`npm run context:load`) |
@@ -355,7 +378,7 @@ STEP 0  Resolve scope and target
 STEP 1  Preflight & Paper Inspection (condicional — apenas quando o canvas é fonte)
 STEP 2  Context phase — Product Context Skill → Product Context Brief
 STEP 3  Context gate — aplicar a Execution Recommendation do Brief
-STEP 4  Initial Analysis — Design Critique (+ Interaction Design) → achados   [INITIAL_ANALYSIS]
+STEP 4  Initial Analysis — seleção de skills → Design Critique + profundidade  [INITIAL_ANALYSIS]
 STEP 5  Consolidation — deduplicar, agrupar, priorizar (sinal sobre volume)   [INITIAL_ANALYSIS]
 STEP 6  Adversarial Critique — Design Critic desafia o diagnóstico          [ADVERSARIAL_REVIEW]
 STEP 7  Revision — vereditos incorporados em um diagnóstico só                       [REVISION]
@@ -364,7 +387,7 @@ STEP 9  Quality Gate — avaliação formal do design pelo quality-framework
 STEP 10 Report — Design Critique Report completo, com Quality Gate e Review Assurance
 ```
 
-### Pipeline canônico — mapa dos 17 estágios
+### Pipeline canônico — mapa dos 19 estágios
 
 Os STEPs implementam o pipeline canônico do review. O mapa preserva as dependências reais, não a numeração literal — em particular, a inspeção do Paper precede a construção do Brief porque o Canvas Snapshot é evidência de canvas do próprio Brief:
 
@@ -375,18 +398,20 @@ Os STEPs implementam o pipeline canônico do review. O mapa preserva as dependê
 | 3. Load project context | STEP 2 (Context Loader — fase mecânica) |
 | 4. Inspect Paper | STEP 1 (Paper Inspection → Canvas Snapshot) |
 | 5. Build Context Brief | STEP 2 (Product Context Skill → Brief; gate no STEP 3) |
-| 6. Run Design Critique | STEP 4 (varredura L0–L8 sob o Gate de evidência) |
-| 7. Run Interaction Design when relevant | STEP 4 (Roteamento da Interaction Design) |
-| 8. Normalize findings | STEP 4 (Issue Model — contrato de 7 campos) |
-| 9. Classify severity | STEP 4 (Severity Engine) |
-| 10. Assign confidence | STEP 4 (Issue Model — ortogonal à severidade) |
-| 11. Deduplicate findings | STEP 5 (Consolidação) |
-| 12. Prioritize issues | STEP 5 (ordenação: severidade → impacto → confiança → alcance) |
-| 13. Challenge the diagnosis | STEP 6 (Design Critic → Adversarial Critique Record) |
-| 14. Revise the diagnosis | STEP 7 (Revision — vereditos incorporados, mecanismos do STEP 5 reaplicados) |
-| 15. Audit review quality | STEP 8 (Design QA → Review QA Record) |
-| 16. Generate report | STEP 9–10 (Quality Gate + Composição do report) |
-| 17. Present next steps | STEP 10 (Recommended Next Steps amarrados às issues) |
+| 6. Select relevant skills | STEP 4 (Seleção das competências especializadas — `standards/skill-routing.md`) |
+| 7. Run Design Critique | STEP 4 (varredura L0–L8 sob o Gate de evidência) |
+| 8. Run Interaction Design when relevant | STEP 4 (Roteamento da Interaction Design) |
+| 9. Run specialized skills when routed | STEP 4 (UX Writing · Visual Hierarchy · Design Systems · Accessibility) |
+| 10. Normalize findings | STEP 4 (Issue Model — contrato de 7 campos) |
+| 11. Classify severity | STEP 4 (Severity Engine) |
+| 12. Assign confidence | STEP 4 (Issue Model — ortogonal à severidade) |
+| 13. Deduplicate findings | STEP 5 (Consolidação — Design Critique consolida as contribuições de todas as skills) |
+| 14. Prioritize issues | STEP 5 (ordenação: severidade → impacto → confiança → alcance) |
+| 15. Challenge the diagnosis | STEP 6 (Design Critic → Adversarial Critique Record) |
+| 16. Revise the diagnosis | STEP 7 (Revision — vereditos incorporados, mecanismos do STEP 5 reaplicados) |
+| 17. Audit review quality | STEP 8 (Design QA → Review QA Record) |
+| 18. Generate report | STEP 9–10 (Quality Gate + Composição do report) |
+| 19. Present next steps | STEP 10 (Recommended Next Steps amarrados às issues) |
 
 - **STEP 0 — Resolve scope and target.** Identificar o artefato observável e resolver o escopo pela ordem de precedência de Scope Resolution (explícito → seleção ativa → contexto → ambiguidade sinalizada). Dois gaps blocking possíveis aqui: artefato ausente (pedir a fonte, nunca reviewar de memória) e ambiguidade de escopo entre múltiplos candidatos plausíveis (perguntar listando os candidatos, nunca escolher por palpite).
 - **STEP 1 — Preflight & Paper Inspection (condicional).** Somente quando o canvas for fonte: percorrer o Agent Preflight até `PAPER_READY` (docs/architecture.md); qualquer outro estado bloqueia a leitura do canvas e é reportado com a ação de correção. Com `PAPER_READY`, executar a inspeção e consolidar o **Canvas Snapshot** (seção Paper Inspection), com `Limitations` preenchido. Fontes textuais e imagens não exigem preflight.
@@ -394,7 +419,7 @@ Os STEPs implementam o pipeline canônico do review. O mapa preserva as dependê
 - **STEP 3 — Context gate.** Ler o Context Status do Brief e aplicar o contrato de consumo (`standards/product-context-brief.md`) sob a Política de bloqueio (Context Integration):
   - `PROCEED` ou `PROCEED WITH ASSUMPTIONS` → seguir ao STEP 4, herdando as premissas como premissas (nunca promovidas a fato).
   - `REQUEST BLOCKING CONTEXT` → apresentar as blocking questions — e, **por padrão, continuar mesmo assim**: a crítica prossegue nas camadas que não dependem das respostas (cenário C da Design Critique Skill: L0 `not-evaluable`, Confidence rebaixada onde depender de task criticality), com as perguntas abertas visíveis no report. Isso respeita o contrato do Brief: o que as blocking questions bloqueiam é o julgamento que depende delas, não as camadas observáveis. **Interromper é exceção**: reservada a quando a ausência tornaria a análise potencialmente enganosa mesmo com limitações declaradas — nesse caso o review para nas perguntas, explicando por que prosseguir seria pior que esperar. **Inventar respostas nunca é saída.**
-- **STEP 4 — Initial Analysis (`INITIAL_ANALYSIS`).** Executar a Design Critique Skill sobre o artefato — o Canvas Snapshot, quando a fonte for o Paper —, com o Brief como contexto (Context Integration da skill), varrendo L0–L8 sob o Gate de evidência por camada (Critique Orchestration). A Interaction Design Skill entra pelo Roteamento da Critique Orchestration — automática para escopo de fluxo, tarefa multi-tela ou sequência de interação; sob demanda diante de cheiro comportamental — e os achados das duas skills passam pela Consolidação: um problema, um achado, no mesmo contrato de 7 campos.
+- **STEP 4 — Initial Analysis (`INITIAL_ANALYSIS`).** Selecionar as competências pelo `standards/skill-routing.md` (Seleção das competências especializadas) e registrar a linha `Skills:`. Executar a Design Critique Skill sobre o artefato — o Canvas Snapshot, quando a fonte for o Paper —, com o Brief como contexto (Context Integration da skill), varrendo L0–L8 sob o Gate de evidência por camada (Critique Orchestration). A Interaction Design Skill entra pelo Roteamento da Critique Orchestration — automática para escopo de fluxo, tarefa multi-tela ou sequência de interação; sob demanda diante de cheiro comportamental —, a Accessibility Skill sempre, e UX Writing, Visual Hierarchy e Design Systems quando roteadas ou escaladas por sinal; os achados de todas passam pela Consolidação: um problema, um achado, no mesmo contrato de 7 campos.
 - **STEP 5 — Consolidation (`INITIAL_ANALYSIS`).** Antes de qualquer desafio, nota ou relatório, o conjunto bruto de achados passa pela Consolidação (contrato em Critique Orchestration): duplicatas removidas, equivalentes agrupados pela causa, conflitos de severidade resolvidos pelas lentes, evidência mais forte preservada, `Low` não acionáveis agregados e o conjunto ordenado por prioridade. O que sai daqui é o **diagnóstico inicial** — o objeto do STEP 6, não a conclusão do review. O Quality Gate pontua o conjunto **consolidado**, nunca o bruto.
 - **STEP 6 — Adversarial Critique (`ADVERSARIAL_REVIEW`).** Acionar o **Design Critic** (`agents/design-critic.md`) sobre o diagnóstico inicial, com o mesmo artefato e o mesmo Brief em mãos: os dez eixos de desafio perguntados, veredito por achado (`confirmed | revised | rejected | added`) e saída no **Adversarial Critique Record** (`standards/adversarial-quality.md`). **Confirmar tudo é resultado válido** — não há cota de mudanças, e fabricar revisão para o estágio parecer produtivo é Failure Condition 10. Diagnóstico inicial vazio não dispensa o estágio: a pergunta vira "o que deixamos de ver?".
 - **STEP 7 — Revision (`REVISION`).** Incorporar os vereditos em **um único** diagnóstico (contrato na seção Revision — um diagnóstico só): confirmados preservados, revisados alterados campo a campo, rejeitados removidos de Issues (e devolvidos a `Unknowns and Assumptions` quando restar suspeita legítima), omissões incluídas no contrato pleno de 7 campos. O conjunto resultante mudou, então os mecanismos do STEP 5 são **reaplicados** a ele — consolidação e ordenação por prioridade —, e os falsificadores registrados pelo Critic viram validação pendente na Recommendation ou nos next steps. **O usuário nunca recebe dois diagnósticos:** análise contraditória lado a lado é Failure Condition 11.
@@ -439,7 +464,7 @@ Disciplinas por seção:
 
   "Fazer testes de usabilidade" sem objeto não é next step — é ruído.
 - **Review Limitations** — declaradas honestamente, cobrindo quatro origens: **contexto ausente** (do Brief), **dados não disponíveis pela integração** (as `Limitations` do Canvas Snapshot sobem ao report — nunca ficam só no snapshot), **suposições adotadas** (blocos Assumption) e **áreas que exigem validação humana** (achados `Low` confidence, pendências não validáveis do baseline de acessibilidade).
-- **Review Assurance** — o bloco compacto de `standards/adversarial-quality.md`, nunca os records inteiros: stage trace, contagens do desafio (`N confirmed · N revised · N rejected · N added`), veredito do QA, QA blockers e reservas. As contagens precisam **fechar com o record real** — número que não corresponde a entradas existentes é fabricação de processo. Estágio que não rodou aparece declarado, com o porquê.
+- **Review Assurance** — o bloco compacto de `standards/adversarial-quality.md`, nunca os records inteiros: a linha `Skills:` (competências selecionadas e escaladas, com motivo), stage trace, contagens do desafio (`N confirmed · N revised · N rejected · N added`), veredito do QA, QA blockers e reservas. As contagens precisam **fechar com o record real** — número que não corresponde a entradas existentes é fabricação de processo. Estágio que não rodou aparece declarado, com o porquê.
 
 ## Completion Criteria
 
@@ -515,6 +540,7 @@ Antes de entregar (etapa `critique` do ciclo aplicada ao workflow):
 - [ ] Severidade pelas quatro lentes do severity-framework, pisos intactos — e ortogonal à Confidence: incerteza expressa em Confidence, nunca rebaixando severidade em silêncio?
 - [ ] Gate de evidência aplicado camada a camada: *not enough evidence* virou `not-evaluable` declarado — nenhum achado fabricado, nenhuma camada não verificada dada como avaliada?
 - [ ] Interaction Design acionada quando o escopo pedia (fluxo, multi-tela, sequência) — e achados das duas skills consolidados: nenhum problema em dois blocos, evidência mais forte preservada, severidade maior mantida só com justificativa?
+- [ ] Competências selecionadas pelo `standards/skill-routing.md` — conjunto mínimo, cada uma com motivo, escaladas declaradas, Accessibility presente — e a linha `Skills:` registrada em `Review Assurance`?
 - [ ] STEP 5 aplicado ao conjunto inteiro: sem duplicatas, `Low` agregados, ordenado por prioridade — o report entrega sinal, não volume?
 - [ ] O Critic rodou sobre o diagnóstico consolidado, perguntou os dez eixos e emitiu veredito com base observável em cada entrada — sem mudança fabricada e sem cota de revisões?
 - [ ] A Revision entregou **um** diagnóstico: confirmados preservados, revisados alterados campo a campo, rejeitados fora de Issues (com suspeita legítima devolvida a Open Question), omissões incluídas no contrato pleno — e os mecanismos do STEP 5 reaplicados ao conjunto novo?

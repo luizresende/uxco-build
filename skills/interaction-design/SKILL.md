@@ -21,7 +21,9 @@ Enquanto a Design Critique pergunta *o que nesta interface atrapalha a tarefa*, 
 | Pergunta | "O que atrapalha a tarefa?" | "O que acontece quando o usuário age — e o que falta acontecer?" |
 | Saída | Design Critique Report completo | Mesmos blocos de achado (+ campos de extensão), consumíveis pelo report da crítica ou entregues isoladamente |
 
-Regra de roteamento: a Design Critique, ao encontrar cheiro comportamental que exija decomposição (fluxo crítico, estados suspeitos, erro mal recuperado), **aciona esta skill para o mergulho** — e integra os achados no report único. Esta skill também opera sozinha quando o pedido já é comportamental.
+Regra de roteamento: a Design Critique, ao encontrar cheiro comportamental que exija decomposição (fluxo crítico, estados suspeitos, erro mal recuperado), **aciona esta skill para o mergulho** — e integra os achados no report único. Esta skill também opera sozinha quando o pedido já é comportamental. Os sinais e perfis vivem em `standards/skill-routing.md`.
+
+Vizinhas de profundidade, cada uma dona de uma camada: a **redação** da mensagem de erro é L4 (`skills/ux-writing/SKILL.md`); o **acesso** a estados e foco por tecnologia assistiva é L7 (`skills/accessibility/SKILL.md`). Esta skill decide se o estado e o caminho de recuperação **existem e funcionam**; as outras, como são lidos e por quem.
 
 ## Interaction Model
 

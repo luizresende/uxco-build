@@ -107,6 +107,32 @@ Contratos completos em `standards/adversarial-quality.md`; o processo executáve
 
 O ganho da camada adversarial é, hoje, **arquitetural**: há contratos, invariantes testadas e cenários de conduta definidos, mas nenhuma execução comparativa registrada. O protocolo que decide se a camada fica, simplifica ou sai (BEFORE × AFTER, com contagens de ganho e de custo) está em `benchmarks/review-workflow/adversarial-protocol.md` e aguarda execução manual. Tratar a camada como validada antes disso seria exatamente o tipo de falsa precisão que ela existe para combater.
 
+### Competências especializadas e seleção contextual (Sprint 6)
+
+O Critique Engine ganhou quatro skills de **profundidade**, cada uma dona de uma camada do `critique-framework.md`: UX Writing (L4), Visual Hierarchy (L5), Design Systems (L6) e Accessibility (L7). Elas se somam à Interaction Design (L1/L3/L8). A Design Critique continua sendo a **amplitude** (varre L0–L8, aprofunda L0 e L2) e passa a ser explicitamente a **consolidadora**.
+
+```text
+standards/skill-routing.md ── seleciona ──▶ Design Critique (amplitude)
+                                             ├─ Interaction Design   L1 L3 L8
+                                             ├─ UX Writing           L4
+                                             ├─ Visual Hierarchy     L5
+                                             ├─ Design Systems       L6 (+ System Action em qualquer achado)
+                                             └─ Accessibility        L7
+                                                      │
+                                    Consolidação (STEP 5) — um problema, um achado
+                                                      │
+                                    Design Critic ─▶ Revision ─▶ Design QA
+```
+
+Decisões que delimitam a camada:
+
+1. **Profundidade por camada existente, não taxonomia nova.** As camadas L4–L7 já existiam como linhas de varredura; as skills são o mergulho nelas. `Category`, severidade e Confidence não mudaram; cada skill traz só campos de extensão (`Proposed Copy`, `Observed Emphasis`, `System Action`, `A11y Status`), que a consolidação absorve num bloco único.
+2. **Seleção por standard Markdown, não por código.** O Claude Code não descobre `skills/` sozinho — o carregamento sempre foi por referência (CLAUDE.md §9). `standards/skill-routing.md` concentra o registro, os sinais e os perfis; o review registra a escolha numa linha `Skills:`, e o Design QA a audita. Um roteador em JavaScript resolveria um problema que a arquitetura não tem.
+3. **Design QA continua agent.** O PRD lista Design QA entre as competências; ela já existia como responsabilidade acoplada ao STEP 8 (Sprint 5). Duplicá-la como skill de uso livre criaria dois donos para a mesma pergunta.
+4. **Critic e QA sem eixos novos.** Os achados especializados são desafiados pelos mesmos dez eixos e auditados pelas mesmas sete dimensões; só os critérios de `FAIL`/`PARTIAL` ganharam exemplos específicos (critério WCAG errado, `Skills:` sem motivo).
+
+O ganho dessa camada também é, por enquanto, **arquitetural**: o protocolo BEFORE × AFTER (`benchmarks/design-intelligence/before-after-protocol.md`) está definido e não executado.
+
 ## Preflight em dois níveis
 
 O UXCO Build formaliza duas camadas de verificação de prontidão, porque elas observam coisas diferentes e falham de formas diferentes.

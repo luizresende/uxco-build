@@ -73,6 +73,8 @@ A pergunta 3 tem peso especial: ela aplica ao próprio diagnóstico o Impact Tes
 
 A pergunta 10 é obrigatória em todo achado que sobreviva com `Confidence` abaixo de `High`: o falsificador é registrado e a Revision o carrega como validação pendente (regra 7 do Adversarial Critique Record).
 
+**Achados das skills de profundidade** (`standards/skill-routing.md`) passam pelos mesmos dez eixos — sem eixo novo. O eixo `evidence` aplicado a eles verifica a disciplina de evidência de cada uma: medida ou cor citada com fonte (Visual Hierarchy), critério WCAG correto e `A11y Status` coerente com o nível de verificabilidade (Accessibility), copy proposta que não promete capacidade inexistente (UX Writing), componente ou token existente com fonte e `Create new component` com Design Decision (Design Systems).
+
 ## Process
 
 ```text

@@ -56,9 +56,9 @@ As sete dimensões, seus critérios de `FAIL` e o que normalmente produz `PARTIA
 | **Evidence Quality** | Achado sem Evidence, ou Evidence não localizável no artefato | Evidence genérica onde havia observação específica disponível |
 | **Severity Calibration** | Piso violado (acessibilidade abaixo de `High`, perda de dados abaixo de `High`), ou inflação sistemática | Um nível discutível em achado isolado, com lentes aplicadas |
 | **Actionability** | Recomendação genérica, ou next step sem objeto ("fazer testes de usabilidade") | Recomendação correta mas sem o critério de verificação |
-| **Completeness** | Camada avaliada sem evidência, camada omitida do Layer Coverage, ou lacuna relevante não declarada | Estado ou edge case citado em Unknowns que merecia análise |
-| **Accessibility Coverage** | Conformidade alegada sem verificação, ou violação inventada sem dados | Piso parcialmente verificado sem o não-validável declarado por área |
-| **System Consistency** | Formato paralelo, token não canônico, seção oficial ausente ou inventada | Desvio de forma sem perda de contrato (ordem interna, redação) |
+| **Completeness** | Camada avaliada sem evidência, camada omitida do Layer Coverage, ou lacuna relevante não declarada | Estado ou edge case citado em Unknowns que merecia análise; skill com sinal claro no escopo não selecionada nem declarada (`standards/skill-routing.md`) |
+| **Accessibility Coverage** | Conformidade alegada sem verificação, violação inventada sem dados, ou critério WCAG citado incorretamente | Piso parcialmente verificado sem o não-validável declarado por área; pendências de verificação técnica sem lista própria |
+| **System Consistency** | Formato paralelo, token não canônico, seção oficial ausente ou inventada | Desvio de forma sem perda de contrato (ordem interna, redação); linha `Skills:` ausente ou sem motivo por competência |
 
 `UNKNOWN` é o status honesto quando o material não permite auditar a dimensão — e o que faltou é declarado. `UNKNOWN` **nunca** é aprovação: em `REVIEW READY` ele não pode existir sem reserva registrada.
 

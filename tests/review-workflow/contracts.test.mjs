@@ -345,7 +345,7 @@ test('workflow report composition maps every canonical section to the official c
   }
 });
 
-test('workflow maps the canonical seventeen-stage pipeline onto its steps', () => {
+test('workflow maps the canonical pipeline onto its steps, preserving the seventeen original stages in order', () => {
   const wf = read(WORKFLOW);
   const process = wf.split('## Process')[1]?.split('\n## ')[0];
   assert.ok(process.includes('Pipeline canônico'), 'missing canonical pipeline map');

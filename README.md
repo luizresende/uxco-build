@@ -1,6 +1,6 @@
 # UXCO Build
 
-> Projeto privado — Sprint 5: Adversarial Quality Engine do UXCO Design Engine.
+> Projeto privado — Sprint 6: Design Intelligence do UXCO Design Engine.
 
 O **UXCO Build** é um agente especializado em Product Design, capaz de transformar contexto de produto em decisões, análises e alterações de design executadas diretamente no canvas.
 
@@ -15,7 +15,7 @@ Claude Code  →  UXCO Design Engine  →  Paper MCP  →  Paper Canvas
 ```
 
 - **Claude Code** — runtime do agente: loop de execução, contexto, tools e subagentes.
-- **UXCO Design Engine** — ativo proprietário: instruções globais, skills, agentes, workflows, standards e memória de projeto (fundação na Sprint 1; skills nas Sprints 2–3; workflow na Sprint 4; agentes na Sprint 5).
+- **UXCO Design Engine** — ativo proprietário: instruções globais, skills, agentes, workflows, standards e memória de projeto (fundação na Sprint 1; skills nas Sprints 2–3 e 6; workflow na Sprint 4; agentes na Sprint 5).
 - **Paper MCP** — ponte de leitura e escrita entre o agente e o canvas do Paper.
 
 ## Estado do projeto
@@ -26,7 +26,8 @@ Claude Code  →  UXCO Design Engine  →  Paper MCP  →  Paper Canvas
 - **Sprint 3 — concluída:** Critique Engine — análise crítica de interfaces e fluxos, descrita na seção [Critique Engine](#critique-engine).
 - **Sprint 4 — concluída:** Review Workflow — o primeiro workflow e o primeiro comando real (`/uxco-review`), descrito na seção [Review Workflow](#review-workflow).
 - **Harness — concluído:** camada explícita de Harness Engineering (Instructions/Tools/Environment/State/Feedback), descrita na seção [Harness](#harness).
-- **Sprint 5 — atual:** Adversarial Quality Engine — o sistema passa a desafiar o próprio diagnóstico antes de apresentá-lo, descrito na seção [Adversarial Quality Engine](#adversarial-quality-engine).
+- **Sprint 5 — concluída:** Adversarial Quality Engine — o sistema passa a desafiar o próprio diagnóstico antes de apresentá-lo, descrito na seção [Adversarial Quality Engine](#adversarial-quality-engine).
+- **Sprint 6 — atual:** Design Intelligence — as oito competências de Product Design com seleção contextual, descritas na seção [Design Intelligence](#design-intelligence).
 
 ## Architecture
 
@@ -39,7 +40,8 @@ PROGRESS.md             Estado operacional entre sessões — onde estamos, pró
 .nvmrc                  Versão de Node do ambiente de desenvolvimento
 standards/              Critérios compartilhados — consultados por tarefa
 skills/                 product-context (Context Engine) · design-critique ·
-                        interaction-design (Critique Engine)
+                        interaction-design (Critique Engine) · ux-writing ·
+                        visual-hierarchy · design-systems · accessibility (L4–L7)
 agents/                 design-critic · design-qa (Adversarial Quality Engine)
 workflows/              uxco-review (Review Workflow — orquestra os engines)
 .claude/commands/       Comandos reais do Claude Code — /uxco-review
@@ -49,7 +51,7 @@ examples/               Memória demo (Pulse) e fixtures de teste dos engines e 
                         (inclui adversarial-tests/ — diagnósticos, não designs)
 scripts/                Machine Preflight e Context Loader
 tests/                  foundation/ · context-engine/ · critique-engine/ ·
-                        review-workflow/ (determinísticos, inclui a camada adversarial)
+                        review-workflow/ · design-intelligence/ (determinísticos)
 benchmarks/             Harnesses de avaliação manual (engines e review workflow)
 docs/                   Arquitetura, getting started, registros de sprint
 experiments/paper-mcp/  Evidência do smoke test da Sprint 0 (histórico)
@@ -69,6 +71,7 @@ Conhecimento profundo, um tópico por arquivo, consultado sob demanda (cada arqu
 - [`accessibility-baseline.md`](standards/accessibility-baseline.md) — piso prático de acessibilidade em 10 áreas, com limites de verificação declarados (sem alegação de conformidade normativa).
 - [`design-output-format.md`](standards/design-output-format.md) — blocos padronizados de saída (Design Issue, Design Decision, Assumption, Open Question) e escala de Confidence.
 - [`adversarial-quality.md`](standards/adversarial-quality.md) — contratos da camada adversarial: Adversarial Critique Record, Review QA Record, marcadores de estágio e o invariante de ciclo único.
+- [`skill-routing.md`](standards/skill-routing.md) — registro das oito competências e as regras que decidem quais entram em cada tarefa.
 
 ### templates/project/ — memória de projeto
 
@@ -123,7 +126,7 @@ workflows/uxco-review.md
       ↓
 STEP 0-1  escopo · preflight condicional (canvas → PAPER_READY)
 STEP 2-3  Product Context Skill → Brief → gate de contexto
-STEP 4-5  Initial Analysis — Design Critique (+ Interaction Design) → consolidação
+STEP 4-5  Initial Analysis — seleção de skills → Design Critique + profundidade → consolidação
 STEP 6    Adversarial Critique — Design Critic desafia o diagnóstico
 STEP 7    Revision — vereditos incorporados em um diagnóstico só
 STEP 8    Review QA — Design QA audita a qualidade do review
@@ -183,13 +186,35 @@ O que chega ao report é um bloco compacto (`## Review Assurance`) — stage tra
 
 **Testes:** 23 testes determinísticos em [`tests/review-workflow/adversarial.test.mjs`](tests/review-workflow/adversarial.test.mjs); cenários comportamentais ADV-A..ADV-G em [`tests/review-workflow/adversarial-scenarios.md`](tests/review-workflow/adversarial-scenarios.md); fixture de diagnóstico falho em [`examples/adversarial-tests/`](examples/adversarial-tests/).
 
+### Design Intelligence
+
+As oito competências de Product Design previstas no PRD (Sprint 6). As quatro novas são skills de **profundidade** para camadas que o `critique-framework.md` já definia — o mesmo desenho que a Interaction Design tinha para L1/L3/L8. Nenhuma taxonomia nova: `Category` continua L0–L8, e severidade e Confidence continuam nos seus standards; cada skill acrescenta só campos de extensão.
+
+| Competência | Território | Arquivo |
+| --- | --- | --- |
+| Product Context | Brief (L0, calibração) | [`skills/product-context/`](skills/product-context/SKILL.md) |
+| Design Critique | Varredura L0–L8 + consolidação | [`skills/design-critique/`](skills/design-critique/SKILL.md) |
+| Interaction Design | L1 · L3 · L8 | [`skills/interaction-design/`](skills/interaction-design/SKILL.md) |
+| UX Writing | L4 — cadeia Original → Problem → Proposed Copy → Rationale → Expected Impact | [`skills/ux-writing/`](skills/ux-writing/SKILL.md) |
+| Visual Hierarchy | L5 — importância da tarefa × proeminência visual | [`skills/visual-hierarchy/`](skills/visual-hierarchy/SKILL.md) |
+| Design Systems | L6 — `System Action` (reuse · extend · create · resolve · insufficient evidence) | [`skills/design-systems/`](skills/design-systems/SKILL.md) |
+| Accessibility | L7 — `A11y Status` (confirmed · potential · requires technical verification · not assessable) | [`skills/accessibility/`](skills/accessibility/SKILL.md) |
+| Design QA | O review, não o design (STEP 8) | [`agents/design-qa.md`](agents/design-qa.md) |
+
+- **Seleção contextual** — [`standards/skill-routing.md`](standards/skill-routing.md): sinais de ativação e sete perfis canônicos de pedido (review completo, microcopy, formulário, hierarquia, fluxo, auditoria de acessibilidade, consistência de sistema). Conjunto mínimo, escalada declarada e nenhum roteador executável: as skills vivem em `skills/` (não em `.claude/skills/`) e são carregadas por referência.
+- **No `/uxco-review`** — a seleção acontece no STEP 4, e a Design Critique consolida as contribuições de todas as skills no STEP 5 (um problema, um achado). Critic e QA seguem integrados e auditam também os achados especializados. A seleção fica registrada numa linha `Skills:` do `Review Assurance`. Interface pública, 11 STEPs e operação `READ` inalterados.
+
+**Limitação honesta:** a substância das skills ainda **não foi medida**. Os 24 cenários (`tests/design-intelligence/skill-scenarios.md`) e a comparação BEFORE × AFTER (`benchmarks/design-intelligence/before-after-protocol.md`) estão definidos e não executados.
+
+**Testes:** contratos, routing, WCAG citado contra um mapa canônico e contrastes dos gabaritos recalculados em [`tests/design-intelligence/`](tests/design-intelligence/) (`npm test`); fixtures em [`examples/skill-tests/`](examples/skill-tests/), com controles positivos.
+
 ### tests/foundation/ — validação comportamental
 
 Dez cenários manuais em [`tests/foundation/scenarios.md`](tests/foundation/scenarios.md) que validam a conduta do agente sob a constituição (agir sem contexto, gaps bloqueantes, ações destrutivas, contradições, estética vs. problema, registro de decisões etc.). Resultados de execução são registrados em `tests/foundation/results/` (append-only).
 
 ### Ainda não implementado
 
-**Os demais comandos `/uxco-*` não existem ainda** — `/uxco-new-feature`, `/uxco-improve-flow`, `/uxco-explore`, `/uxco-design-qa` e `/uxco-status` estão previstos para as próximas sprints (as três skills vieram das Sprints 2–3; o workflow de review e o comando `/uxco-review`, da Sprint 4; os dois agents, da Sprint 5). Nada neste repositório deve ser lido como se eles existissem; a própria constituição (§9.3) proíbe o agente de simular componentes inexistentes.
+**Os demais comandos `/uxco-*` não existem ainda** — `/uxco-new-feature`, `/uxco-improve-flow`, `/uxco-explore`, `/uxco-design-qa` e `/uxco-status` estão previstos para as próximas sprints (as skills vieram das Sprints 2–3 e 6; o workflow de review e o comando `/uxco-review`, da Sprint 4; os dois agents, da Sprint 5). Nada neste repositório deve ser lido como se eles existissem; a própria constituição (§9.3) proíbe o agente de simular componentes inexistentes.
 
 Em particular: a camada de QA da Sprint 5 é um **estágio interno** do `/uxco-review` (STEP 8), **não** o comando `/uxco-design-qa`. Um futuro comando poderá rotear para `agents/design-qa.md` sem retrabalho — mas ele ainda não existe.
 

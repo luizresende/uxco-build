@@ -15,7 +15,7 @@ A saída é o Design Critique Report. A skill **não redesenha, não corrige e n
 
 - Pedido explícito de crítica, review ou QA de uma interface, tela ou fluxo.
 - Etapa `critique` formalizada sobre trabalho produzido na própria sessão.
-- Futuro: `/uxco-review` e `/uxco-design-qa` a consumirão (não implementados — não simular).
+- `/uxco-review` a consome no STEP 4 (`workflows/uxco-review.md`); `/uxco-design-qa` ainda não existe — não simular.
 
 **Quando não usar:** pedido de design novo (crítica não é geração); ajuste pontual que não pede avaliação — o rito é proporcional à tarefa (CLAUDE.md §2).
 
@@ -57,6 +57,22 @@ STEP 6  Classify and prioritize — severidade, Confidence, ordenação por impa
 STEP 7  Self-check — falsos positivos, gosto disfarçado, inflação (Quality Checklist)
 STEP 8  Report — Design Critique Report completo
 ```
+
+## Depth Routing and Consolidation
+
+Esta skill é a **amplitude** do Critique Engine: varre L0–L8 e aprofunda as camadas sem dono (L0, L2). As demais têm skills de profundidade, selecionadas por `standards/skill-routing.md`:
+
+| Camada | Profundidade |
+| --- | --- |
+| L1 · L3 · L8 | `skills/interaction-design/SKILL.md` |
+| L4 | `skills/ux-writing/SKILL.md` |
+| L5 | `skills/visual-hierarchy/SKILL.md` |
+| L6 | `skills/design-systems/SKILL.md` |
+| L7 | `skills/accessibility/SKILL.md` |
+
+1. **Varredura não é mergulho.** No STEP 4, a camada com dono é varrida por esta skill; quando a varredura encontra o sinal da skill de profundidade (tabela de sinais do roteamento), ela é acionada — e só então. Sem sinal, a linha da camada no Layer Coverage reflete a varredura.
+2. **Esta skill consolida.** Quando duas ou mais competências produzem achados, o STEP 5 desta skill (*Find structural causes*) recebe todos: um problema, um achado, na camada causal; as manifestações vistas por cada competência entram como evidência do mesmo bloco; os campos de extensão de cada uma (`System Action`, `A11y Status`, `Original`/`Proposed Copy`, `Task Priority` etc.) enriquecem o bloco, nunca abrem um segundo.
+3. **A skill de profundidade é dona do método da sua camada.** Esta skill não recalcula contraste, não reescreve copy e não decide `System Action` — consome o que a profundidade entregou e prioriza.
 
 ## Not a Checklist
 
