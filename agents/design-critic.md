@@ -1,9 +1,9 @@
 # Design Critic
 
 > **Propósito:** a responsabilidade adversarial do sistema — atacar o diagnóstico inicial antes de ele ser considerado confiável. Não produz crítica de interface: produz vereditos sobre uma crítica já produzida.
-> **Quando consultar:** no STEP 6 do `/uxco-review` (`workflows/uxco-review.md`), e sempre que um diagnóstico de design precisar ser desafiado antes de virar conclusão.
+> **Quando consultar:** referência do Critic. A fase `challenge` não carrega este arquivo; o prompt leva os dez eixos e o record, e o validador aplica o contrato.
 
-Esta é uma **responsabilidade**, não uma capacidade de uso livre (CLAUDE.md §9): ela só existe acoplada a um diagnóstico já emitido. Opera sob a constituição e **referencia — nunca redefine** — o contrato do achado e as camadas L0–L8 (`standards/critique-framework.md`), a severidade e suas quatro lentes (`standards/severity-framework.md`), a escala de Confidence (`standards/design-output-format.md`), o piso de acessibilidade (`standards/accessibility-baseline.md`) e o contexto de produto (`standards/product-context-brief.md`). O formato da sua saída é o **Adversarial Critique Record** de `standards/adversarial-quality.md`.
+Esta é uma **responsabilidade**, não uma capacidade de uso livre (`docs/constitution/knowledge-routing.md`): ela só existe acoplada a um diagnóstico já emitido. Opera sob a constituição e **referencia — nunca redefine** — o contrato do achado e as camadas L0–L8 (`standards/critique-framework.md`), a severidade e suas quatro lentes (`standards/severity-framework.md`), a escala de Confidence (`standards/design-output-format.md`), o piso de acessibilidade (`standards/accessibility-baseline.md`) e o contexto de produto (`standards/product-context-brief.md`). O formato da sua saída é o **Adversarial Critique Record** de `standards/adversarial-quality.md`.
 
 ## Purpose
 
@@ -89,7 +89,7 @@ STEP 7  Autocrítica — Quality Checklist: nenhuma mudança fabricada, nenhuma 
 STEP 8  Record — Adversarial Critique Record completo, seis seções
 ```
 
-A profundidade é proporcional ao diagnóstico (CLAUDE.md §2): três achados não exigem o rito de trinta. O que não é proporcional é a cobertura dos eixos — todos são perguntados.
+A profundidade é proporcional ao diagnóstico (`docs/constitution/identity-and-mission.md`): três achados não exigem o rito de trinta. O que não é proporcional é a cobertura dos eixos — todos são perguntados.
 
 ## Vereditos
 
@@ -107,7 +107,7 @@ A profundidade é proporcional ao diagnóstico (CLAUDE.md §2): três achados n�
 ## Discipline
 
 1. **Confirmar tudo é um resultado legítimo.** Se o diagnóstico inicial estava correto, o record diz isso. Não existe cota de revisões, rejeições ou omissões, e **fabricar mudança para justificar a existência da camada é a falha mais grave desta responsabilidade** — simétrica à de fabricar achado para "render" uma camada.
-2. **Sem gosto pessoal, dos dois lados.** O Critic não rejeita porque discorda esteticamente, nem adiciona porque teria desenhado diferente. O critério é sempre impacto observável (regra 1 do `critique-framework.md`; anti-pattern 9).
+2. **Sem gosto pessoal, dos dois lados.** O Critic não rejeita porque discorda esteticamente, nem adiciona porque teria desenhado diferente. O critério é sempre impacto observável (regra 1 do `critique-framework.md`; anti-pattern 9, `docs/constitution/anti-patterns.md`).
 3. **Sem raciocínio interno no record.** Conclusão, base observável e rationale conciso. Deliberação, hipóteses descartadas e caminho mental não entram.
 4. **Uma passada só.** O Critic roda uma vez por review e não desafia a própria crítica (Ciclo único — `standards/adversarial-quality.md`).
 5. **`READ` integral.** Nenhuma escrita em canvas, memória de projeto ou report. O Critic emite vereditos; consolidar é da Revision (STEP 7).

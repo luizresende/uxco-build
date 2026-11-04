@@ -1,0 +1,126 @@
+{
+  "id": "uxco-review",
+  "version": 1,
+  "mode": "READ",
+  "description": "Review formal. Seis fases. O manifesto declara contexto, artefatos e gates. scripts/chain.mjs aplica os gates e recusa contexto de fase acima de 400 palavras. Outro comando reusa o mesmo validador com outro manifesto.",
+  "always": ["CLAUDE.md"],
+  "command": ".claude/commands/uxco-review.md",
+  "agent": ".claude/agents/review-step.md",
+  "artifactsDir": ".review-runs",
+  "reportTemplate": "templates/reports/design-review.md",
+  "orchestrator": {
+    "loads": [
+      "CLAUDE.md",
+      ".claude/commands/uxco-review.md",
+      "workflows/review/manifest.json",
+      ".claude/agents/review-step.md"
+    ],
+    "conditional": [
+      {
+        "path": "docs/constitution/knowledge-routing.md",
+        "when": "natural-language-route"
+      }
+    ]
+  },
+  "gates": [
+    "scope-resolved",
+    "paper-source",
+    "context-gate",
+    "evidence-layers",
+    "single-cycle",
+    "critique-record",
+    "one-diagnosis",
+    "qa-vs-design",
+    "report-contract"
+  ],
+  "steps": [
+    {
+      "id": "scope",
+      "prompt": "workflows/review/steps/scope.md",
+      "when": "always",
+      "context": [],
+      "input": [],
+      "output": "scope.json",
+      "schema": "workflows/review/schemas/scope.json",
+      "gate": ["scope-resolved"],
+      "touchesPaper": false,
+      "stages": ["Receive review request", "Detect scope"],
+      "marker": null
+    },
+    {
+      "id": "inspect",
+      "prompt": "workflows/review/steps/inspect.md",
+      "when": "canvas",
+      "context": [
+        { "path": "docs/constitution/canvas-safety.md" }
+      ],
+      "input": ["scope.json"],
+      "output": "inspect.json",
+      "schema": "workflows/review/schemas/inspect.json",
+      "gate": ["paper-source"],
+      "touchesPaper": true,
+      "stages": ["Inspect Paper"],
+      "marker": null
+    },
+    {
+      "id": "ground",
+      "prompt": "workflows/review/steps/ground.md",
+      "when": "always",
+      "context": [],
+      "input": ["scope.json", "inspect.json"],
+      "output": "ground.json",
+      "schema": "workflows/review/schemas/ground.json",
+      "gate": ["context-gate"],
+      "touchesPaper": false,
+      "stages": ["Load project context", "Build Context Brief"],
+      "marker": null
+    },
+    {
+      "id": "analyze",
+      "prompt": "workflows/review/steps/analyze.md",
+      "when": "always",
+      "context": [],
+      "input": ["scope.json", "inspect.json", "ground.json"],
+      "output": "analyze.json",
+      "schema": "workflows/review/schemas/analyze.json",
+      "gate": ["evidence-layers"],
+      "touchesPaper": false,
+      "stages": [
+        "Run Design Critique",
+        "Run Interaction Design when relevant",
+        "Normalize findings",
+        "Classify severity",
+        "Assign confidence",
+        "Deduplicate findings",
+        "Prioritize issues"
+      ],
+      "marker": "INITIAL_ANALYSIS"
+    },
+    {
+      "id": "challenge",
+      "prompt": "workflows/review/steps/challenge.md",
+      "when": "always",
+      "context": [],
+      "input": ["scope.json", "ground.json", "analyze.json"],
+      "output": "challenge.json",
+      "schema": "workflows/review/schemas/challenge.json",
+      "gate": ["single-cycle", "critique-record", "one-diagnosis"],
+      "touchesPaper": false,
+      "stages": ["Challenge the diagnosis", "Revise the diagnosis"],
+      "markers": ["ADVERSARIAL_REVIEW", "REVISION"]
+    },
+    {
+      "id": "close",
+      "prompt": "workflows/review/steps/close.md",
+      "when": "always",
+      "context": [],
+      "input": ["scope.json", "inspect.json", "ground.json", "analyze.json", "challenge.json"],
+      "output": "close.json",
+      "schema": "workflows/review/schemas/close.json",
+      "gate": ["single-cycle", "qa-vs-design", "report-contract"],
+      "touchesPaper": false,
+      "stages": ["Audit review quality", "Generate report", "Present next steps"],
+      "marker": "FINAL_QA"
+    }
+  ]
+}

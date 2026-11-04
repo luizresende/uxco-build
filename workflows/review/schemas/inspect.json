@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["step", "status", "paperReady", "haltReason", "blockedMessage", "snapshot"],
+  "properties": {
+    "step": { "const": "inspect" },
+    "status": { "enum": ["captured", "partial", "skipped", "halt"] },
+    "paperReady": { "nullable": true, "type": "boolean" },
+    "haltReason": { "nullable": true, "enum": ["paper-only-blocked"] },
+    "blockedMessage": { "nullable": true, "type": "string" },
+    "snapshot": { "nullable": true, "$ref": "snapshot.json" }
+  }
+}

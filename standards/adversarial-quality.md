@@ -1,13 +1,13 @@
 # Adversarial Quality
 
 > **Propósito:** o contrato da camada adversarial do review — os registros do Design Critic e do Design QA, os marcadores de estágio e o invariante de ciclo único. Define **como um diagnóstico é desafiado e auditado**; severidade, Confidence, camadas, contrato do achado e dimensões de qualidade de design vêm dos standards existentes e **não são redefinidos aqui**.
-> **Quando consultar:** ao executar ou auditar os STEPs 6–8 do `/uxco-review` (`workflows/uxco-review.md`), e sempre que um diagnóstico de design precisar ser desafiado antes de ser considerado confiável.
+> **Quando consultar:** referência completa da camada adversarial. A cadeia não carrega este arquivo: `challenge` e `close` levam a regra operacional no prompt, e `scripts/chain.mjs` aplica o contrato. Os números de STEP abaixo são o mapa histórico.
 
 Dependências explícitas: contrato do achado (7 campos) e camadas L0–L8 vêm de `critique-framework.md`; severidade e as quatro lentes, de `severity-framework.md`; Confidence e os blocos Assumption/Open Question, de `design-output-format.md`; as dimensões e os gates de **qualidade do design**, de `quality-framework.md`; o contexto de produto, do Product Context Brief (`product-context-brief.md`).
 
 ## Por que esta camada existe
 
-Uma análise entregue no instante em que é produzida carrega os vieses de quem a produziu: a suposição que passou por fato, o achado inflado porque chamava atenção, a recomendação que trata o sintoma, a camada que ninguém notou que faltou. Autocriticar antes de concluir já é regra global (CLAUDE.md §3.11) — mas regra sem momento próprio degenera em releitura do próprio texto.
+Uma análise entregue no instante em que é produzida carrega os vieses de quem a produziu: a suposição que passou por fato, o achado inflado porque chamava atenção, a recomendação que trata o sintoma, a camada que ninguém notou que faltou. Autocriticar antes de concluir já é regra global (`docs/constitution/operating-principles.md`, princípio 11) — mas regra sem momento próprio degenera em releitura do próprio texto.
 
 Esta camada dá à autocrítica um **momento separado, com responsabilidade diferente**:
 
@@ -102,7 +102,7 @@ Tokens canônicos: `Verdict` e `Challenge` usam exatamente os valores acima. Mud
 1. **Veredito precisa de base observável.** Rejeitar exige mostrar *qual* evidência falta, não declarar que falta. Confirmar exige apontar a evidência que resistiu. `Basis` vazio invalida a entrada.
 2. **Rejeição não é exclusão silenciosa.** O achado rejeitado não desaparece: a Revision o remove de Issues e, quando ainda houver suspeita legítima sem evidência, ele reaparece em `Unknowns and Assumptions` como Open Question — nunca como problema afirmado (regra 3 do contrato do achado).
 3. **Confirmação é resultado válido e completo.** Um record com tudo em `confirmed` e `Nenhuma omissão identificada.` é um record aprovado, não um estágio preguiçoso. **Não existe cota de revisões, rejeições ou omissões** — fabricar mudança para justificar a existência da camada é a mesma falha que fabricar achado para "render" camada (Failure Condition 6 da Design Critique Skill).
-4. **O Critic não desenha nem reescreve o report.** Ele emite vereditos; a consolidação é da Revision. Operação integralmente `READ` (CLAUDE.md §6).
+4. **O Critic não desenha nem reescreve o report.** Ele emite vereditos; a consolidação é da Revision. Operação integralmente `READ` (`CLAUDE.md`, Action Safety).
 5. **Severidade e Confidence seguem as escalas de origem.** O Critic desafia a *aplicação* das quatro lentes e da escala de Confidence — jamais cria nível, dimensão ou significado novo.
 6. **Sem raciocínio interno.** O record registra conclusão, base observável e rationale conciso. Cadeia de pensamento, deliberação e alternativas descartadas não entram — não são evidência, são ruído.
 7. **Falsificador obrigatório onde a certeza é baixa:** todo achado que sobrevive com `Confidence` abaixo de `High` registra em `Basis` ou `Change` **o que o falsificaria** — e a Revision carrega isso para a Recommendation ou para Recommended Next Steps como validação pendente.
@@ -178,7 +178,7 @@ Um review impecável sobre um design reprovado é `REVIEW READY` com Quality Gat
 | `REVIEW READY WITH RESERVATIONS` | Nenhum `FAIL`, mas há `PARTIAL`/`UNKNOWN` que limitam o que o review pode afirmar |
 | `REVIEW NOT READY` | Qualquer `FAIL`, ou qualquer QA Blocker aberto |
 
-`REVIEW NOT READY` **não suprime o report** nem dispara novo ciclo: o report é entregue com o blocker explícito e com a limitação visível ao usuário. Esconder a reprovação do QA é a mesma violação que entregar Quality Gate reprovado como aprovado (CLAUDE.md §8).
+`REVIEW NOT READY` **não suprime o report** nem dispara novo ciclo: o report é entregue com o blocker explícito e com a limitação visível ao usuário. Esconder a reprovação do QA é a mesma violação que entregar Quality Gate reprovado como aprovado (`docs/constitution/quality-gate.md`).
 
 ## Review Assurance — o que sobe ao report
 

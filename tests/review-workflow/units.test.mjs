@@ -11,11 +11,16 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { BLOCKED_MESSAGE } from '../../scripts/chain.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const read = (p) => readFileSync(join(root, p), 'utf8');
 
 const WORKFLOW = 'workflows/uxco-review.md';
+const SCOPE = 'workflows/review/steps/scope.md';
+const GROUND = 'workflows/review/steps/ground.md';
+const ANALYZE = 'workflows/review/steps/analyze.md';
+const INSPECT = 'workflows/review/steps/inspect.md';
 const COMMAND = '.claude/commands/uxco-review.md';
 const SCENARIOS = 'tests/review-workflow/scope-scenarios.md';
 const TEMPLATE = 'templates/reports/design-review.md';
@@ -33,7 +38,7 @@ const section = (content, name) => content.split(name)[1]?.split('\n## ')[0] ?? 
 // ---------------------------------------------------------------- scope detection
 
 test('unit: scope detection resolves each canonical case to canonical tokens', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(SCOPE);
   const sc = read(SCENARIOS);
   const cases = wf.split('### Casos canônicos de detecção')[1]?.split('\n## ')[0];
   assert.ok(cases, 'missing detection cases');
@@ -58,7 +63,7 @@ test('unit: scope detection resolves each canonical case to canonical tokens', (
     'SCP-003 must expect selection as source');
 
   // negativo: nenhum token de Source/Type fora do vocabulário canônico, em nenhum artefato
-  for (const file of [WORKFLOW, TEMPLATE, SCENARIOS, COMMAND]) {
+  for (const file of [SCOPE, TEMPLATE, SCENARIOS, COMMAND]) {
     const content = read(file);
     for (const [, token] of content.matchAll(/`Source: ([\w-]+)`/g)) {
       assert.ok(SOURCE_TOKENS.includes(token),
@@ -80,7 +85,7 @@ test('unit: scope detection resolves each canonical case to canonical tokens', (
 // ---------------------------------------------------------------- scope ambiguity
 
 test('unit: scope ambiguity is signaled with candidates, never guessed — and single candidates are not ambiguity', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(SCOPE);
   const sc = read(SCENARIOS);
 
   // positivo: ambiguidade real → candidatos listados + pergunta blocking, sem crítica
@@ -110,7 +115,7 @@ test('unit: scope ambiguity is signaled with candidates, never guessed — and s
 // ------------------------------------------------------------ context integration
 
 test('unit: context integration consumes the Brief without promoting, resolving, or inventing', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(GROUND);
 
   // positivo: gate do STEP 3 continua por padrão e reusa Brief/snapshot declaradamente
   assert.ok(wf.includes('por padrão, continuar mesmo assim'),
@@ -131,7 +136,7 @@ test('unit: context integration consumes the Brief without promoting, resolving,
 // ------------------------------------------------------------- issue normalization
 
 test('unit: issue normalization uses exactly the seven canonical fields — no more, no fewer', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(ANALYZE);
   const fw = read(FRAMEWORK);
 
   // positivo: os 7 campos do bloco do workflow existem no contrato do standard
@@ -158,7 +163,7 @@ test('unit: issue normalization uses exactly the seven canonical fields — no m
 // --------------------------------------------------------- severity classification
 
 test('unit: severity classification defers to the framework scale, floors, and downward tie-break', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(ANALYZE);
   const std = read(SEVERITY_STD);
 
   // positivo: pisos idênticos nas duas pontas e desempate para baixo no standard
@@ -170,14 +175,14 @@ test('unit: severity classification defers to the framework scale, floors, and d
     'standard tie-break must go to the lower level');
 
   // positivo: tokens canônicos consistentes em todos os artefatos que os declaram
-  for (const file of [WORKFLOW, TEMPLATE]) {
+  for (const file of [ANALYZE, TEMPLATE]) {
     assert.ok(read(file).includes('Critical | High | Medium | Low | Opportunity'),
       `${file} must declare the exact canonical severity scale`);
   }
 
   // negativo: nenhum vocabulário concorrente de severidade em artefato algum da sprint
   const banned = /\b(Major|Minor|Trivial|Blocker-level|P[0-4])\b/;
-  for (const file of [WORKFLOW, COMMAND, TEMPLATE, SCENARIOS]) {
+  for (const file of [ANALYZE, COMMAND, TEMPLATE, SCENARIOS]) {
     assert.ok(!banned.test(read(file)), `${file} uses competing severity vocabulary`);
   }
   // negativo: severidade nunca numérica
@@ -188,10 +193,11 @@ test('unit: severity classification defers to the framework scale, floors, and d
 // ------------------------------------------------------- confidence classification
 
 test('unit: confidence classification is qualitative, defined per level, and repairs itself via validation', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(ANALYZE);
+  const scope = read(SCOPE);
   const t = read(TEMPLATE);
 
-  // positivo: os três níveis definidos operacionalmente no workflow
+  // positivo: os três níveis definidos operacionalmente na fase de análise
   assert.ok(wf.includes('`High` = evidência direta'),
     'High confidence must require direct evidence');
   assert.ok(wf.includes('`Low` = hipótese'),
@@ -203,14 +209,14 @@ test('unit: confidence classification is qualitative, defined per level, and rep
   assert.ok(!/Confidence:\s*\[?\d/.test(wf + t) && !/\d+\s*%\s*(de\s+)?[Cc]onfian/.test(wf + t),
     'confidence must never be numeric or percentage-based');
   // negativo: Source inferida nunca nasce com confiança alta sem base
-  assert.ok(wf.includes('nunca nasce `High` sem base declarada'),
+  assert.ok(scope.includes('nunca nasce `High` sem base declarada'),
     'inferred scope must not start at High confidence without declared basis');
 });
 
 // ----------------------------------------------------------------- deduplication
 
 test('unit: deduplication yields one finding per problem, keeping the strongest evidence', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(ANALYZE);
   const cons = wf.split('### Consolidação')[1]?.split('\n## ')[0];
   assert.ok(cons, 'missing consolidation stage');
 
@@ -235,7 +241,7 @@ test('unit: deduplication yields one finding per problem, keeping the strongest 
 // -------------------------------------------------------- sorting / prioritization
 
 test('unit: prioritization orders by severity then impact → confidence → reach, opportunities apart', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(ANALYZE);
   const t = read(TEMPLATE);
 
   // positivo: a cadeia completa de ordenação nos dois artefatos
@@ -310,35 +316,34 @@ test('unit: report template mirrors the official contract sections exactly, in o
 // ---------------------------------------------------------------- failure handling
 
 test('unit: each failure mode binds to its resolving mechanism, and the blocked output is unique', () => {
-  const wf = read(WORKFLOW);
-  const fh = section(wf, '## Failure Handling');
-  assert.ok(fh, 'missing Failure Handling section');
+  const catalog = read('workflows/review/failures.md');
+  const inspect = read(INSPECT);
+  const chain = read('scripts/chain.mjs');
+  const owned = [catalog, read(SCOPE), inspect, read(GROUND), read(ANALYZE), read('workflows/review/steps/close.md')].join('\n');
 
-  // positivo: cada falha aponta o mecanismo que a resolve — nada é redefinido
-  assert.ok(fh.includes('Safety Model, regra 2') && fh.includes('npm run preflight'),
+  assert.ok(inspect.includes('Safety Model, regra 2') && inspect.includes('npm run preflight'),
     'Falha 1 must bind to the Safety Model rule and the correction action');
-  assert.ok(fh.includes('Caso 4 da Scope Resolution'),
+  assert.ok(read(SCOPE).includes('caso 4 da Scope Resolution') || read(SCOPE).includes('Caso 4 da Scope Resolution'),
     'Falha 2 must bind to the canonical detection case');
-  assert.ok(fh.includes('Failure Condition 4'),
+  assert.ok(read(GROUND).includes('Failure Condition 4'),
     'Falha 3 must bind silent continuation to the invalidating condition');
-  assert.ok(fh.includes('anti-pattern 10'),
+  assert.ok(read(GROUND).includes('anti-pattern 10'),
     'Falha 4 must name undue blocking as the anti-pattern');
-  assert.ok(fh.includes('§9.3') && fh.includes('Preconditions'),
+  assert.ok(catalog.includes('knowledge-routing.md') && catalog.includes('Preconditions'),
     'Falha 5 must bind to the no-simulation rule and the declared loader exception');
-  assert.ok(fh.includes('Paper Inspection') && fh.includes('sobem às Review Limitations'),
+  assert.ok(inspect.includes('## Paper Inspection') && inspect.includes('sobem às Review Limitations'),
     'Falha 6 must bind to the inspection contract and surface limitations in the report');
-
-  // positivo: falha de execução ≠ condição de invalidade — a distinção é explícita
-  assert.ok(fh.includes('não são condições de invalidade'),
+  assert.ok(catalog.includes('não é review inválido'),
     'failure handling must be distinguished from failure conditions');
 
-  // negativo: a mensagem canônica de bloqueio existe uma única vez, sem variantes
-  assert.equal((wf.match(/Review blocked:/g) ?? []).length, 1,
-    'the canonical blocked message must appear exactly once');
-  assert.ok(!/Review blocked[^:]/.test(wf),
+  assert.equal(BLOCKED_MESSAGE, 'Review blocked:\nPaper connection unavailable.');
+  assert.equal((inspect.match(/Review blocked:/g) ?? []).length, 1,
+    'the canonical blocked message must appear exactly once in the inspect step');
+  assert.ok(inspect.includes(BLOCKED_MESSAGE), 'the inspect step and the validator share one blocked message');
+  assert.ok(chain.includes('BLOCKED_MESSAGE'), 'the validator names the blocked message');
+  assert.ok(!/Review blocked[^:]/.test(inspect),
     'no variant of the blocked message may exist');
-  // negativo: nenhum modo de falha autoriza compensação por invenção
   for (const forbidden of ['preencher o snapshot mesmo assim', 'assumir conexão']) {
-    assert.ok(!fh.includes(forbidden), `failure handling must not allow: ${forbidden}`);
+    assert.ok(!owned.includes(forbidden), `failure handling must not allow: ${forbidden}`);
   }
 });

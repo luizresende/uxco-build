@@ -36,7 +36,7 @@ Recommendation: [correção proposta; se houver alternativas relevantes, a recom
 
 ### Design Decision
 
-Para registrar uma decisão relevante (critério de relevância no CLAUDE.md §7). É o formato que a memória de projeto usará para o log de decisões, quando existir:
+Para registrar uma decisão relevante (critério de relevância em `docs/constitution/decision-framework.md`). É o formato que a memória de projeto usará para o log de decisões, quando existir:
 
 ```text
 Decision:     [a escolha feita, em uma frase]
@@ -50,7 +50,7 @@ Consequences: [o que ela implica daqui em diante; o que a invalidaria]
 
 ### Assumption
 
-Para declarar uma premissa adotada sem confirmação (materializa o `ASSUMPTION` da taxonomia, CLAUDE.md §5):
+Para declarar uma premissa adotada sem confirmação (materializa o `ASSUMPTION` da taxonomia, `CLAUDE.md`, Evidence Taxonomy):
 
 ```text
 Assumption:        [a premissa adotada]
@@ -61,11 +61,11 @@ Validation Needed: [o que confirmaria ou derrubaria]
 
 ### Open Question
 
-Para registrar um gap de conhecimento (materializa o `UNKNOWN` da taxonomia e a classificação do Context Protocol, CLAUDE.md §4):
+Para registrar um gap de conhecimento (materializa o `UNKNOWN` da taxonomia e a classificação do Context Protocol, `CLAUDE.md`, Gaps):
 
 ```text
 Question:       [a pergunta em aberto]
-Blocking:       [Yes | No — critério de blocking no CLAUDE.md §4]
+Blocking:       [Yes | No — critério de blocking em CLAUDE.md, Gaps]
 Why it matters: [o que depende da resposta]
 ```
 

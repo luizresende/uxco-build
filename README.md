@@ -33,8 +33,10 @@ Claude Code  →  UXCO Design Engine  →  Paper MCP  →  Paper Canvas
 O que existe hoje no repositório e a responsabilidade de cada parte:
 
 ```text
-CLAUDE.md               Constituição operacional — sempre carregada (§11: harness — runtime,
-                        verificação, protocolo de sessão)
+CLAUDE.md               Constituição sempre carregada (taxonomia, gaps, segurança de ação,
+                        anti-patterns nucleares, contrato de saída)
+docs/constitution/      Detalhe da constituição sob demanda — índice em INDEX.md
+                        (identidade, princípios, Paper, harness, inventário)
 PROGRESS.md             Estado operacional entre sessões — onde estamos, próximo passo
 .nvmrc                  Versão de Node do ambiente de desenvolvimento
 standards/              Critérios compartilhados — consultados por tarefa
@@ -47,7 +49,8 @@ templates/              project/ (memória de projeto, copiada por projeto) ·
                         reports/ (molde do Design Critique Report do /uxco-review)
 examples/               Memória demo (Pulse) e fixtures de teste dos engines e do workflow
                         (inclui adversarial-tests/ — diagnósticos, não designs)
-scripts/                Machine Preflight e Context Loader
+scripts/                Machine Preflight, Context Loader e measure-context
+                        (tamanho do corpus do /uxco-review)
 tests/                  foundation/ · context-engine/ · critique-engine/ ·
                         review-workflow/ (determinísticos, inclui a camada adversarial)
 benchmarks/             Harnesses de avaliação manual (engines e review workflow)
@@ -57,7 +60,7 @@ experiments/paper-mcp/  Evidência do smoke test da Sprint 0 (histórico)
 
 ### CLAUDE.md — constituição operacional
 
-Define o comportamento global do agente em toda sessão: identidade, ciclo de trabalho (`context → investigate → decide → design → critique → validate`), princípios operacionais, protocolo de contexto (gaps blocking/non-blocking), taxonomia de evidência (`FACT`/`EVIDENCE`/`ASSUMPTION`/`HYPOTHESIS`/`DECISION`/`UNKNOWN`), modelo de segurança de ações (`READ`/`SAFE_WRITE`/`DESTRUCTIVE_WRITE`), framework de decisão, quality gate e anti-patterns. É deliberadamente compacta: **roteia** para o conhecimento especializado em vez de contê-lo. As regras específicas do Paper ficam isoladas em uma única subseção (§6.1).
+Define o que vale em toda sessão, e só isso: taxonomia de evidência (`FACT`/`EVIDENCE`/`ASSUMPTION`/`HYPOTHESIS`/`DECISION`/`UNKNOWN`), gaps blocking/non-blocking, segurança de ação (`READ`/`SAFE_WRITE`/`DESTRUCTIVE_WRITE`, com leitura subsequente antes de dar uma escrita por concluída) e o contrato mínimo de saída. Identidade por extenso, princípios, protocolo de carga, regras do Paper, quality gate, inventário e harness vivem em [`docs/constitution/`](docs/constitution/INDEX.md) e entram sob demanda. A constituição **roteia**; não carrega o conhecimento especializado.
 
 ### standards/ — critérios compartilhados
 
@@ -119,25 +122,21 @@ O primeiro workflow do sistema (Sprint 4): a orquestração que conecta os dois 
 ```text
 /uxco-review <alvo>
       ↓
-workflows/uxco-review.md
+workflows/review/manifest.json
       ↓
-STEP 0-1  escopo · preflight condicional (canvas → PAPER_READY)
-STEP 2-3  Product Context Skill → Brief → gate de contexto
-STEP 4-5  Initial Analysis — Design Critique (+ Interaction Design) → consolidação
-STEP 6    Adversarial Critique — Design Critic desafia o diagnóstico
-STEP 7    Revision — vereditos incorporados em um diagnóstico só
-STEP 8    Review QA — Design QA audita a qualidade do review
-STEP 9-10 Quality Gate do design → Design Critique Report
+scope → inspect (só canvas) → ground → analyze → challenge → close
 ```
 
-- **Workflow** — [`workflows/uxco-review.md`](workflows/uxco-review.md): processo em 11 STEPs com gates explícitos; orquestra por referência (nenhum método é redefinido) e é integralmente operação `READ` — review nunca escreve no canvas nem na memória.
-- **Comando** — [`.claude/commands/uxco-review.md`](.claude/commands/uxco-review.md): o slash command real do Claude Code; roteador fino para o workflow. Formas de invocação:
+Cada fase é um subagente com a própria lista de arquivos. O estado que passa adiante é um JSON. `node scripts/chain.mjs validate` recusa artefato fora do contrato: saída 2 é parada válida, saída 1 é contrato quebrado e a fase não se repete. O review continua `READ`.
+
+- **Cadeia** — [`workflows/review/manifest.json`](workflows/review/manifest.json): fases, contexto, artefatos e gates. [`workflows/uxco-review.md`](workflows/uxco-review.md) guarda o mapa dos 17 estágios, não o processo. Outro comando futuro reusa o mesmo validador com outro manifesto.
+- **Comando** — [`.claude/commands/uxco-review.md`](.claude/commands/uxco-review.md): o slash command. Ele não carrega o corpus; dispara a fase e o validador. Formas de invocação:
 
 ```text
 /uxco-review                                   escopo pela seleção do Paper ou pelo contexto da sessão
 /uxco-review checkout                          alvo nomeado — referente resolvido contra canvas, arquivos e conversa
 /uxco-review examples/.../fixture.md           caminho explícito
-"faça o review formal do fluxo de checkout"    pedido contextual equivalente, roteado pela constituição (§9)
+"faça o review formal do fluxo de checkout"    pedido contextual equivalente, roteado por docs/constitution/knowledge-routing.md
 ```
 - **Gate de contexto** — a `Execution Recommendation` do Brief governa a passagem: `REQUEST BLOCKING CONTEXT` exige respostas do usuário ou autorização explícita para o modo degradado (cenário C) — nunca respostas inventadas.
 - **Quality Gate sempre presente** — review formal é avaliação formal (`standards/quality-framework.md`): é o que o distingue da crítica pontual via skill.
@@ -173,7 +172,7 @@ Initial Analysis ──▶ Adversarial Critique ──▶ Revision ──▶ Rev
 Quatro responsabilidades encadeadas — **não quatro personas**: a primeira olha o design, a segunda olha a primeira, a terceira consolida, a quarta audita o resultado das três.
 
 - **Design Critic** — [`agents/design-critic.md`](agents/design-critic.md): a responsabilidade adversarial. Pergunta "onde o nosso diagnóstico pode estar errado, incompleto, superficial ou excessivamente confiante?" por dez eixos (assumptions, evidência, severidade, confidence, causalidade, estados e edge cases omitidos, encaixe no contexto, recomendações, complexidade desnecessária) e dez sondas obrigatórias — incluindo "what would falsify this diagnosis?". Emite veredito por achado: `confirmed · revised · rejected · added`. **Não repete a varredura L0–L8** e **pode concluir que o diagnóstico inicial estava correto**: confirmar tudo é resultado válido, e não existe cota de mudanças.
-- **Revision** — o estágio de consolidação no workflow (STEP 7): rejeitados saem de Issues (suspeita legítima volta como Open Question), revisados mudam campo a campo, omissões entram no contrato pleno de 7 campos, e os mecanismos de consolidação e ordenação são reaplicados ao conjunto novo. **O usuário recebe uma conclusão, nunca duas análises contraditórias.**
+- **Revision** — no mesmo artefato de `challenge`: rejeitados saem de Issues (suspeita legítima volta como Open Question), revisados mudam campo a campo, omissões entram no contrato pleno de 7 campos, e os mecanismos de consolidação e ordenação são reaplicados ao conjunto novo. **O usuário recebe uma conclusão, nunca duas análises contraditórias.** O validador recusa o artefato se um rejeitado continua problema ou se um achado que sobreviveu some.
 - **Design QA** — [`agents/design-qa.md`](agents/design-qa.md): audita a **qualidade do review**, não o design. Sete dimensões (Context Grounding · Evidence Quality · Severity Calibration · Actionability · Completeness · Accessibility Coverage · System Consistency) em `PASS/PARTIAL/FAIL/UNKNOWN`, **sem score composto** — média de tokens de conduta seria falsa precisão. Blockers ficam em lista própria, e o **QA blocker** (o review não é confiável) nunca se confunde com o **design blocker** (o design está reprovado).
 - **Contratos** — [`standards/adversarial-quality.md`](standards/adversarial-quality.md): os dois records, os marcadores de estágio (`INITIAL_ANALYSIS` → `ADVERSARIAL_REVIEW` → `REVISION` → `FINAL_QA`) e o **ciclo único**: 1 crítica, 1 revisão, 1 QA. Nenhuma recursão, nenhum agente debatendo; QA reprovando declara o blocker em vez de reprocessar.
 
@@ -189,9 +188,9 @@ Dez cenários manuais em [`tests/foundation/scenarios.md`](tests/foundation/scen
 
 ### Ainda não implementado
 
-**Os demais comandos `/uxco-*` não existem ainda** — `/uxco-new-feature`, `/uxco-improve-flow`, `/uxco-explore`, `/uxco-design-qa` e `/uxco-status` estão previstos para as próximas sprints (as três skills vieram das Sprints 2–3; o workflow de review e o comando `/uxco-review`, da Sprint 4; os dois agents, da Sprint 5). Nada neste repositório deve ser lido como se eles existissem; a própria constituição (§9.3) proíbe o agente de simular componentes inexistentes.
+**Os demais comandos `/uxco-*` não existem ainda** — `/uxco-new-feature`, `/uxco-improve-flow`, `/uxco-explore`, `/uxco-design-qa` e `/uxco-status` estão previstos para as próximas sprints (as três skills vieram das Sprints 2–3; o workflow de review e o comando `/uxco-review`, da Sprint 4; os dois agents, da Sprint 5). Nada neste repositório deve ser lido como se eles existissem; a constituição proíbe simular componente inexistente (`CLAUDE.md`; inventário em `docs/constitution/knowledge-routing.md`).
 
-Em particular: a camada de QA da Sprint 5 é um **estágio interno** do `/uxco-review` (STEP 8), **não** o comando `/uxco-design-qa`. Um futuro comando poderá rotear para `agents/design-qa.md` sem retrabalho — mas ele ainda não existe.
+Em particular: a camada de QA da Sprint 5 é a fase `close` do `/uxco-review`, **não** o comando `/uxco-design-qa`. Um futuro comando poderá rotear para `agents/design-qa.md` sem retrabalho — mas ele ainda não existe.
 
 ## Como executar o preflight
 
@@ -218,7 +217,7 @@ Instruções completas no cabeçalho de [`tests/foundation/scenarios.md`](tests/
 
 A confiabilidade do desenvolvimento entre sessões do Claude Code é estruturada em cinco subsistemas — o repositório é o system of record; nenhum deles depende de histórico de conversa:
 
-- **Instructions** — `CLAUDE.md` é o entry point sempre carregado (constituição + §11 harness); roteia para `standards/`, `skills/`, `agents/`, `workflows/` em vez de duplicá-los.
+- **Instructions** — `CLAUDE.md` é o entry point sempre carregado; o detalhe da constituição fica em `docs/constitution/` e o harness de sessão em `docs/constitution/harness.md`. Roteia para `standards/`, `skills/`, `agents/`, `workflows/` em vez de duplicá-los.
 - **Tools** — Node.js, Git, Claude Code e (opcionalmente) Paper MCP; verificados por `npm run preflight`.
 - **Environment** — `.nvmrc` + `engines` em `package.json` declaram o runtime; zero dependências externas por decisão de arquitetura.
 - **State** — [`PROGRESS.md`](PROGRESS.md) registra onde o desenvolvimento está, o que está bloqueado e o próximo passo — sem substituir Git ou o `CHANGELOG.md`.

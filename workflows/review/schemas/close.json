@@ -1,0 +1,91 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["step", "marker", "cyclePass", "rerun", "qa", "qualityGate", "reviewLimitations", "stageTrace", "counts", "reportFile"],
+  "properties": {
+    "step": { "const": "close" },
+    "marker": { "const": "FINAL_QA" },
+    "cyclePass": { "const": 1 },
+    "rerun": { "const": false },
+    "qa": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dimensions", "verdict", "blockers", "compositeScore"],
+      "properties": {
+        "dimensions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["contextGrounding", "evidenceQuality", "severityCalibration", "actionability", "completeness", "accessibilityCoverage", "systemConsistency"],
+          "properties": {
+            "contextGrounding": { "enum": ["PASS", "PARTIAL", "FAIL", "UNKNOWN"] },
+            "evidenceQuality": { "enum": ["PASS", "PARTIAL", "FAIL", "UNKNOWN"] },
+            "severityCalibration": { "enum": ["PASS", "PARTIAL", "FAIL", "UNKNOWN"] },
+            "actionability": { "enum": ["PASS", "PARTIAL", "FAIL", "UNKNOWN"] },
+            "completeness": { "enum": ["PASS", "PARTIAL", "FAIL", "UNKNOWN"] },
+            "accessibilityCoverage": { "enum": ["PASS", "PARTIAL", "FAIL", "UNKNOWN"] },
+            "systemConsistency": { "enum": ["PASS", "PARTIAL", "FAIL", "UNKNOWN"] }
+          }
+        },
+        "verdict": { "enum": ["REVIEW READY", "REVIEW READY WITH RESERVATIONS", "REVIEW NOT READY"] },
+        "blockers": { "type": "array", "items": { "type": "string" } },
+        "compositeScore": { "const": null }
+      }
+    },
+    "qualityGate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dimensions", "verdict", "designBlockers", "riskAccepted", "decision", "qualifiedByQa"],
+      "properties": {
+        "dimensions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["contextFit", "clarity", "usability", "interaction", "completeness", "consistency", "accessibility", "visualHierarchy", "content", "rationale"],
+          "properties": {
+            "contextFit": { "$ref": "gate-dimension.json" },
+            "clarity": { "$ref": "gate-dimension.json" },
+            "usability": { "$ref": "gate-dimension.json" },
+            "interaction": { "$ref": "gate-dimension.json" },
+            "completeness": { "$ref": "gate-dimension.json" },
+            "consistency": { "$ref": "gate-dimension.json" },
+            "accessibility": { "$ref": "gate-dimension.json" },
+            "visualHierarchy": { "$ref": "gate-dimension.json" },
+            "content": { "$ref": "gate-dimension.json" },
+            "rationale": { "$ref": "gate-dimension.json" }
+          }
+        },
+        "verdict": { "enum": ["pass", "fail"] },
+        "designBlockers": { "type": "array", "items": { "type": "string" } },
+        "riskAccepted": { "type": "boolean" },
+        "decision": { "type": "string" },
+        "qualifiedByQa": { "type": "boolean" }
+      }
+    },
+    "reviewLimitations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["missingContext", "integrationLimits", "assumptions", "humanValidation"],
+      "properties": {
+        "missingContext": { "type": "array", "items": { "type": "string" } },
+        "integrationLimits": { "type": "array", "items": { "type": "string" } },
+        "assumptions": { "type": "array", "items": { "type": "string" } },
+        "humanValidation": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "stageTrace": {
+      "type": "array",
+      "items": { "enum": ["INITIAL_ANALYSIS", "ADVERSARIAL_REVIEW", "REVISION", "FINAL_QA"] }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confirmed", "revised", "rejected", "added"],
+      "properties": {
+        "confirmed": { "type": "number" },
+        "revised": { "type": "number" },
+        "rejected": { "type": "number" },
+        "added": { "type": "number" }
+      }
+    },
+    "reportFile": { "const": "report.md" }
+  }
+}

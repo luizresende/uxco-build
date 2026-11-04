@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["score", "critical"],
+  "properties": {
+    "score": { "enum": [1, 2, 3, 4, 5, "UNKNOWN"] },
+    "critical": { "type": "boolean" }
+  }
+}

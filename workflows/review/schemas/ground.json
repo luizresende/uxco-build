@@ -1,0 +1,50 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["step", "status", "haltReason", "contextStatus", "continueDespiteBlocking", "answersInvented", "blockingQuestions", "brief"],
+  "properties": {
+    "step": { "const": "ground" },
+    "status": { "enum": ["proceed", "proceed-with-assumptions", "halt"] },
+    "haltReason": { "nullable": true, "enum": ["misleading-without-context"] },
+    "contextStatus": { "enum": ["PROCEED", "PROCEED WITH ASSUMPTIONS", "REQUEST BLOCKING CONTEXT"] },
+    "continueDespiteBlocking": { "type": "boolean" },
+    "answersInvented": { "const": false },
+    "blockingQuestions": { "type": "array", "items": { "type": "string" } },
+    "brief": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confirmed", "evidence", "assumptions", "unknowns", "contradictions", "memory", "loader"],
+      "properties": {
+        "confirmed": { "type": "array", "items": { "type": "string" } },
+        "evidence": { "type": "array", "items": { "type": "string" } },
+        "assumptions": { "type": "array", "items": { "type": "string" } },
+        "unknowns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["text", "blocking"],
+            "properties": {
+              "text": { "type": "string" },
+              "blocking": { "type": "boolean" }
+            }
+          }
+        },
+        "contradictions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["text", "resolved"],
+            "properties": {
+              "text": { "type": "string" },
+              "resolved": { "const": false }
+            }
+          }
+        },
+        "memory": { "enum": ["present", "MISSING", "reused"] },
+        "loader": { "enum": ["npm run context:load", "direct-read", "none"] }
+      }
+    }
+  }
+}

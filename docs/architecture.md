@@ -30,7 +30,7 @@ Executa o loop do agente: carrega contexto, chama tools, conecta servidores MCP,
 
 ### UXCO Design Engine
 
-O moat do produto. Composto por instruções globais (`CLAUDE.md`), skills, workflows, agentes, standards de qualidade e memória estruturada de projeto. **Na Sprint 0 ele ainda não existia** — apenas o `CLAUDE.md` mínimo de segurança operacional; o estado construído desde então está em [Camadas de inteligência do Engine](#camadas-de-inteligência-do-engine), e o inventário canônico do que existe, na §9.3 da constituição.
+O moat do produto. Composto por instruções globais (`CLAUDE.md`, sempre carregado), o detalhe da constituição sob demanda (`docs/constitution/`), skills, workflows, agentes, standards de qualidade e memória estruturada de projeto. **Na Sprint 0 ele ainda não existia** — apenas o `CLAUDE.md` mínimo de segurança operacional; o estado construído desde então está em [Camadas de inteligência do Engine](#camadas-de-inteligência-do-engine), e o inventário canônico do que existe, em `docs/constitution/knowledge-routing.md`.
 
 ### Paper MCP
 
@@ -65,7 +65,7 @@ Quality Gate                        standards/quality-framework → veredito do 
 Design Critique Report
 ```
 
-O **Review Workflow** (Sprint 4, `workflows/uxco-review.md`) é o orquestrador dessa pilha; o comando `/uxco-review` é um roteador fino para ele. Nenhuma camada chama outra diretamente: o workflow aciona cada uma e passa adiante o artefato que ela produziu.
+O **Review** (Sprint 4, hoje a cadeia em `workflows/review/manifest.json`; `workflows/uxco-review.md` guarda o mapa) é o orquestrador dessa pilha; o comando `/uxco-review` é um roteador fino para ela. Nenhuma camada chama outra diretamente: cada fase recebe o artefato da anterior e produz o seu.
 
 ### Por que a camada adversarial existe
 
@@ -75,7 +75,7 @@ Até a Sprint 4, o pipeline era:
 Context → Paper inspection → Design Critique → Report
 ```
 
-O primeiro diagnóstico produzido era o diagnóstico entregue. Isso carrega os vieses de quem o produziu — suposição que passou por fato, severidade inflada, recomendação que trata o sintoma, camada que ninguém notou que faltou. A constituição já exigia autocrítica antes de concluir (§3.11), mas regra sem momento próprio degenera em releitura do próprio texto.
+O primeiro diagnóstico produzido era o diagnóstico entregue. Isso carrega os vieses de quem o produziu — suposição que passou por fato, severidade inflada, recomendação que trata o sintoma, camada que ninguém notou que faltou. A constituição já exigia autocrítica antes de concluir (princípio 11, `docs/constitution/operating-principles.md`), mas regra sem momento próprio degenera em releitura do próprio texto.
 
 A partir da Sprint 5:
 
@@ -98,10 +98,10 @@ Decisões de arquitetura que delimitam a camada:
 1. **Ciclo único, como invariante.** Uma passada de cada estágio. Reflexão recursiva e agentes debatendo estão fora por decisão explícita: o ganho marginal da segunda passada não paga latência, verbosidade do report nem risco de diagnósticos divergentes. QA reprovando **declara** o blocker; não reprocessa.
 2. **Dois blockers que nunca se confundem.** O Quality Gate reprova o **design**; o QA reprova o **review**. Um review impecável sobre um design ruim é `REVIEW READY` com gate reprovado — e o inverso também é representável.
 3. **Nenhuma escala nova.** Severidade, Confidence e camadas continuam nos seus standards; o Critic desafia a *aplicação* delas. O QA usa `PASS/PARTIAL/FAIL/UNKNOWN` (a convenção dos harnesses de avaliação), **sem score composto** — somar tokens de conduta produziria a falsa precisão que a camada existe para combater.
-4. **`agents/` em vez de `skills/`.** Critic e QA não são capacidades de uso livre: só existem acoplados a um estágio do review, com um artefato de entrada obrigatório. A camada `agents/` já estava declarada na hierarquia da constituição (§9) e esta é a sua primeira instância.
+4. **`agents/` em vez de `skills/`.** Critic e QA não são capacidades de uso livre: só existem acoplados a um estágio do review, com um artefato de entrada obrigatório. A camada `agents/` já estava declarada na hierarquia da constituição (`docs/constitution/knowledge-routing.md`) e esta é a sua primeira instância.
 5. **Observabilidade sem chain-of-thought.** Cada estágio registra um marcador canônico (`INITIAL_ANALYSIS` · `ADVERSARIAL_REVIEW` · `REVISION` · `FINAL_QA`), e o report carrega um bloco compacto (`## Review Assurance`) com o trace, as contagens do desafio e o veredito do QA. O trace declara **que** o estágio aconteceu e o que mudou em números — nunca como se chegou lá.
 
-Contratos completos em `standards/adversarial-quality.md`; o processo executável, nos STEPs 6–8 de `workflows/uxco-review.md`.
+Contratos completos em `standards/adversarial-quality.md`. O processo executável é `challenge` (crítica e diagnóstico único no mesmo artefato) e `close` em `workflows/review/manifest.json`. O standard não entra na janela da fase.
 
 ### O que ainda não está medido
 

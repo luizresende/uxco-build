@@ -1,6 +1,6 @@
 # Product
 
-> **Template de memória de projeto (UXCO Build).** Copie e preencha o que souber — seção sem informação mantém `_Not filled_`; isso é dado válido ("ainda não sabemos"), nunca preencha para completar. Fatos ficam nas seções de conteúdo; suposições em **Assumptions**; perguntas abertas em **Open Questions** (taxonomia: CLAUDE.md §5).
+> **Template de memória de projeto (UXCO Build).** Copie e preencha o que souber — seção sem informação mantém `_Not filled_`; isso é dado válido ("ainda não sabemos"), nunca preencha para completar. Fatos ficam nas seções de conteúdo; suposições em **Assumptions**; perguntas abertas em **Open Questions** (taxonomia: `CLAUDE.md`, Evidence Taxonomy).
 
 **Project:** _Not filled_
 **Last updated:** _Not filled_

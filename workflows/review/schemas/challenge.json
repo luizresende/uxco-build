@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "step", "marker", "revisionMarker", "cyclePass", "rerun",
+    "confirmed", "revised", "rejected", "missing", "assumptionsChallenged", "confidenceChanges",
+    "issues", "opportunities", "accounted", "mechanismsReapplied"
+  ],
+  "properties": {
+    "step": { "const": "challenge" },
+    "marker": { "const": "ADVERSARIAL_REVIEW" },
+    "revisionMarker": { "const": "REVISION" },
+    "cyclePass": { "const": 1 },
+    "rerun": { "const": false },
+    "confirmed": { "type": "array", "items": { "$ref": "entry.json" } },
+    "revised": { "type": "array", "items": { "$ref": "entry.json" } },
+    "rejected": { "type": "array", "items": { "$ref": "entry.json" } },
+    "missing": { "type": "array", "items": { "$ref": "entry.json" } },
+    "assumptionsChallenged": { "type": "array", "items": { "$ref": "entry.json" } },
+    "confidenceChanges": { "type": "array", "items": { "$ref": "entry.json" } },
+    "issues": { "type": "array", "items": { "$ref": "issue.json" } },
+    "opportunities": { "type": "array", "items": { "$ref": "issue.json" } },
+    "accounted": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "as", "text"],
+        "properties": {
+          "id": { "type": "string" },
+          "as": { "enum": ["open-question", "dropped"] },
+          "text": { "type": "string" }
+        }
+      }
+    },
+    "mechanismsReapplied": { "type": "array", "items": { "enum": ["dedupe", "priority"] } }
+  }
+}

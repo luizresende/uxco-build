@@ -1,7 +1,7 @@
 # Quality Framework
 
 > **Propósito:** o instrumento compartilhado para avaliar qualidade de design — dimensões, escala e gates de aprovação. Define **o que olhar** e **como pontuar**.
-> **Quando consultar:** ao avaliar qualquer design (review, crítica, autocrítica do Quality Gate do CLAUDE.md §8) e ao decidir se um trabalho está pronto.
+> **Quando consultar:** ao avaliar qualquer design (review, crítica, autocrítica do Quality Gate em `docs/constitution/quality-gate.md`) e ao decidir se um trabalho está pronto.
 
 Este framework operacionaliza os `uxco-design-principles.md`. Achados encontrados aqui são classificados pelo `severity-framework.md` e reportados nos formatos de `design-output-format.md`.
 
@@ -15,7 +15,7 @@ Este framework operacionaliza os `uxco-design-principles.md`. Achados encontrado
 | 4 | Good | Sólido: apenas achados `Low`; nada compromete a experiência |
 | 5 | Excellent | Exemplar: nenhum problema; no máximo `Opportunity`; serve de referência para o produto |
 
-A âncora é a **severidade do pior achado na dimensão** — isso torna a nota derivável de evidência, não de impressão. Uma dimensão sem informação suficiente para avaliar **não recebe nota**: é registrada como `UNKNOWN` com o que faltou (CLAUDE.md §5); nota inventada é pior que ausência declarada.
+A âncora é a **severidade do pior achado na dimensão** — isso torna a nota derivável de evidência, não de impressão. Uma dimensão sem informação suficiente para avaliar **não recebe nota**: é registrada como `UNKNOWN` com o que faltou (`CLAUDE.md`, Evidence Taxonomy); nota inventada é pior que ausência declarada.
 
 ## Dimensões
 
@@ -44,13 +44,13 @@ Um trabalho só é considerado aprovado quando, simultaneamente:
 
 **Blockers prevalecem sobre score médio:** um trabalho com média 4.6 e um achado `Critical` está reprovado. A média nunca compra a passagem de um blocker. Um blocker só deixa de estar aberto por **correção verificada** ou por **aceite explícito de risco pelo usuário**, registrado como `DECISION` — é a "decisão explícita" prevista na resposta a `Critical` do `severity-framework.md`.
 
-Reprovação devolve o trabalho ao ciclo (etapa `design` ou anterior — CLAUDE.md §2), com os achados que motivaram a reprovação explícitos.
+Reprovação devolve o trabalho ao ciclo (etapa `design` ou anterior — `docs/constitution/identity-and-mission.md`), com os achados que motivaram a reprovação explícitos.
 
 ## Processo de avaliação
 
-1. **Contexto primeiro:** reunir problema, usuário e restrições (Context Protocol, CLAUDE.md §4). Sem contexto, *Context Fit* não é avaliável — e isso limita o que o restante da avaliação pode afirmar.
+1. **Contexto primeiro:** reunir problema, usuário e restrições (Context Protocol, `docs/constitution/context-protocol.md`; classificação em `CLAUDE.md`, Gaps). Sem contexto, *Context Fit* não é avaliável — e isso limita o que o restante da avaliação pode afirmar.
 2. **Varredura por dimensão:** percorrer as 10 dimensões colhendo achados; cada achado precisa de **evidência observável** (o que, onde, por quê) — impressões sem evidência não entram.
 3. **Classificar:** atribuir severidade a cada achado (`severity-framework.md`); derivar a nota de cada dimensão pelo pior achado.
 4. **Sintetizar:** aplicar os gates; reportar no formato adequado de `design-output-format.md`, achados ordenados por severidade.
 
-A profundidade da varredura é proporcional ao escopo (CLAUDE.md §2). Dimensões **não críticas** podem ser declaradas fora de escopo — declaradas, nunca omitidas em silêncio. Dimensões **críticas** não são puladas: são avaliadas no nível do escopo da tarefa — o *Context Fit* de um componente isolado é seu encaixe no fluxo em que vive, não no produto inteiro.
+A profundidade da varredura é proporcional ao escopo (`docs/constitution/identity-and-mission.md`). Dimensões **não críticas** podem ser declaradas fora de escopo — declaradas, nunca omitidas em silêncio. Dimensões **críticas** não são puladas: são avaliadas no nível do escopo da tarefa — o *Context Fit* de um componente isolado é seu encaixe no fluxo em que vive, não no produto inteiro.

@@ -23,7 +23,7 @@
 
 ## False positives
 
-- **Propor triage contínuo / criticar o modelo em lote:** é `DECISION` ativa (`decisions.md`, 2026-07-08) — reabri-la silenciosamente viola CLAUDE.md §5. No máximo, citar a decisão e o que a invalidaria.
+- **Propor triage contínuo / criticar o modelo em lote:** é `DECISION` ativa (`decisions.md`, 2026-07-08) — reabri-la silenciosamente viola `CLAUDE.md` (Evidence Taxonomy). No máximo, citar a decisão e o que a invalidaria.
 - Criticar a ausência de app mobile ou de atalhos de teclado avançados sem evidência — restrição registrada (web responsivo; sem pesquisa sobre atalhos).
 - Afirmar que a perda de progresso **é a causa** da queda no funil de triage — é hipótese conectável ao Research Gap, não conclusão (`Confidence: Low`/Unknowns, nunca fato).
 

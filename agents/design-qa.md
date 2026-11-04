@@ -1,9 +1,9 @@
 # Design QA
 
 > **Propósito:** auditar a **qualidade do review** antes de ele ser entregue — não produzir outra crítica do design. Responde se o diagnóstico revisado é confiável o suficiente para chegar ao usuário.
-> **Quando consultar:** no STEP 8 do `/uxco-review` (`workflows/uxco-review.md`), depois da Revision e antes do Quality Gate.
+> **Quando consultar:** referência do QA. A fase `close` não carrega este arquivo; o prompt leva as sete dimensões e a separação dos blockers, e o validador aplica o contrato.
 
-Esta é uma **responsabilidade**, não uma capacidade de uso livre (CLAUDE.md §9): só existe acoplada a um review pronto para entrega. Opera sob a constituição e **referencia — nunca redefine** — as dimensões e os gates de qualidade de **design** (`standards/quality-framework.md`), a severidade (`standards/severity-framework.md`), a Confidence (`standards/design-output-format.md`), o contrato do achado e do report (`standards/critique-framework.md`) e o piso de acessibilidade (`standards/accessibility-baseline.md`). O formato da sua saída é o **Review QA Record** de `standards/adversarial-quality.md`, incluindo as sete dimensões, a escala `PASS/PARTIAL/FAIL/UNKNOWN` e os vereditos.
+Esta é uma **responsabilidade**, não uma capacidade de uso livre (`docs/constitution/knowledge-routing.md`): só existe acoplada a um review pronto para entrega. Opera sob a constituição e **referencia — nunca redefine** — as dimensões e os gates de qualidade de **design** (`standards/quality-framework.md`), a severidade (`standards/severity-framework.md`), a Confidence (`standards/design-output-format.md`), o contrato do achado e do report (`standards/critique-framework.md`) e o piso de acessibilidade (`standards/accessibility-baseline.md`). O formato da sua saída é o **Review QA Record** de `standards/adversarial-quality.md`, incluindo as sete dimensões, a escala `PASS/PARTIAL/FAIL/UNKNOWN` e os vereditos.
 
 ## Purpose
 
@@ -66,7 +66,7 @@ As sete dimensões, seus critérios de `FAIL` e o que normalmente produz `PARTIA
 
 1. **Sem score composto.** Nenhuma média, soma ou nota global do review. Tokens de conduta não se somam; somá-los seria a falsa precisão que esta camada combate. O sinal é a distribuição.
 2. **Blockers fora do status.** `QA Blockers` é lista própria, nunca derivada por aritmética (`standards/adversarial-quality.md`).
-3. **Reprovar não reprocessa.** `REVIEW NOT READY` é declarado no report, não corrigido por um novo ciclo. Esconder a reprovação é a mesma violação que entregar Quality Gate reprovado como aprovado (CLAUDE.md §8).
+3. **Reprovar não reprocessa.** `REVIEW NOT READY` é declarado no report, não corrigido por um novo ciclo. Esconder a reprovação é a mesma violação que entregar Quality Gate reprovado como aprovado (`docs/constitution/quality-gate.md`).
 4. **Aprovar é resultado legítimo.** Sete `PASS` e `REVIEW READY` é um record válido. Não existe cota de `PARTIAL` — inventar ressalva para parecer rigoroso é fabricação.
 5. **Nada de segunda crítica.** O QA não varre L0–L8, não abre issue, não propõe design.
 6. **`READ` integral**, uma passada só.

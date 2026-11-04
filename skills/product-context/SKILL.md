@@ -1,9 +1,9 @@
 # Product Context Skill
 
 > **Propósito:** transformar as fontes de contexto de um projeto em um Product Context Brief — entendimento estruturado, classificado e honesto sobre o que se sabe, o que se supõe e o que falta saber.
-> **Quando consultar:** sempre que uma tarefa exigir entendimento do produto antes de analisar ou desenhar; é a materialização das etapas `context` e `investigate` do ciclo (CLAUDE.md §2).
+> **Quando consultar:** sempre que uma tarefa exigir entendimento do produto antes de analisar ou desenhar; é a materialização das etapas `context` e `investigate` do ciclo (`docs/constitution/identity-and-mission.md`).
 
-Esta skill opera sob a constituição (CLAUDE.md) e **referencia** — nunca redefine — a taxonomia de evidência (§5), o Context Protocol (§4) e os blocos de `standards/design-output-format.md`.
+Esta skill opera sob a constituição (`CLAUDE.md`) e **referencia** — nunca redefine — a taxonomia de evidência (`CLAUDE.md`, Evidence Taxonomy), o Context Protocol (`docs/constitution/context-protocol.md`; a regra blocking/non-blocking está em `CLAUDE.md`, Gaps) e os blocos de `standards/design-output-format.md`.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ A skill responde a uma pergunta: **"o que sabemos sobre este produto, com que gr
 - Quando o usuário pedir explicitamente o levantamento de contexto do projeto.
 - Antes da execução de qualquer workflow `/uxco-*` que declare o Brief como entrada (workflows ainda não implementados — não simular).
 
-**Quando não usar:** tarefa pontual cujo contexto já está suficiente na conversa; nesse caso, aplicar diretamente o Context Protocol (CLAUDE.md §4) sem o rito completo do Brief. Proporcionalidade é regra (CLAUDE.md §2).
+**Quando não usar:** tarefa pontual cujo contexto já está suficiente na conversa; nesse caso, aplicar diretamente o Context Protocol (`docs/constitution/context-protocol.md`; classificação em `CLAUDE.md`, Gaps) sem o rito completo do Brief. Proporcionalidade é regra (`docs/constitution/identity-and-mission.md`).
 
 ## Inputs
 
@@ -26,7 +26,7 @@ A skill responde a uma pergunta: **"o que sabemos sobre este produto, com que gr
 | Project Memory | Instância dos arquivos de `templates/project/`: `product.md`, `users.md`, `requirements.md`, `research.md`, `metrics.md`, `decisions.md`, `glossary.md` | Não — ausência é dado, não erro |
 | Instrução do usuário | Contexto fornecido explicitamente pelo usuário na sessão atual | Não |
 | Arquivos do repositório | Documentação, requisitos, contexto técnico e decisões registradas fora da memória estruturada | Não |
-| Canvas (Paper) | Leitura do estado atual do design (somente `READ`; exige `PAPER_READY` — CLAUDE.md §6.1) | Não |
+| Canvas (Paper) | Leitura do estado atual do design (somente `READ`; exige `PAPER_READY` — `docs/constitution/canvas-safety.md`) | Não |
 | Documentos avulsos | Arquivos indicados pelo usuário (briefs, PRDs, notas) — entram no nível 3 da Source Priority, com a confiança que origem e data permitirem | Não |
 
 **Localização da Project Memory:** usar o caminho informado pelo usuário; sem indicação, procurar um diretório `memory/` na raiz do projeto de produto. Não encontrando, declarar `Project Memory: MISSING` — nunca tratar os templates de `templates/project/` como se fossem memória preenchida (são moldes, não dados).
@@ -42,7 +42,7 @@ A obtenção de contexto segue esta ordem explícita:
 
 O que cada fonte é — e o que ela não é:
 
-1. **Project Memory** — contexto previamente documentado; o ponto de partida da consulta. **Não é verdade eterna:** decisões antigas podem estar desatualizadas — `Last updated` distante e sinais de mudança no produto rebaixam a confiança do conteúdo, e entradas `Active` de `decisions.md` continuam `DECISION` (respeitadas, não reabertas — CLAUDE.md §5) até o usuário revisitá-las.
+1. **Project Memory** — contexto previamente documentado; o ponto de partida da consulta. **Não é verdade eterna:** decisões antigas podem estar desatualizadas — `Last updated` distante e sinais de mudança no produto rebaixam a confiança do conteúdo, e entradas `Active` de `decisions.md` continuam `DECISION` (respeitadas, não reabertas — `CLAUDE.md`, Evidence Taxonomy) até o usuário revisitá-las.
 2. **Explicit user instruction** — instrução explícita do usuário na sessão atual. Em **conflito claro** com contexto antigo, a instrução atual prevalece — e a substituição é declarada no Brief (qual registro ficou superado), nunca aplicada em silêncio. Conflito ambíguo não é substituição: é contradição (ver Contradiction Handling).
 3. **Relevant repository files** — podem fornecer requisitos, documentação, contexto técnico e decisões anteriores registradas fora da memória estruturada. Entram com a confiança que sua origem e data permitirem.
 4. **Paper canvas evidence** — evidência sobre estrutura existente, fluxos, padrões, conteúdo e componentes. **O canvas mostra o quê, não o porquê:** ele não explica o motivo das decisões — inferir intenção a partir do canvas já é inferência (nível 5), não leitura.
@@ -77,7 +77,7 @@ STEP 10  Generate Product Context Brief.
   `MISSING` e `EMPTY` são sinais distintos e ambos entram no Brief — nunca são silenciados.
 - **STEP 2 — Read Project Memory.** Ler integralmente os arquivos existentes; seções `_Not filled_` são registradas como tal, não puladas.
 - **STEP 3 — Repository files.** *When necessary:* inspecionar arquivos relevantes do repositório (requisitos, documentação, decisões fora da memória) quando a memória não cobrir o necessário ou a tarefa os indicar.
-- **STEP 4 — Paper canvas.** *When relevant and available:* inspecionar o canvas (somente `READ`, exigindo `PAPER_READY` — CLAUDE.md §6.1). Canvas indisponível não é erro: registra-se a limitação no inventário e segue-se adiante.
+- **STEP 4 — Paper canvas.** *When relevant and available:* inspecionar o canvas (somente `READ`, exigindo `PAPER_READY` — `docs/constitution/canvas-safety.md`). Canvas indisponível não é erro: registra-se a limitação no inventário e segue-se adiante.
 - **STEP 5 — Extract.** Extrair fatos brutos e evidências das fontes carregadas, com fonte citada por item (`CONFIRMED`/`EVIDENCE`).
 - **STEP 6 — Assumptions.** Identificar as premissas em jogo — as declaradas nas fontes e as que a análise precisou adotar (`ASSUMPTION`, sempre marcadas).
 - **STEP 7 — Contradictions.** Cruzar as fontes ativamente (ver Contradiction Handling); registrar cada choque como `CONTRADICTION`.
@@ -104,7 +104,7 @@ Regras da análise:
 
 ## Evidence Classification
 
-Toda informação relevante do Brief carrega **uma de cinco categorias**. Este sistema é a projeção operacional da taxonomia do CLAUDE.md §5 para contexto de produto — detalha a constituição, não a substitui (mapeamento ao final da seção).
+Toda informação relevante do Brief carrega **uma de cinco categorias**. Este sistema é a projeção operacional da taxonomia de `CLAUDE.md` (Evidence Taxonomy) para contexto de produto — detalha a constituição, não a substitui (mapeamento ao final da seção).
 
 ### CONFIRMED
 
@@ -145,7 +145,7 @@ Não permitido sem evidência:
 Users abandon the flow because it is too long.
 ```
 
-A linguagem denuncia a categoria: afirmação categórica exige `CONFIRMED` ou `EVIDENCE`. Hipóteses testáveis (o `HYPOTHESIS` do §5) entram aqui indicando como poderiam ser validadas.
+A linguagem denuncia a categoria: afirmação categórica exige `CONFIRMED` ou `EVIDENCE`. Hipóteses testáveis (o `HYPOTHESIS` da Evidence Taxonomy em `CLAUDE.md`) entram aqui indicando como poderiam ser validadas.
 
 ### UNKNOWN
 
@@ -167,16 +167,16 @@ A skill **não escolhe silenciosamente uma das versões** — o tratamento compl
 
 | Sinal na fonte | Categoria |
 | --- | --- |
-| Item `[Confirmed]`, fato com fonte em Known Facts (`FACT` §5) | `CONFIRMED` |
-| Entrada `Active` em `decisions.md` (`DECISION` §5) | `CONFIRMED` — como decisão registrada: respeitada, não reaberta |
-| Entrada de `research.md` com Source/Finding (`EVIDENCE` §5) | `EVIDENCE` (peso conforme Confidence da entrada) |
+| Item `[Confirmed]`, fato com fonte em Known Facts (`FACT`, Evidence Taxonomy) | `CONFIRMED` |
+| Entrada `Active` em `decisions.md` (`DECISION`, Evidence Taxonomy) | `CONFIRMED` — como decisão registrada: respeitada, não reaberta |
+| Entrada de `research.md` com Source/Finding (`EVIDENCE`, Evidence Taxonomy) | `EVIDENCE` (peso conforme Confidence da entrada) |
 | Item `[Assumed]`, seção Assumptions, item **sem marcação** | `ASSUMPTION` |
 | Inferência da skill (nível 5 da Source Priority) | `ASSUMPTION` — sempre, sem exceção |
-| Insight/hipótese testável (`HYPOTHESIS` §5) | `ASSUMPTION` — com a validação possível indicada |
+| Insight/hipótese testável (`HYPOTHESIS`, Evidence Taxonomy) | `ASSUMPTION` — com a validação possível indicada |
 | Item `[Unknown]`, Open Questions, seção `_Not filled_`, arquivo `MISSING`/`EMPTY` | `UNKNOWN` |
 | Informações incompatíveis entre fontes ou dentro de uma fonte | `CONTRADICTION` |
 
-Força decrescente: `CONFIRMED > EVIDENCE > ASSUMPTION > UNKNOWN`; `CONTRADICTION` é transversal — marca o choque entre entradas, qualquer que seja a categoria de cada lado. Na dúvida entre categorias, **a mais fraca** (CLAUDE.md §5). Nenhuma promoção silenciosa: elevar `ASSUMPTION` a `CONFIRMED` exige fonte nova e a mudança declarada no Brief.
+Força decrescente: `CONFIRMED > EVIDENCE > ASSUMPTION > UNKNOWN`; `CONTRADICTION` é transversal — marca o choque entre entradas, qualquer que seja a categoria de cada lado. Na dúvida entre categorias, **a mais fraca** (`CLAUDE.md`, Evidence Taxonomy). Nenhuma promoção silenciosa: elevar `ASSUMPTION` a `CONFIRMED` exige fonte nova e a mudança declarada no Brief.
 
 ## Contradiction Handling
 
@@ -184,7 +184,7 @@ Contradição existe quando duas informações não podem ser ambas verdadeiras 
 
 1. **Detectar ativamente:** o cruzamento entre fontes é etapa obrigatória da análise, não achado acidental.
 2. **Nomear especificamente:** o que colide, onde está cada lado (arquivo/seção), e o que a colisão impede.
-3. **Classificar o efeito:** contradição sobre premissa central (quem é o usuário, qual o problema) tende a ser **blocking**; sobre detalhe periférico, **non-blocking** — critério do CLAUDE.md §4.
+3. **Classificar o efeito:** contradição sobre premissa central (quem é o usuário, qual o problema) tende a ser **blocking**; sobre detalhe periférico, **non-blocking** — critério de `CLAUDE.md` (Gaps).
 4. **Nunca resolver em silêncio.** Escolher um lado é decisão do usuário. Leitura conciliadora plausível pode ser oferecida — rotulada como hipótese a confirmar (`ASSUMPTION` com validação indicada), nunca adotada como resolução.
 5. Toda contradição aparece na seção própria do Brief, mesmo as non-blocking.
 
@@ -210,7 +210,7 @@ If reasonable progress is possible with an explicit assumption:
     NON-BLOCKING
 ```
 
-Uma pergunta é **blocking** quando a ausência da resposta pode levar o agente a **resolver o problema errado** — errar a premissa invalida o trabalho ou causa dano difícil de reverter (CLAUDE.md §4). São tipicamente blocking:
+Uma pergunta é **blocking** quando a ausência da resposta pode levar o agente a **resolver o problema errado** — errar a premissa invalida o trabalho ou causa dano difícil de reverter (`CLAUDE.md`, Gaps). São tipicamente blocking:
 
 - *Who is the target user?*
 - *What is the primary task?*
@@ -220,7 +220,7 @@ Uma pergunta é **blocking** quando a ausência da resposta pode levar o agente 
 Regras de conduta:
 
 1. **Procurar antes de perguntar.** Nenhuma pergunta é feita sem antes buscar a resposta nas fontes disponíveis (ordem da Source Priority) — perguntar o que a memória já responde é falha.
-2. **Poucas e objetivas**, cada uma com o *porquê* do bloqueio. Havendo muitas candidatas, priorizar por impacto — o agente **não é uma máquina de fazer perguntas** (anti-pattern 10).
+2. **Poucas e objetivas**, cada uma com o *porquê* do bloqueio. Havendo muitas candidatas, priorizar por impacto — o agente **não é uma máquina de fazer perguntas** (anti-pattern 10, `docs/constitution/anti-patterns.md`).
 3. No Brief, cada uma usa o bloco Open Question com `Blocking: Yes`.
 4. Perguntas blocking **não impedem a emissão do Brief**: ele é emitido com `Execution Recommendation: REQUEST BLOCKING CONTEXT` (ver `standards/product-context-brief.md`). O que elas bloqueiam é o trabalho de design que dependeria da resposta.
 
@@ -253,7 +253,7 @@ Falhas **operacionais** (arquivo ilegível, canvas fora de `PAPER_READY`) não i
 
 ## Quality Checklist
 
-Autocrítica antes de entregar (etapa `critique` do ciclo — CLAUDE.md §2):
+Autocrítica antes de entregar (etapa `critique` do ciclo — `docs/constitution/identity-and-mission.md`):
 
 - [ ] Inventário cobre as 7 fontes de memória, cada uma com status explícito?
 - [ ] Todas as seções do Brief estão presentes — com conteúdo ou `UNKNOWN` declarado?

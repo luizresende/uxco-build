@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document", "captured", "method", "frames", "hierarchy", "texts", "properties", "sequence", "patterns", "states", "limitations"],
+  "properties": {
+    "document": { "type": "string" },
+    "captured": { "type": "string" },
+    "method": { "type": "string" },
+    "frames": { "type": "string" },
+    "hierarchy": { "type": "string" },
+    "texts": { "type": "string" },
+    "properties": { "type": "string" },
+    "sequence": { "type": "string" },
+    "patterns": { "type": "string" },
+    "states": { "type": "string" },
+    "limitations": { "type": "string" }
+  }
+}
