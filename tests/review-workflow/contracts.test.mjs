@@ -68,7 +68,7 @@ test('the chain keeps each contract in one place', () => {
 
 test('manifest defines the seven phases in order', () => {
   const manifest = JSON.parse(read(MANIFEST));
-  const ids = ['scope', 'inspect', 'ground', 'analyze', 'challenge', 'revise', 'close'];
+  const ids = ['scope', 'inspect', 'ground', 'analyze', 'challenge', 'close'];
   assert.deepEqual(manifest.steps.map((step) => step.id), ids);
   const cmd = read(COMMAND);
   const orderLine = cmd.split('\n').find((line) => line.startsWith('Fases, nesta ordem'));
@@ -143,7 +143,8 @@ test('workflow maps the five canonical detection cases with behavioral scenarios
 });
 
 test('workflow orchestrates the existing engines by reference, not copies', () => {
-  const wf = read(MANIFEST) + read(ANALYZE);
+  const index = read('docs/constitution/INDEX.md');
+  const loaded = JSON.parse(read(MANIFEST)).steps.flatMap((step) => step.context.map((entry) => entry.path));
   const refs = [
     'skills/product-context/SKILL.md',
     'skills/design-critique/SKILL.md',
@@ -153,9 +154,11 @@ test('workflow orchestrates the existing engines by reference, not copies', () =
     'standards/quality-framework.md',
     'standards/severity-framework.md',
   ];
-  for (const r of refs) assert.ok(wf.includes(r), `missing reference: ${r}`);
-  // não redefine as camadas nem o contrato do achado — apenas os consome
-  assert.ok(!/\|\s*\*\*L\d — /.test(wf), 'workflow must not redefine the L0-L8 layer table');
+  for (const r of refs) {
+    assert.ok(index.includes(r), `unloaded reference missing from the index: ${r}`);
+    assert.ok(!loaded.includes(r), `${r} must stay out of the phase window`);
+  }
+  assert.ok(!/\|\s*\*\*L\d — /.test(read(ANALYZE)), 'the phase must not redefine the L0-L8 layer table');
 });
 
 test('workflow integrates the context engine without replicating it', () => {
@@ -395,17 +398,19 @@ test('workflow documentation sections carry their required substance', () => {
   const pre = section('Preconditions');
   assert.ok(pre.includes('Artefato observável') && pre.includes('PAPER_READY'),
     'Preconditions must name the observable artifact and canvas readiness');
-  const manifest = read(MANIFEST);
+  const loaded = JSON.parse(read(MANIFEST)).steps.flatMap((step) => step.context.map((entry) => entry.path));
+  const index = read('docs/constitution/INDEX.md');
   for (const d of ['skills/product-context/SKILL.md', 'skills/design-critique/SKILL.md',
     'skills/interaction-design/SKILL.md']) {
-    assert.ok(manifest.includes(d), `manifest missing dependency: ${d}`);
+    assert.ok(index.includes(d), `index missing unloaded skill: ${d}`);
+    assert.ok(!loaded.includes(d), `${d} must stay out of the phase window`);
   }
-  assert.ok(!manifest.includes('scripts/context-loader.mjs'),
+  assert.ok(!read(MANIFEST).includes('scripts/context-loader.mjs'),
     'the loader source stays out of the model context');
   assert.ok(read(GROUND).includes('npm run context:load'),
     'ground still runs the loader as a command');
   const done = section('Completion Criteria');
-  assert.ok(done.includes('sete fases') && done.includes('Quality Gate'),
+  assert.ok(done.includes('seis fases') && done.includes('Quality Gate'),
     'Completion Criteria must bind the phases and the gate');
   assert.ok(done.includes('Gate reprovado não é review incompleto'),
     'failed gate must not equal incomplete review');

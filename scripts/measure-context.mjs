@@ -680,6 +680,8 @@ function renderChain(chain) {
   lines.push("");
   lines.push("Medição estática do manifesto `workflows/review/manifest.json`. Não é token de sessão.");
   lines.push("");
+  lines.push("## Por fase");
+  lines.push("");
   lines.push("| Fase | Arquivos no piso | Palavras no piso | Tokens aprox. no piso | Palavras no teto | Tokens aprox. no teto | Condicional |");
   lines.push("| --- | ---: | ---: | ---: | ---: | ---: | --- |");
   for (const step of chain.steps) {
@@ -698,6 +700,24 @@ function renderChain(chain) {
   lines.push("");
   return `${lines.join("\n")}\n`;
 }
+
+const CHAIN_AT_STEP_3 = {
+  commit: "232bbb3",
+  rows: [
+    ["scope", 6, 2512, 4371, 2512, 4371, "—"],
+    ["inspect", 7, 5742, 10325, 5742, 10325, "fase inteira, só com canvas"],
+    ["ground", 7, 5577, 9954, 5577, 9954, "—"],
+    ["analyze", 11, 8968, 15855, 10206, 17914, "`skills/interaction-design/SKILL.md` (flow)"],
+    ["challenge", 7, 5817, 9785, 5817, 9785, "—"],
+    ["revise", 6, 5825, 10007, 5825, 10007, "—"],
+    ["close", 11, 9043, 15302, 9043, 15302, "—"],
+  ],
+  worstCeiling: ["analyze", 12, 10206, 17914],
+  worstFloor: ["close", 11, 9043, 15302],
+  parent: [4, 1884, 4117],
+  union: [35, 28561, 50480],
+  sum: [56, 44722, 77658],
+};
 
 function renderCompare(chain) {
   const baselineText = readRel("benchmarks/harness-refactor/baseline.md");
@@ -719,6 +739,18 @@ function renderCompare(chain) {
   lines.push("Piso é a fase sem arquivo `when`. Teto soma esses condicionais. A fase `inspect` inteira só existe quando o canvas é fonte; o piso e o teto dela são o que ela carrega se rodar.");
   lines.push("");
   lines.push("Contagem igual à do baseline: palavras por `\\S+` (`wc -w`), tokens aprox. = soma de `ceil(bytes UTF-8 / 4)` por arquivo. Não é o tokenizador do Claude e não é consumo de sessão.");
+  lines.push("");
+  lines.push("## Cadeia do passo 3");
+  lines.push("");
+  lines.push(`Números medidos no commit \`${CHAIN_AT_STEP_3.commit}\`, antes deste enxugamento. Não são uma nova medição de runtime. O teto eager do baseline está na tabela de totais.`);
+  lines.push("");
+  lines.push("| Fase | Arquivos no piso | Palavras no piso | Tokens aprox. no piso | Palavras no teto | Tokens aprox. no teto | Condicional |");
+  lines.push("| --- | ---: | ---: | ---: | ---: | ---: | --- |");
+  for (const row of CHAIN_AT_STEP_3.rows) {
+    lines.push(`| \`${row[0]}\` | ${row[1]} | ${row[2]} | ${row[3]} | ${row[4]} | ${row[5]} | ${row[6]} |`);
+  }
+  lines.push("");
+  lines.push(`Pior teto naquele commit: \`${CHAIN_AT_STEP_3.worstCeiling[0]}\`, ${CHAIN_AT_STEP_3.worstCeiling[1]} arquivos, ${CHAIN_AT_STEP_3.worstCeiling[2]} palavras, ${CHAIN_AT_STEP_3.worstCeiling[3]} tokens aprox. Pior piso sempre ligado: \`${CHAIN_AT_STEP_3.worstFloor[0]}\`, ${CHAIN_AT_STEP_3.worstFloor[1]} arquivos, ${CHAIN_AT_STEP_3.worstFloor[2]} palavras, ${CHAIN_AT_STEP_3.worstFloor[3]} tokens aprox. Orquestrador: ${CHAIN_AT_STEP_3.parent[0]} arquivos, ${CHAIN_AT_STEP_3.parent[1]} palavras. União: ${CHAIN_AT_STEP_3.union[0]} arquivos, ${CHAIN_AT_STEP_3.union[1]} palavras. Soma dos tetos: ${CHAIN_AT_STEP_3.sum[1]} palavras — não é custo.`);
   lines.push("");
   lines.push("## Por fase");
   lines.push("");
@@ -752,7 +784,7 @@ function renderCompare(chain) {
   lines.push("");
   lines.push(`O número que substitui o teto eager, para o tamanho de uma janela, é o pior teto de fase: \`${worst.id}\`, ${worstCeiling.words} palavras, ${worstCeiling.tokensApprox} tokens aprox., contra ${eager.words} palavras e ${eager.tokensApprox} tokens aprox. do baseline.`);
   lines.push("");
-  lines.push("A união não é o que uma run carrega de uma vez. A soma dos tetos também não: `CLAUDE.md` e o subagente entram em toda fase, e alguns standards entram em mais de uma.");
+  lines.push("A união não é o que uma run carrega de uma vez. A soma dos tetos também não: `CLAUDE.md` e o subagente entram em toda fase.");
   lines.push("");
   lines.push("## Runtime — não medido");
   lines.push("");

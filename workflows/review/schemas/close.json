@@ -1,13 +1,12 @@
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["step", "marker", "cyclePass", "rerun", "mode", "qa", "qualityGate", "reviewLimitations", "stageTrace", "counts", "reportFile"],
+  "required": ["step", "marker", "cyclePass", "rerun", "qa", "qualityGate", "reviewLimitations", "stageTrace", "counts", "reportFile"],
   "properties": {
     "step": { "const": "close" },
     "marker": { "const": "FINAL_QA" },
     "cyclePass": { "const": 1 },
     "rerun": { "const": false },
-    "mode": { "const": "READ" },
     "qa": {
       "type": "object",
       "additionalProperties": false,

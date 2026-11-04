@@ -1,6 +1,6 @@
 # Fase close
 
-Feche o review. Marcador `FINAL_QA`. `cyclePass` 1. `rerun` false. `mode` é `READ`. Escreva `close.json` e `report.md` no mesmo diretório. Não escreva no canvas nem na memória do projeto.
+Feche o review. Marcador `FINAL_QA`. `cyclePass` 1. `rerun` false. Escreva `close.json` e `report.md` no mesmo diretório. Não escreva no canvas nem na memória do projeto. O review inteiro é `READ`.
 
 O QA audita o review. Não varre L0–L8 e não abre issue de design. Lacuna vira falha de `completeness` na dimensão do QA, não achado novo. Sete dimensões, nesta ordem, em `PASS`, `PARTIAL`, `FAIL` ou `UNKNOWN`: contextGrounding, evidenceQuality, severityCalibration, actionability, completeness, accessibilityCoverage, systemConsistency. `compositeScore` é null.
 
@@ -16,13 +16,13 @@ Design blocker é o design: achado Critical ou piso de acessibilidade, em `quali
 
 Review impecável sobre design reprovado é `REVIEW READY` com gate `fail`. Review frágil sobre design bom é `REVIEW NOT READY` com gate `pass` e `qualifiedByQa: true`. Os dois casos têm de ser representáveis. Confundir os blockers invalida o review.
 
-O Quality Gate do design usa as dez dimensões de `standards/quality-framework.md` (contextFit e usability, completeness e accessibility são as críticas). Nota 1 a 5 pelo pior achado do diagnóstico revisado, ou `UNKNOWN`. Média das dimensões avaliadas ≥ 4, crítica ≥ 3, nenhum design blocker aberto. Blocker aberto só sai com `riskAccepted: true` e `decision` preenchida — aceite explícito, não escrita em memória alheia (`docs/constitution/decision-framework.md`).
+O Quality Gate do design usa as dez dimensões (contextFit, clarity, usability, interaction, completeness, consistency, accessibility, visualHierarchy, content, rationale). contextFit, usability, completeness e accessibility são as críticas, com `critical: true`. Nota pelo pior achado do diagnóstico revisado: 1 se há Critical ou a dimensão não foi tratada; 2 se o pior é High; 3 se é Medium; 4 se só há Low; 5 se não há problema, no máximo Opportunity. Sem evidência, `UNKNOWN` — não invente nota. Os nomes Weak–Excellent e o processo ficam em `standards/quality-framework.md` e não entram nesta fase. Média das dimensões avaliadas ≥ 4, crítica ≥ 3, nenhum design blocker aberto. Blocker aberto só sai com `riskAccepted: true` e `decision` preenchida — aceite explícito, não escrita em memória alheia.
 
 `REVIEW NOT READY` não dispara outro ciclo. O report sai mesmo assim, com o blocker visível e `qualifiedByQa: true`. Esconder a reprovação é falha.
 
 ## Output
 
-A saída visível é o Design Critique Report, e o review não cria nenhuma seção paralela. O molde é `templates/reports/design-review.md`. O contrato é `standards/critique-framework.md`.
+A saída visível é o Design Critique Report, e o review não cria nenhuma seção paralela. A composição abaixo é o contrato desta fase. O molde `templates/reports/design-review.md` e o texto integral de `standards/critique-framework.md` não entram na lista.
 
 Review impecável de um design reprovado continua representável: `REVIEW READY` com Quality Gate reprovado. O inverso também: `REVIEW NOT READY` com Quality Gate aprovado, e `qualifiedByQa: true`. Design blocker e QA blocker ficam em campos diferentes; `standards/quality-framework.md` é o dono do primeiro.
 

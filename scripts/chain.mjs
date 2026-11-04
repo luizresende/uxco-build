@@ -15,7 +15,7 @@
  *          indisponível, contexto que tornaria a análise enganosa).
  *          Não é defeito de contrato. O passo seguinte não roda.
  * Saída 1: contrato quebrado. Não repetir o passo para "consertar" o ciclo
- *          adversarial — um challenge, um revise, um close.
+ *          adversarial — um challenge (crítica e diagnóstico único), um close.
  */
 
 import { existsSync, readFileSync } from "node:fs";
@@ -67,6 +67,8 @@ const REPORT_HEADINGS = [
   "## Recommended Next Steps",
 ];
 
+const MAX_CONTEXT_WORDS = 400;
+
 const IMPLEMENTED_GATES = [
   "scope-resolved",
   "paper-source",
@@ -97,6 +99,10 @@ function contextEntries(step) {
 
 function contextPaths(step) {
   return contextEntries(step).map((entry) => entry.path);
+}
+
+function wordCount(rel) {
+  return (readFileSync(repoPath(rel), "utf8").match(/\S+/g) ?? []).length;
 }
 
 function resolveSchema(schema, dir, stack = []) {
@@ -423,8 +429,8 @@ function gateCritique(artifact, prior) {
 
 function gateDiagnosis(artifact, prior) {
   const errors = [];
-  const challenge = prior.challenge;
-  if (!challenge) return { errors: ["prior challenge ausente"], halt: false };
+  const challenge = Array.isArray(artifact.confirmed) ? artifact : prior.challenge;
+  if (!challenge) return { errors: ["record do challenge ausente"], halt: false };
   const output = new Map();
   artifact.issues.forEach((item, index) => {
     checkIssue(item, `issues[${index}]`, errors, "issue");
@@ -610,9 +616,14 @@ function checkManifest(manifest) {
       }
     }
     const mine = new Set(contextPaths(step));
-    if (mine.size >= universe.size) errors.push(`${step.id} carrega o corpus inteiro de contexto`);
+    if (universe.size > 1 && mine.size >= universe.size) {
+      errors.push(`${step.id} carrega o corpus inteiro de contexto`);
+    }
     for (const entry of contextEntries(step)) {
       if (!existsSync(repoPath(entry.path))) errors.push(`${step.id} cita arquivo ausente: ${entry.path}`);
+      else if (wordCount(entry.path) > MAX_CONTEXT_WORDS) {
+        errors.push(`${step.id} carrega ${entry.path} com mais de ${MAX_CONTEXT_WORDS} palavras — o texto longo fica fora da fase`);
+      }
       if (entry.path === "scripts/context-loader.mjs") {
         errors.push(`${step.id} carrega o fonte do context loader — rode npm run context:load, não o arquivo`);
       }
@@ -629,7 +640,8 @@ function checkManifest(manifest) {
     for (const gate of step.gate) {
       if (!GATES[gate]) errors.push(`${step.id} aponta gate não implementado: ${gate}`);
     }
-    if (step.marker) markers.push(step.marker);
+    if (Array.isArray(step.markers) && step.markers.length) markers.push(...step.markers);
+    else if (step.marker) markers.push(step.marker);
     if (step.when !== "always" && step.when !== "canvas") {
       errors.push(`${step.id} tem when inválido`);
     }
@@ -637,16 +649,6 @@ function checkManifest(manifest) {
   if (!sawPaper) errors.push("nenhum passo declara toque em Paper");
   if (markers.join("|") !== STAGE_TRACE.join("|")) {
     errors.push("marcadores de estágio fora da ordem canônica, ou repetidos");
-  }
-  const flowFile = "skills/interaction-design/SKILL.md";
-  const analyze = manifest.steps.find((step) => step.id === "analyze");
-  const flowEntry = contextEntries(analyze ?? { context: [] }).find((entry) => entry.path === flowFile);
-  if (!flowEntry || flowEntry.when !== "flow") {
-    errors.push("interaction-design só entra em analyze, e só when flow");
-  }
-  for (const step of manifest.steps) {
-    if (step.id === "analyze") continue;
-    if (contextPaths(step).includes(flowFile)) errors.push(`${step.id} carrega interaction-design fora de analyze`);
   }
   for (const path of manifest.orchestrator?.loads ?? []) {
     if (!existsSync(repoPath(path))) errors.push(`orquestrador cita arquivo ausente: ${path}`);

@@ -1,7 +1,7 @@
 # Design QA
 
 > **Propósito:** auditar a **qualidade do review** antes de ele ser entregue — não produzir outra crítica do design. Responde se o diagnóstico revisado é confiável o suficiente para chegar ao usuário.
-> **Quando consultar:** na fase `close` do `/uxco-review` (`workflows/review/manifest.json`), depois da Revision e junto com o Quality Gate do design.
+> **Quando consultar:** referência do QA. A fase `close` não carrega este arquivo; o prompt leva as sete dimensões e a separação dos blockers, e o validador aplica o contrato.
 
 Esta é uma **responsabilidade**, não uma capacidade de uso livre (`docs/constitution/knowledge-routing.md`): só existe acoplada a um review pronto para entrega. Opera sob a constituição e **referencia — nunca redefine** — as dimensões e os gates de qualidade de **design** (`standards/quality-framework.md`), a severidade (`standards/severity-framework.md`), a Confidence (`standards/design-output-format.md`), o contrato do achado e do report (`standards/critique-framework.md`) e o piso de acessibilidade (`standards/accessibility-baseline.md`). O formato da sua saída é o **Review QA Record** de `standards/adversarial-quality.md`, incluindo as sete dimensões, a escala `PASS/PARTIAL/FAIL/UNKNOWN` e os vereditos.
 

@@ -101,7 +101,7 @@ Decisões de arquitetura que delimitam a camada:
 4. **`agents/` em vez de `skills/`.** Critic e QA não são capacidades de uso livre: só existem acoplados a um estágio do review, com um artefato de entrada obrigatório. A camada `agents/` já estava declarada na hierarquia da constituição (`docs/constitution/knowledge-routing.md`) e esta é a sua primeira instância.
 5. **Observabilidade sem chain-of-thought.** Cada estágio registra um marcador canônico (`INITIAL_ANALYSIS` · `ADVERSARIAL_REVIEW` · `REVISION` · `FINAL_QA`), e o report carrega um bloco compacto (`## Review Assurance`) com o trace, as contagens do desafio e o veredito do QA. O trace declara **que** o estágio aconteceu e o que mudou em números — nunca como se chegou lá.
 
-Contratos completos em `standards/adversarial-quality.md`; o processo executável, nas fases `challenge`, `revise` e `close` de `workflows/review/manifest.json`.
+Contratos completos em `standards/adversarial-quality.md`. O processo executável é `challenge` (crítica e diagnóstico único no mesmo artefato) e `close` em `workflows/review/manifest.json`. O standard não entra na janela da fase.
 
 ### O que ainda não está medido
 

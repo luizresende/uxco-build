@@ -1,7 +1,7 @@
 # Adversarial Quality
 
 > **Propósito:** o contrato da camada adversarial do review — os registros do Design Critic e do Design QA, os marcadores de estágio e o invariante de ciclo único. Define **como um diagnóstico é desafiado e auditado**; severidade, Confidence, camadas, contrato do achado e dimensões de qualidade de design vêm dos standards existentes e **não são redefinidos aqui**.
-> **Quando consultar:** nas fases `challenge`, `revise` e `close` do `/uxco-review` (`workflows/review/manifest.json`), e sempre que um diagnóstico de design precisar ser desafiado antes de ser considerado confiável. Os números de STEP citados abaixo são o mapa histórico; a cadeia não os executa como passos separados.
+> **Quando consultar:** referência completa da camada adversarial. A cadeia não carrega este arquivo: `challenge` e `close` levam a regra operacional no prompt, e `scripts/chain.mjs` aplica o contrato. Os números de STEP abaixo são o mapa histórico.
 
 Dependências explícitas: contrato do achado (7 campos) e camadas L0–L8 vêm de `critique-framework.md`; severidade e as quatro lentes, de `severity-framework.md`; Confidence e os blocos Assumption/Open Question, de `design-output-format.md`; as dimensões e os gates de **qualidade do design**, de `quality-framework.md`; o contexto de produto, do Product Context Brief (`product-context-brief.md`).
 

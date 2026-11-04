@@ -1,10 +1,10 @@
 # Fase challenge
 
-Ataque o diagnóstico de `analyze.json`. Não varra L0–L8 de novo. Não escreva no design. Marcador `ADVERSARIAL_REVIEW`. `cyclePass` é 1 e `rerun` é false.
+Ataque o diagnóstico de `analyze.json` e escreva, no mesmo artefato, o diagnóstico único. Não varra L0–L8 de novo. Não escreva no design. Marcadores `ADVERSARIAL_REVIEW` e `REVISION`. `cyclePass` é 1 e `rerun` é false. `revisionMarker` é `REVISION`.
 
 ## Adversarial Quality Engine
 
-Quatro responsabilidades, não quatro personas. Cada uma recebe um artefato e produz outro.
+Quatro responsabilidades, não quatro personas. `analyze` olha o design. Esta fase olha o diagnóstico e deixa um diagnóstico só. `close` audita o review.
 
 | Estágio | Objeto | Pergunta |
 | --- | --- | --- |
@@ -15,7 +15,24 @@ Quatro responsabilidades, não quatro personas. Cada uma recebe um artefato e pr
 
 ### Fronteira — quem pergunta o quê
 
-O Critic olha o diagnóstico. A pergunta e os dez eixos estão em `agents/design-critic.md`. Confirmar tudo é resultado válido. Não há cota. Fabricar revisão para o estágio parecer produtivo é falha. O trace não expõe raciocínio interno.
+O Critic olha o diagnóstico. Confirmar tudo é resultado válido. Não há cota. Fabricar revisão para o estágio parecer produtivo é falha. O trace não expõe raciocínio interno.
+
+Os dez eixos são pergunta, não cota. O processo longo, as failure conditions e a disciplina ficam em `agents/design-critic.md` e não entram nesta fase.
+
+| Eixo | Pergunta |
+| --- | --- |
+| `assumption` | Alguma premissa foi tratada como fato? |
+| `evidence` | O achado se apoia em observação citável, ou em princípio genérico? |
+| `severity` | A severidade resiste às quatro lentes, sem inflação e sem furar o piso para baixo? |
+| `confidence` | A Confidence corresponde à força da evidência? |
+| `causality` | O achado nomeia a causa ou o sintoma? |
+| `missing-state` | Qual estado (vazio, carregando, erro, parcial) ficou de fora? |
+| `missing-edge-case` | Qual extremo, permissão ou caminho de volta não foi considerado? |
+| `context-fit` | O diagnóstico cabe neste produto, ou aplica um padrão genérico? |
+| `recommendation` | A recomendação resolve o problema, sem criar outro, e é verificável? |
+| `overengineering` | A recomendação pede mais complexidade do que o problema exige? |
+
+Sondas, só quando mudarem um veredito: o que assumimos; o que não tem evidência; preferência tratada como usabilidade; severidade justificada; outra explicação; causa ou sintoma; estado ou extremo omitido; a recomendação cria outro problema; complexidade desnecessária; o que falsificaria o diagnóstico.
 
 ### Ciclo único
 
@@ -36,4 +53,19 @@ Seis listas, sempre presentes: `confirmed`, `revised`, `rejected`, `missing`, `a
 
 Cada id de `issues` e `opportunities` do analyze aparece em exatamente uma das três primeiras listas. Suposição que não é achado usa `finding` `assumption:<texto>`.
 
-Assumption apresentada como fato é o anti-pattern 9 (`docs/constitution/anti-patterns.md`). O princípio 11 está em `docs/constitution/operating-principles.md`: autocriticar antes de concluir, nesta fase e não na hora de entregar.
+Assumption apresentada como fato é o anti-pattern 9. Autocriticar acontece aqui, não na hora de entregar. A lista numerada está em `docs/constitution/anti-patterns.md` e os doze princípios em `docs/constitution/operating-principles.md`; nenhum dos dois entra nesta fase.
+
+### Revision — um diagnóstico só
+
+O mesmo artefato carrega o record e o diagnóstico que o usuário poderá ver. Não há segunda lista.
+
+| Verdict | Efeito |
+| --- | --- |
+| confirmed | O achado permanece. Para o confirmado, resistir ao desafio é preservação, não inércia. |
+| revised | Os campos mudam conforme `change`. Continua sendo um achado. |
+| rejected | Sai de issues e de opportunities. Entra em `accounted` com texto. Suspeita legítima usa `as: open-question`. Rejeição sem resto usa `as: dropped`. Texto vazio é exclusão silenciosa. |
+| added | Entra no contrato pleno de 7 campos, sem desconto de evidência. |
+
+Depois de aplicar os vereditos, reaponte os mecanismos: `mechanismsReapplied` inclui `dedupe` e `priority`. Severidade ainda pelas quatro lentes. Ordenação: Critical → Low nas issues; Opportunity só em opportunities.
+
+Não crie uma segunda lista de diagnóstico. Achado rejeitado que permanece como problema afirmado é diagnóstico contraditório — o validador rejeita o artefato.

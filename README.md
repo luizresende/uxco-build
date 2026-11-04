@@ -124,7 +124,7 @@ O primeiro workflow do sistema (Sprint 4): a orquestração que conecta os dois 
       ↓
 workflows/review/manifest.json
       ↓
-scope → inspect (só canvas) → ground → analyze → challenge → revise → close
+scope → inspect (só canvas) → ground → analyze → challenge → close
 ```
 
 Cada fase é um subagente com a própria lista de arquivos. O estado que passa adiante é um JSON. `node scripts/chain.mjs validate` recusa artefato fora do contrato: saída 2 é parada válida, saída 1 é contrato quebrado e a fase não se repete. O review continua `READ`.
@@ -172,7 +172,7 @@ Initial Analysis ──▶ Adversarial Critique ──▶ Revision ──▶ Rev
 Quatro responsabilidades encadeadas — **não quatro personas**: a primeira olha o design, a segunda olha a primeira, a terceira consolida, a quarta audita o resultado das três.
 
 - **Design Critic** — [`agents/design-critic.md`](agents/design-critic.md): a responsabilidade adversarial. Pergunta "onde o nosso diagnóstico pode estar errado, incompleto, superficial ou excessivamente confiante?" por dez eixos (assumptions, evidência, severidade, confidence, causalidade, estados e edge cases omitidos, encaixe no contexto, recomendações, complexidade desnecessária) e dez sondas obrigatórias — incluindo "what would falsify this diagnosis?". Emite veredito por achado: `confirmed · revised · rejected · added`. **Não repete a varredura L0–L8** e **pode concluir que o diagnóstico inicial estava correto**: confirmar tudo é resultado válido, e não existe cota de mudanças.
-- **Revision** — a fase `revise`: rejeitados saem de Issues (suspeita legítima volta como Open Question), revisados mudam campo a campo, omissões entram no contrato pleno de 7 campos, e os mecanismos de consolidação e ordenação são reaplicados ao conjunto novo. **O usuário recebe uma conclusão, nunca duas análises contraditórias.**
+- **Revision** — no mesmo artefato de `challenge`: rejeitados saem de Issues (suspeita legítima volta como Open Question), revisados mudam campo a campo, omissões entram no contrato pleno de 7 campos, e os mecanismos de consolidação e ordenação são reaplicados ao conjunto novo. **O usuário recebe uma conclusão, nunca duas análises contraditórias.** O validador recusa o artefato se um rejeitado continua problema ou se um achado que sobreviveu some.
 - **Design QA** — [`agents/design-qa.md`](agents/design-qa.md): audita a **qualidade do review**, não o design. Sete dimensões (Context Grounding · Evidence Quality · Severity Calibration · Actionability · Completeness · Accessibility Coverage · System Consistency) em `PASS/PARTIAL/FAIL/UNKNOWN`, **sem score composto** — média de tokens de conduta seria falsa precisão. Blockers ficam em lista própria, e o **QA blocker** (o review não é confiável) nunca se confunde com o **design blocker** (o design está reprovado).
 - **Contratos** — [`standards/adversarial-quality.md`](standards/adversarial-quality.md): os dois records, os marcadores de estágio (`INITIAL_ANALYSIS` → `ADVERSARIAL_REVIEW` → `REVISION` → `FINAL_QA`) e o **ciclo único**: 1 crítica, 1 revisão, 1 QA. Nenhuma recursão, nenhum agente debatendo; QA reprovando declara o blocker em vez de reprocessar.
 

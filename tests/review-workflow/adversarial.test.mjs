@@ -24,7 +24,6 @@ const CRITIC = 'agents/design-critic.md';
 const QA = 'agents/design-qa.md';
 const WORKFLOW = 'workflows/uxco-review.md';
 const CHALLENGE = 'workflows/review/steps/challenge.md';
-const REVISE = 'workflows/review/steps/revise.md';
 const CLOSE = 'workflows/review/steps/close.md';
 const MANIFEST = 'workflows/review/manifest.json';
 const COMMAND = '.claude/commands/uxco-review.md';
@@ -274,7 +273,7 @@ test('ADV-A: a finding that resists the challenge survives intact, and confirmin
   assert.ok(/`confirmed`[^|]*\|[^|]*\|[^|]*`Change: None`/.test(c) ||
     /Change: None/.test(c), 'confirmed must declare Change: None explicitly');
   // o achado confirmado é preservado pela Revision
-  const rev = read(REVISE).split('### Revision — um diagnóstico só')[1]?.split('\n### ')[0];
+  const rev = read(CHALLENGE).split('### Revision — um diagnóstico só')[1]?.split('\n### ')[0];
   assert.ok(rev, 'missing revision contract');
   assert.ok(/resistir ao desafio é preservação/.test(rev),
     'the revision must preserve confirmed findings');
@@ -369,7 +368,7 @@ test('ADV-D: a missing finding can be discovered, but needs the same citable evi
   assert.ok(/Omissão sem evidência observável é Open Question/.test(c),
     'an unsupported omission must be an Open Question, not a finding');
   // a Revision incorpora a omissão no contrato pleno de 7 campos
-  const rev = read(REVISE).split('### Revision — um diagnóstico só')[1]?.split('\n### ')[0];
+  const rev = read(CHALLENGE).split('### Revision — um diagnóstico só')[1]?.split('\n### ')[0];
   assert.ok(/7 campos/.test(rev) && /sem desconto de evidência/.test(rev),
     'the revision must add omissions under the full finding contract');
   // o gabarito ancora a omissão na memória real do projeto — contexto de verdade
@@ -530,9 +529,12 @@ test('the workflow wires the three new steps into the pipeline without losing th
   const ids = manifest.steps.map((step) => step.id);
   assert.ok(ids.indexOf('analyze') < ids.indexOf('challenge'),
     'the critique must attack an already consolidated diagnosis');
-  assert.ok(ids.indexOf('challenge') < ids.indexOf('revise'));
-  assert.ok(ids.indexOf('revise') < ids.indexOf('close'),
-    'the review QA must precede the design quality gate and the report, which share close');
+  assert.ok(!ids.includes('revise'), 'revision shares the challenge artifact');
+  assert.ok(ids.indexOf('challenge') < ids.indexOf('close'),
+    'the review QA and the report stay after the single diagnosis');
+  const challenge = manifest.steps.find((step) => step.id === 'challenge');
+  assert.deepEqual(challenge.markers, ['ADVERSARIAL_REVIEW', 'REVISION']);
+  assert.ok(challenge.gate.includes('critique-record') && challenge.gate.includes('one-diagnosis'));
   const close = manifest.steps.find((step) => step.id === 'close');
   assert.ok(close.stages.indexOf('Audit review quality') < close.stages.indexOf('Generate report'),
     'the gate audit of the review still precedes the report');
@@ -547,12 +549,14 @@ test('the workflow wires the three new steps into the pipeline without losing th
   }
   assert.ok(/não quatro personas|[Nn]ão são personas/.test(engine),
     'the stages must be declared responsibilities, not personas');
-  const deps = read(MANIFEST);
+  const index = read('docs/constitution/INDEX.md');
+  const loaded = manifest.steps.flatMap((step) => step.context.map((entry) => entry.path));
   for (const d of [CRITIC, QA, STANDARD]) {
-    assert.ok(deps.includes(d), `manifest missing: ${d}`);
+    assert.ok(index.includes(d), `unloaded reference missing from the index: ${d}`);
+    assert.ok(!loaded.includes(d), `${d} must stay out of the phase window`);
   }
   const done = section(WORKFLOW, 'Completion Criteria');
-  assert.ok(/sete fases/.test(done), 'completion criteria must bind the seven phases');
+  assert.ok(/seis fases/.test(done), 'completion criteria must bind the six phases');
   assert.ok(/[Cc]iclo adversarial completo e observável/.test(done),
     'completion must require the observable cycle');
   assert.ok(/Veredito do QA presente/.test(done),
@@ -570,7 +574,7 @@ test('ADV-G regression: the sprint 4 review contract survives the sprint 5 chang
   assert.deepEqual(commands, ['uxco-review.md'],
     'no new command may be introduced — /uxco-review stays the only interface');
   assert.ok(!exists('.claude/commands/uxco-review-v2.md'), 'no v2 command');
-  for (const id of ['scope', 'inspect', 'ground', 'analyze', 'challenge', 'revise', 'close']) {
+  for (const id of ['scope', 'inspect', 'ground', 'analyze', 'challenge', 'close']) {
     assert.ok(cmd.includes(`\`${id}\``), `command missing phase: ${id}`);
   }
 

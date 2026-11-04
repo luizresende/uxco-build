@@ -24,13 +24,13 @@ O argumento aceita caminho ou nome. Nome é intenção explícita; o referente a
 2. Crie um diretório em `.review-runs/` para esta run.
 3. Para cada passo, na ordem do manifesto:
    - `inspect` com `needsCanvas: false`: grave você mesmo o `inspect.json` skipped (`paperReady` e `snapshot` nulos, sem mensagem de bloqueio) e valide. Não chame o subagente e não abra arquivo de canvas.
-   - Nos demais, chame o subagente `review-step` (`.claude/agents/review-step.md`) com o id da fase, o prompt, a lista exata de contexto (arquivo `when: flow` só se `needsFlowSkill` for true) e os artefatos de entrada.
+   - Nos demais, chame o subagente `review-step` (`.claude/agents/review-step.md`) com o id da fase, o prompt, a lista exata de contexto (vazia, se o passo não declara arquivo) e os artefatos de entrada. Não acrescente standard, skill ou agente que o manifesto não listou.
    - Rode `node scripts/chain.mjs validate --step <id> --artifact <saída> --prior <id>=<arquivo> ...`.
    - Saída 2: pare. Se houver `blockedMessage`, mostre esse texto ao usuário, sem paráfrase, e a ação `npm run preflight`. Não chame a fase seguinte.
-   - Saída 1: pare e mostre o erro. Não rode a fase de novo. Challenge, revise e close não têm segunda passada.
+   - Saída 1: pare e mostre o erro. Não rode a fase de novo. Challenge e close não têm segunda passada.
    - Saída 0: próximo passo.
 4. Entregue o `report.md` da fase `close`. O JSON fica na run; não cole os records dentro das Issues.
 
 O review inteiro é `READ`. Canvas só é tocado pela fase `inspect`, que carrega `docs/constitution/canvas-safety.md` pela lista do manifesto.
 
-Fases, nesta ordem: `scope`, `inspect`, `ground`, `analyze`, `challenge`, `revise`, `close`.
+Fases, nesta ordem: `scope`, `inspect`, `ground`, `analyze`, `challenge`, `close`.

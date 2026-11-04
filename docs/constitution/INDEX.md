@@ -34,21 +34,36 @@ Também ficaram, e estão marcados como julgamento em aberto mais abaixo: duas f
 
 ## O que cada fase carrega
 
-`CLAUDE.md` entra em toda fase. O resto é a lista do manifesto — esta tabela repete essa lista para leitura humana. Se divergir do JSON, o JSON ganha.
+`CLAUDE.md` entra em toda fase, mais o subagente e o prompt. O resto é a lista do manifesto. Se esta tabela divergir do JSON, o JSON ganha. Contexto de fase acima de 400 palavras faz `scripts/chain.mjs check` falhar.
 
-| Fase | Constituição | Resto do contexto | Artefato |
-| --- | --- | --- | --- |
-| scope | `anti-patterns.md`, `identity-and-mission.md` | `standards/design-output-format.md` | `scope.json` |
-| inspect, só com canvas | `canvas-safety.md` | `docs/architecture.md`, `experiments/paper-mcp/smoke-test.md`, `standards/accessibility-baseline.md` | `inspect.json` |
-| ground | `context-protocol.md`, `anti-patterns.md` | `skills/product-context/SKILL.md`, `standards/product-context-brief.md`. O loader roda como `npm run context:load`; o fonte não entra | `ground.json` |
-| analyze | `operating-principles.md`, `anti-patterns.md` | `skills/design-critique/SKILL.md`, `skills/interaction-design/SKILL.md` só em fluxo, `standards/critique-framework.md`, `standards/severity-framework.md`, `standards/design-output-format.md`, `standards/accessibility-baseline.md`, `standards/uxco-design-principles.md` | `analyze.json` |
-| challenge | `operating-principles.md`, `anti-patterns.md` | `agents/design-critic.md`, `standards/adversarial-quality.md` | `challenge.json` |
-| revise | — | `standards/adversarial-quality.md`, `standards/severity-framework.md`, `standards/critique-framework.md` | `revise.json` |
-| close | `quality-gate.md`, `decision-framework.md`, `identity-and-mission.md` | `agents/design-qa.md`, `standards/adversarial-quality.md`, `standards/quality-framework.md`, `standards/critique-framework.md`, `templates/reports/design-review.md` | `close.json` + `report.md` |
+| Fase | Contexto além do prompt | Artefato |
+| --- | --- | --- |
+| scope | — | `scope.json` |
+| inspect, só com canvas | `canvas-safety.md` | `inspect.json` |
+| ground | — | `ground.json` |
+| analyze | — | `analyze.json` |
+| challenge | — | `challenge.json` (record e diagnóstico único) |
+| close | — | `close.json` + `report.md` |
 
 `knowledge-routing.md` fica no orquestrador, e só quando o pedido vem em linguagem natural. `harness.md` não entra no review.
 
-A cadeia seguiu com os julgamentos abaixo ainda abertos. Não voltou princípio nem regra de Paper para `CLAUDE.md`. Paper carrega em `inspect`. Os doze princípios operacionais carregam em `analyze` e `challenge`, porque o arquivo é curto, não porque o julgamento tenha sido fechado.
+## O que saiu da janela e continua no repositório
+
+Nada abaixo foi apagado. A fase não carrega o arquivo. O prompt leva a regra que o gate não consegue checar sozinho. Caminho citado no prompt não autoriza o subagente a abrir o arquivo.
+
+| Arquivo | O que a fase usa no lugar |
+| --- | --- |
+| `skills/product-context/SKILL.md`, `standards/product-context-brief.md`, `docs/constitution/context-protocol.md` | `ground` manda rodar `npm run context:load`. O schema do brief é o que o gate lê. |
+| `skills/design-critique/SKILL.md`, `standards/critique-framework.md` | Uma linha por camada e o contrato de 7 campos no prompt de `analyze`. Desambiguação e mapeamento para dimensões ficam no framework. |
+| `skills/interaction-design/SKILL.md` | As doze dimensões no prompt de `analyze`, só aplicadas quando `needsFlowSkill`. |
+| `standards/severity-framework.md`, `standards/accessibility-baseline.md`, `standards/uxco-design-principles.md`, `standards/design-output-format.md` | Pisos, lentes e "princípio não é evidência" no prompt de `analyze`. |
+| `docs/constitution/operating-principles.md`, `docs/constitution/anti-patterns.md`, `docs/constitution/identity-and-mission.md` | `CLAUDE.md` mais a frase que a fase precisa. A lista numerada e os doze princípios continuam aqui. |
+| `agents/design-critic.md`, `standards/adversarial-quality.md` | Dez eixos e o record no prompt de `challenge`. Processo, sondas longas e failure conditions ficam no agente e no standard. |
+| `agents/design-qa.md`, `standards/quality-framework.md`, `docs/constitution/quality-gate.md`, `docs/constitution/decision-framework.md` | Escala 1–5 numa linha e a separação dos blockers no prompt de `close`. Nomes Weak–Excellent e o processo ficam no framework. |
+| `templates/reports/design-review.md` | A composição do report está no prompt de `close`. O molde continua o contrato visual para leitura humana. |
+| `docs/architecture.md`, `experiments/paper-mcp/smoke-test.md` | `inspect` carrega só `canvas-safety.md`. O prompt ainda nomeia o smoke test como repertório; o arquivo não entra na lista. |
+
+A cadeia seguiu com os julgamentos abaixo ainda abertos. Não voltou princípio nem regra de Paper para `CLAUDE.md`. Paper, quando a fonte é canvas, carrega só `canvas-safety.md`. Os doze princípios não entraram de novo na janela: o julgamento continua aberto, e o passo 4 parou de carregá-los por tamanho.
 
 ## Julgamentos em aberto
 

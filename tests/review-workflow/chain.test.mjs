@@ -8,7 +8,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BLOCKED_MESSAGE } from '../../scripts/chain.mjs';
+import { BLOCKED_MESSAGE, checkManifest } from '../../scripts/chain.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const read = (path) => readFileSync(join(root, path), 'utf8');
@@ -122,6 +122,11 @@ function challenge(overrides = {}) {
     missing: [],
     assumptionsChallenged: [],
     confidenceChanges: [],
+    revisionMarker: 'REVISION',
+    issues: [issue()],
+    opportunities: [],
+    accounted: [],
+    mechanismsReapplied: ['dedupe', 'priority'],
     ...overrides,
   };
 }
@@ -139,7 +144,6 @@ function closeArtifact(overrides = {}) {
     marker: 'FINAL_QA',
     cyclePass: 1,
     rerun: false,
-    mode: 'READ',
     qa: {
       dimensions: {
         contextGrounding: 'PASS',
@@ -239,7 +243,7 @@ test('chain check accepts the manifest and rejects a missing context file only b
     cwd: root, encoding: 'utf8',
   });
   assert.equal(ok.status, 0, ok.stderr);
-  assert.match(ok.stdout, /ok: uxco-review \(7 steps\)/);
+  assert.match(ok.stdout, /ok: uxco-review \(6 steps\)/);
 });
 
 test('every phase declares existing context, a wired gate, and less than the whole corpus', () => {
@@ -252,9 +256,13 @@ test('every phase declares existing context, a wired gate, and less than the who
   }
   for (const step of manifest.steps) {
     const mine = new Set(step.context.map((entry) => entry.path));
-    assert.ok(mine.size < universe.size, `${step.id} loads the whole context corpus`);
+    if (universe.size > 1) {
+      assert.ok(mine.size < universe.size, `${step.id} loads the whole context corpus`);
+    }
     for (const entry of step.context) {
       assert.equal(read(entry.path).length > 0, true, entry.path);
+      const words = read(entry.path).match(/\S+/g)?.length ?? 0;
+      assert.ok(words <= 400, `${entry.path} is ${words} words; phase context caps at 400`);
     }
   }
   const inspect = manifest.steps.find((step) => step.id === 'inspect');
@@ -265,9 +273,13 @@ test('every phase declares existing context, a wired gate, and less than the who
     if (step.touchesPaper) continue;
     assert.ok(!step.context.some((entry) => entry.path.endsWith('canvas-safety.md')), step.id);
   }
-  const flow = manifest.steps.find((step) => step.id === 'analyze').context
-    .find((entry) => entry.path === 'skills/interaction-design/SKILL.md');
-  assert.equal(flow.when, 'flow');
+  const loaded = manifest.steps.flatMap((step) => step.context.map((entry) => entry.path));
+  assert.ok(!loaded.includes('skills/interaction-design/SKILL.md'));
+  assert.ok(!loaded.includes('standards/critique-framework.md'));
+  assert.ok(read('workflows/review/steps/analyze.md').includes('skills/interaction-design/SKILL.md'));
+  const heavy = structuredClone(manifest);
+  heavy.steps.find((step) => step.id === 'analyze').context.push({ path: 'standards/critique-framework.md' });
+  assert.ok(checkManifest(heavy).some((error) => error.includes('400 palavras')));
   assert.equal(manifest.mode, 'READ');
   assert.ok(!JSON.stringify(manifest).includes('scripts/context-loader.mjs'));
   assert.deepEqual(manifest.always, ['CLAUDE.md']);
@@ -343,25 +355,15 @@ test('the adversarial cycle is one pass and a rejected finding cannot remain a p
   assert.equal(gap.status, 1, gap.stderr);
 
   const empty = analyze({ issues: [] });
-  const still = validate('challenge', challenge({ confirmed: [] }), { analyze: empty });
+  const still = validate('challenge', challenge({ confirmed: [], issues: [] }), { analyze: empty });
   assert.equal(still.status, 0, still.stderr);
 
-  const revised = {
-    step: 'revise',
-    marker: 'REVISION',
-    cyclePass: 1,
-    rerun: false,
+  const kept = validate('challenge', challenge({
+    confirmed: [],
+    rejected: [entry({ verdict: 'rejected' })],
     issues: [issue()],
-    opportunities: [],
     accounted: [],
-    mechanismsReapplied: ['dedupe', 'priority'],
-  };
-  const kept = validate('revise', revised, {
-    challenge: challenge({
-      confirmed: [],
-      rejected: [entry({ verdict: 'rejected' })],
-    }),
-  });
+  }), { analyze: analyze() });
   assert.equal(kept.status, 1, kept.stderr);
 });
 
@@ -414,11 +416,6 @@ test('a text review run validates end to end and stops when scope halts', () => 
     },
     'analyze.json': analyze(),
     'challenge.json': challenge(),
-    'revise.json': {
-      step: 'revise', marker: 'REVISION', cyclePass: 1, rerun: false,
-      issues: [issue()], opportunities: [], accounted: [],
-      mechanismsReapplied: ['dedupe', 'priority'],
-    },
     'close.json': closeArtifact(),
     'report.md': report,
   };

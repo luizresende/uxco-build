@@ -4,7 +4,9 @@ Um diagnóstico inicial, já consolidado. Marcador `INITIAL_ANALYSIS`. Isto não
 
 ## Critique Orchestration
 
-Varra L0 L1 L2 L3 L4 L5 L6 L7 L8 quando aplicável, pelo `standards/critique-framework.md`. Sem cota de achados.
+Varra L0 L1 L2 L3 L4 L5 L6 L7 L8 quando aplicável. O texto integral, a desambiguação e o mapeamento para o quality-framework ficam em `standards/critique-framework.md` e não entram nesta fase. Sem cota de achados.
+
+L0 intenção do produto. L1 caminho da tarefa. L2 organização e nomes. L3 affordance e feedback. L4 microcopy. L5 hierarquia visual. L6 consistência. L7 acessibilidade. L8 estados e extremos. Causa na camada mais estrutural.
 
 ### Gate de evidência por camada
 
@@ -17,7 +19,7 @@ Falsa precisão é falha nas duas direções: fabricar achado, ou apresentar cam
 
 ### Roteamento da Interaction Design
 
-`skills/interaction-design/SKILL.md` entra automático quando `needsFlowSkill` é true (`flow`, multi-tela, sequência de interação). Aí `interactionDesign` é `loaded` — o orquestrador entregou o arquivo.
+Quando `needsFlowSkill` é true (`flow`, multi-tela, sequência de interação), aplique as doze dimensões abaixo e marque `interactionDesign: loaded`. `skills/interaction-design/SKILL.md` não está na lista desta fase.
 
 Em tela isolada a skill não vem no contexto. Cheiro comportamental (fluxo crítico, estado suspeito, recuperação de erro) vira `interactionDesign: on-demand` e `behavioralSmell` nomeia o cheiro. Não simule o método da skill. O achado, se houver, sai da Design Critique, com a validação pendente.
 

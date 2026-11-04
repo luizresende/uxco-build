@@ -6,7 +6,7 @@ As oito falhas de execução estão nomeadas em `workflows/review/failures.md`. 
 
 ## Purpose
 
-Responder se o design está pronto e, se não está, o que muda primeiro. O primeiro diagnóstico não é a conclusão: `analyze` produz, `challenge` ataca, `revise` deixa um diagnóstico, `close` audita o review e pontua o design.
+Responder se o design está pronto e, se não está, o que muda primeiro. O primeiro diagnóstico não é a conclusão: `analyze` produz, `challenge` ataca e deixa um diagnóstico, `close` audita o review e pontua o design.
 
 ## Trigger
 
@@ -25,7 +25,7 @@ Não dispara crítica pontual nem pedido de design novo.
 
 ## Process
 
-Sete fases. Pipeline canônico — o mapa abaixo conserva os 17 estágios. A inspeção vem antes do brief porque o snapshot é evidência do próprio brief.
+Seis fases. Pipeline canônico — o mapa abaixo conserva os 17 estágios. A inspeção vem antes do brief porque o snapshot é evidência do próprio brief. Crítica e revisão saem no mesmo artefato; o validador ainda exige o record e o diagnóstico único, com `cyclePass` 1.
 
 | Estágio canônico | Fase |
 | --- | --- |
@@ -42,13 +42,13 @@ Sete fases. Pipeline canônico — o mapa abaixo conserva os 17 estágios. A ins
 | 11. Deduplicate findings | analyze |
 | 12. Prioritize issues | analyze |
 | 13. Challenge the diagnosis | challenge |
-| 14. Revise the diagnosis | revise |
+| 14. Revise the diagnosis | challenge |
 | 15. Audit review quality | close |
 | 16. Generate report | close |
 | 17. Present next steps | close |
 
 ```text
-scope → inspect (se canvas) → ground → analyze → challenge → revise → close
+scope → inspect (se canvas) → ground → analyze → challenge → close
 ```
 
 Marcadores, uma vez cada, nesta ordem: `INITIAL_ANALYSIS`, `ADVERSARIAL_REVIEW`, `REVISION`, `FINAL_QA`.
@@ -65,7 +65,7 @@ O usuário recebe o Design Critique Report da fase `close`. Quality Gate sempre 
 
 ## Completion Criteria
 
-O review está completo quando as sete fases rodaram até `close` com o validador em saída 0, ou quando uma parada válida (saída 2) foi mostrada com o motivo. Desvio de profundidade não pula gate.
+O review está completo quando as seis fases rodaram até `close` com o validador em saída 0, ou quando uma parada válida (saída 2) foi mostrada com o motivo. Desvio de profundidade não pula gate.
 
 1. Report na composição da fase close, com Quality Gate.
 2. Scope com origem.
