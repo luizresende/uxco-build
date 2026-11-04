@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["finding", "verdict", "challenge", "basis", "change"],
+  "properties": {
+    "finding": { "type": "string" },
+    "verdict": { "enum": ["confirmed", "revised", "rejected", "added"] },
+    "challenge": { "type": "string" },
+    "basis": { "type": "string" },
+    "change": { "nullable": true, "type": "string" }
+  }
+}

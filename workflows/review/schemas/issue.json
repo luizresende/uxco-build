@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "issue", "category", "severity", "confidence", "evidence", "userImpact", "recommendation"],
+  "properties": {
+    "id": { "type": "string" },
+    "issue": { "type": "string" },
+    "category": { "enum": ["L0", "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8"] },
+    "severity": { "enum": ["Critical", "High", "Medium", "Low", "Opportunity"] },
+    "confidence": { "enum": ["High", "Medium", "Low"] },
+    "evidence": { "type": "string" },
+    "userImpact": { "type": "string" },
+    "recommendation": { "type": "string" }
+  }
+}

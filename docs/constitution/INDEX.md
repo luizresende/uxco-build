@@ -1,6 +1,6 @@
 # Índice da constituição
 
-Mapa do que saiu de `CLAUDE.md` e do que ficou. A cadeia de STEPs (passo 3 deste refactor, ainda não construída) carrega uma linha por vez. Até lá, o `/uxco-review` continua sendo o workflow em `workflows/uxco-review.md`: onde ele cita um destes arquivos, o agente abre esse arquivo.
+Mapa do que saiu de `CLAUDE.md` e do que ficou. O `/uxco-review` carrega uma fase por vez, pelo manifesto `workflows/review/manifest.json`. `workflows/uxco-review.md` é só o mapa dos 17 estágios.
 
 `CLAUDE.md` prevalece em conflito. Nada aqui revoga a constituição.
 
@@ -32,27 +32,23 @@ Também ficaram, e estão marcados como julgamento em aberto mais abaixo: duas f
 | §10 Anti-patterns 1–10 | `anti-patterns.md` | Lista numerada, números preservados. | STEP 0 e STEP 3 (10); STEP 4 e Design Critic (9) |
 | §11 Harness | `harness.md` | Runtime, `npm test` / `verify`, protocolo de sessão. | Sessão que altera o repositório. Não é insumo do review |
 
-## O que cada STEP do review precisa além do workflow
+## O que cada fase carrega
 
-O workflow, o comando e `CLAUDE.md` estão no contexto a run inteira, até a cadeia seletiva existir. A coluna "constituição sob demanda" é o que o passo 3 deve abrir naquele STEP, e não antes. A coluna "já era dependência" repete a tabela Skill Dependencies e as âncoras do workflow — o baseline em `benchmarks/harness-refactor/baseline.md` mede esse conjunto no corpus anterior a este split.
+`CLAUDE.md` entra em toda fase. O resto é a lista do manifesto — esta tabela repete essa lista para leitura humana. Se divergir do JSON, o JSON ganha.
 
-| STEP | Constituição sob demanda | Já era dependência do workflow |
-| --- | --- | --- |
-| 0 Resolve scope | `anti-patterns.md` (10), `identity-and-mission.md` (proporcionalidade) | `skills/design-critique/SKILL.md`, `standards/critique-framework.md`, `standards/design-output-format.md` |
-| 1 Paper, se o canvas for fonte | `canvas-safety.md` | `docs/architecture.md`, `experiments/paper-mcp/smoke-test.md`, `standards/accessibility-baseline.md` |
-| 2 Context phase | `context-protocol.md` | `skills/product-context/SKILL.md`, `standards/product-context-brief.md`, `scripts/context-loader.mjs` quando há memória |
-| 3 Context gate | `anti-patterns.md` (10) | `standards/product-context-brief.md`, `skills/product-context/SKILL.md` |
-| 4 Initial Analysis | `operating-principles.md` (5, 6, 7) | `skills/design-critique/SKILL.md`, `skills/interaction-design/SKILL.md` se o escopo pedir, `standards/critique-framework.md`, `standards/severity-framework.md`, `standards/design-output-format.md`, `standards/accessibility-baseline.md`, `standards/uxco-design-principles.md` |
-| 5 Consolidation | — | `standards/severity-framework.md`, `standards/critique-framework.md` |
-| 6 Adversarial Critique | `operating-principles.md` (11), `anti-patterns.md` (9) | `agents/design-critic.md`, `standards/adversarial-quality.md` |
-| 7 Revision | — | `standards/adversarial-quality.md`, `standards/severity-framework.md`, `standards/critique-framework.md` |
-| 8 Review QA | `quality-gate.md` (não esconder reprovação) | `agents/design-qa.md`, `standards/adversarial-quality.md` |
-| 9 Quality Gate | `quality-gate.md`, `decision-framework.md` se houver aceite de risco | `standards/quality-framework.md` |
-| 10 Report | `quality-gate.md`, `identity-and-mission.md` (etapa critique) | `standards/critique-framework.md`, `templates/reports/design-review.md`, `standards/adversarial-quality.md` |
-| Falha 5 | `knowledge-routing.md` | a dependência que não abriu |
-| Rotear pedido em linguagem natural | `knowledge-routing.md` | `.claude/commands/uxco-review.md` |
+| Fase | Constituição | Resto do contexto | Artefato |
+| --- | --- | --- | --- |
+| scope | `anti-patterns.md`, `identity-and-mission.md` | `standards/design-output-format.md` | `scope.json` |
+| inspect, só com canvas | `canvas-safety.md` | `docs/architecture.md`, `experiments/paper-mcp/smoke-test.md`, `standards/accessibility-baseline.md` | `inspect.json` |
+| ground | `context-protocol.md`, `anti-patterns.md` | `skills/product-context/SKILL.md`, `standards/product-context-brief.md`. O loader roda como `npm run context:load`; o fonte não entra | `ground.json` |
+| analyze | `operating-principles.md`, `anti-patterns.md` | `skills/design-critique/SKILL.md`, `skills/interaction-design/SKILL.md` só em fluxo, `standards/critique-framework.md`, `standards/severity-framework.md`, `standards/design-output-format.md`, `standards/accessibility-baseline.md`, `standards/uxco-design-principles.md` | `analyze.json` |
+| challenge | `operating-principles.md`, `anti-patterns.md` | `agents/design-critic.md`, `standards/adversarial-quality.md` | `challenge.json` |
+| revise | — | `standards/adversarial-quality.md`, `standards/severity-framework.md`, `standards/critique-framework.md` | `revise.json` |
+| close | `quality-gate.md`, `decision-framework.md`, `identity-and-mission.md` | `agents/design-qa.md`, `standards/adversarial-quality.md`, `standards/quality-framework.md`, `standards/critique-framework.md`, `templates/reports/design-review.md` | `close.json` + `report.md` |
 
-`harness.md` não entra nessa tabela.
+`knowledge-routing.md` fica no orquestrador, e só quando o pedido vem em linguagem natural. `harness.md` não entra no review.
+
+A cadeia seguiu com os julgamentos abaixo ainda abertos. Não voltou princípio nem regra de Paper para `CLAUDE.md`. Paper carrega em `inspect`. Os doze princípios operacionais carregam em `analyze` e `challenge`, porque o arquivo é curto, não porque o julgamento tenha sido fechado.
 
 ## Julgamentos em aberto
 

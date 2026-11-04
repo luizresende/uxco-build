@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["step", "marker", "cyclePass", "rerun", "issues", "opportunities", "accounted", "mechanismsReapplied"],
+  "properties": {
+    "step": { "const": "revise" },
+    "marker": { "const": "REVISION" },
+    "cyclePass": { "const": 1 },
+    "rerun": { "const": false },
+    "issues": { "type": "array", "items": { "$ref": "issue.json" } },
+    "opportunities": { "type": "array", "items": { "$ref": "issue.json" } },
+    "accounted": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "as", "text"],
+        "properties": {
+          "id": { "type": "string" },
+          "as": { "enum": ["open-question", "dropped"] },
+          "text": { "type": "string" }
+        }
+      }
+    },
+    "mechanismsReapplied": { "type": "array", "items": { "enum": ["dedupe", "priority"] } }
+  }
+}

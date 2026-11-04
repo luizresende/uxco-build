@@ -15,6 +15,13 @@ const exists = (p) => existsSync(join(root, p));
 const read = (p) => readFileSync(join(root, p), 'utf8');
 
 const WORKFLOW = 'workflows/uxco-review.md';
+const MANIFEST = 'workflows/review/manifest.json';
+const SCOPE = 'workflows/review/steps/scope.md';
+const INSPECT = 'workflows/review/steps/inspect.md';
+const GROUND = 'workflows/review/steps/ground.md';
+const ANALYZE = 'workflows/review/steps/analyze.md';
+const CLOSE = 'workflows/review/steps/close.md';
+const FAILURES = 'workflows/review/failures.md';
 const COMMAND = '.claude/commands/uxco-review.md';
 const SCENARIOS = 'tests/review-workflow/scope-scenarios.md';
 const TEMPLATE = 'templates/reports/design-review.md';
@@ -37,36 +44,46 @@ test('required sprint 4 files exist', () => {
   for (const p of required) assert.ok(exists(p), `missing: ${p}`);
 });
 
-test('workflow has all mandatory sections', () => {
-  const wf = read(WORKFLOW);
-  const sections = [
-    '## Purpose', '## Trigger', '## Inputs', '## Preconditions',
-    '## Scope Resolution', '## Context Integration', '## Paper Inspection',
-    '## Critique Orchestration', '## Issue Model', '## Adversarial Quality Engine',
-    '## Safety Model', '## Skill Dependencies', '## Process', '## Output',
-    '## Completion Criteria', '## Failure Handling', '## Failure Conditions',
-    '## Quality Checklist',
-  ];
-  for (const s of sections) assert.ok(wf.includes(s), `missing section: ${s}`);
+test('the chain keeps each contract in one place', () => {
+  const pointer = read(WORKFLOW);
+  for (const s of ['## Purpose', '## Trigger', '## Preconditions', '## Process',
+    '## Safety Model', '## Completion Criteria', '## Failure Conditions']) {
+    assert.ok(pointer.includes(s), `pointer missing ${s}`);
+  }
+  const owned = {
+    [SCOPE]: ['## Scope Resolution'],
+    [GROUND]: ['## Context Integration'],
+    [INSPECT]: ['## Paper Inspection'],
+    [ANALYZE]: ['## Critique Orchestration', '## Issue Model'],
+    'workflows/review/steps/challenge.md': ['## Adversarial Quality Engine'],
+    [CLOSE]: ['## Output'],
+    [FAILURES]: ['Paper indisponível', 'QA reprovando o review'],
+    [MANIFEST]: ['"mode": "READ"'],
+  };
+  for (const [file, parts] of Object.entries(owned)) {
+    const text = read(file);
+    for (const part of parts) assert.ok(text.includes(part), `${file} missing ${part}`);
+  }
 });
 
-test('workflow defines the eleven steps in order', () => {
-  const wf = read(WORKFLOW);
-  const process = wf.split('## Process')[1];
-  assert.ok(process, 'missing Process section');
-  const steps = ['STEP 0', 'STEP 1', 'STEP 2', 'STEP 3', 'STEP 4', 'STEP 5',
-    'STEP 6', 'STEP 7', 'STEP 8', 'STEP 9', 'STEP 10'];
+test('manifest defines the seven phases in order', () => {
+  const manifest = JSON.parse(read(MANIFEST));
+  const ids = ['scope', 'inspect', 'ground', 'analyze', 'challenge', 'revise', 'close'];
+  assert.deepEqual(manifest.steps.map((step) => step.id), ids);
+  const cmd = read(COMMAND);
+  const orderLine = cmd.split('\n').find((line) => line.startsWith('Fases, nesta ordem'));
+  assert.ok(orderLine, 'command must list the phases in one line');
   let last = -1;
-  for (const s of steps) {
-    const i = process.indexOf(s);
-    assert.ok(i !== -1, `missing step: ${s}`);
-    assert.ok(i > last, `step out of order: ${s}`);
+  for (const id of ids) {
+    const i = orderLine.indexOf(`\`${id}\``);
+    assert.ok(i !== -1, `command missing phase: ${id}`);
+    assert.ok(i > last, `phase out of order in the command: ${id}`);
     last = i;
   }
 });
 
 test('workflow defines the scope resolution contract', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(SCOPE);
   const sr = wf.split('## Scope Resolution')[1]?.split('\n## ')[0];
   assert.ok(sr, 'missing Scope Resolution section');
   // as cinco unidades de escopo aceitas
@@ -87,7 +104,7 @@ test('workflow defines the scope resolution contract', () => {
 });
 
 test('workflow formalizes the auditable scope block', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(SCOPE);
   const block = wf.split('### Scope block')[1]?.split('\n### ')[0];
   assert.ok(block, 'missing Scope block subsection');
   for (const f of ['Type:', 'Name:', 'Source:', 'Includes:', 'Confidence:', 'Ambiguities:']) {
@@ -103,7 +120,7 @@ test('workflow formalizes the auditable scope block', () => {
 });
 
 test('workflow maps the five canonical detection cases with behavioral scenarios', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(SCOPE);
   const cases = wf.split('### Casos canônicos de detecção')[1]?.split('\n## ')[0];
   assert.ok(cases, 'missing detection cases subsection');
   const rows = cases.split('\n').filter(
@@ -126,7 +143,7 @@ test('workflow maps the five canonical detection cases with behavioral scenarios
 });
 
 test('workflow orchestrates the existing engines by reference, not copies', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(MANIFEST) + read(ANALYZE);
   const refs = [
     'skills/product-context/SKILL.md',
     'skills/design-critique/SKILL.md',
@@ -142,7 +159,7 @@ test('workflow orchestrates the existing engines by reference, not copies', () =
 });
 
 test('workflow integrates the context engine without replicating it', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(GROUND);
   const ci = wf.split('## Context Integration')[1]?.split('\n## ')[0];
   assert.ok(ci, 'missing Context Integration section');
   // pipeline reutiliza a infraestrutura da Sprint 2, na ordem (diagrama)
@@ -171,7 +188,7 @@ test('workflow integrates the context engine without replicating it', () => {
 });
 
 test('workflow defines read-only paper inspection with an auditable snapshot', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(INSPECT);
   const pi = wf.split('## Paper Inspection')[1]?.split('\n## ')[0];
   assert.ok(pi, 'missing Paper Inspection section');
   assert.ok(pi.includes('`READ`') && pi.includes('PAPER_READY'),
@@ -189,7 +206,7 @@ test('workflow defines read-only paper inspection with an auditable snapshot', (
 });
 
 test('workflow gates every critique layer on available evidence', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(ANALYZE);
   const co = wf.split('## Critique Orchestration')[1]?.split('\n## ')[0];
   assert.ok(co, 'missing Critique Orchestration section');
   // as nove camadas nomeadas por referência ao framework (sem redefinir a tabela)
@@ -209,7 +226,7 @@ test('workflow gates every critique layer on available evidence', () => {
 });
 
 test('workflow routes interaction design and consolidates findings without duplication', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(ANALYZE);
   const co = wf.split('## Critique Orchestration')[1]?.split('\n## ')[0];
   const routing = co?.split('### Roteamento da Interaction Design')[1]?.split('\n### ')[0];
   assert.ok(routing, 'missing Interaction Design routing subsection');
@@ -236,7 +253,7 @@ test('workflow routes interaction design and consolidates findings without dupli
 });
 
 test('workflow issue model restates the canonical contract without divergence', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(ANALYZE);
   const im = wf.split('## Issue Model')[1]?.split('\n## ')[0];
   assert.ok(im, 'missing Issue Model section');
   // mesmo contrato dos standards, nos mesmos campos e na mesma ordem
@@ -271,7 +288,7 @@ test('workflow issue model restates the canonical contract without divergence', 
 });
 
 test('workflow severity engine defers to the framework and keeps confidence orthogonal', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(ANALYZE);
   const se = wf.split('### Severity Engine')[1]?.split('\n## ')[0];
   assert.ok(se, 'missing Severity Engine subsection');
   // uma escala só: o framework é a fonte integral, sem definição concorrente
@@ -294,17 +311,22 @@ test('workflow severity engine defers to the framework and keeps confidence orth
 });
 
 test('workflow consolidates the full finding set in a dedicated stage before the report', () => {
-  const wf = read(WORKFLOW);
-  // STEP 5 é a etapa de consolidação, antes do gate e do report
-  const process = wf.split('## Process')[1];
-  const stepList = process.split('```text')[1]?.split('```')[0];
-  assert.ok(/STEP 5\s+Consolidation/.test(stepList), 'STEP 5 must be the consolidation stage');
-  assert.ok(stepList.indexOf('Consolidation') < stepList.indexOf('Quality Gate'),
+  const manifest = JSON.parse(read(MANIFEST));
+  const ids = manifest.steps.map((step) => step.id);
+  assert.ok(ids.indexOf('analyze') < ids.indexOf('challenge'),
+    'consolidation lives in analyze, before the critique');
+  assert.ok(ids.indexOf('challenge') < ids.indexOf('close'),
+    'the critique must precede the report');
+  const analyze = manifest.steps.find((step) => step.id === 'analyze');
+  assert.ok(analyze.stages.includes('Deduplicate findings'),
+    'dedupe stays inside the initial analysis');
+  assert.ok(analyze.stages.indexOf('Deduplicate findings') <
+    manifest.steps.find((step) => step.id === 'close').stages.indexOf('Generate report') ||
+    ids.indexOf('analyze') < ids.indexOf('close'),
     'consolidation must precede the quality gate');
-  assert.ok(process.includes('conjunto **consolidado**, nunca o bruto'),
-    'the gate must score the consolidated set');
-  // contrato do estágio: os cinco deveres + sinal sobre volume
-  const cons = wf.split('### Consolidação')[1]?.split('\n### ')[0]?.split('\n## ')[0];
+  assert.ok(read(CLOSE).includes('diagnóstico revisado'),
+    'the gate must score the revised, already consolidated set');
+  const cons = read(ANALYZE).split('### Consolidação')[1]?.split('\n### ')[0]?.split('\n## ')[0];
   assert.ok(cons, 'missing consolidation contract');
   for (const duty of ['duplicata', 'agrupa', 'severidade', 'evidência', 'prioridade']) {
     assert.ok(cons.toLowerCase().includes(duty), `missing consolidation duty: ${duty}`);
@@ -316,7 +338,7 @@ test('workflow consolidates the full finding set in a dedicated stage before the
 });
 
 test('workflow report composition maps every canonical section to the official contract', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(CLOSE);
   const out = wf.split('## Output')[1]?.split('\n## ')[0];
   assert.ok(out, 'missing Output section');
   assert.ok(out.includes('Composição do report'), 'missing report composition map');
@@ -373,14 +395,18 @@ test('workflow documentation sections carry their required substance', () => {
   const pre = section('Preconditions');
   assert.ok(pre.includes('Artefato observável') && pre.includes('PAPER_READY'),
     'Preconditions must name the observable artifact and canvas readiness');
-  const deps = section('Skill Dependencies');
+  const manifest = read(MANIFEST);
   for (const d of ['skills/product-context/SKILL.md', 'skills/design-critique/SKILL.md',
-    'skills/interaction-design/SKILL.md', 'scripts/context-loader.mjs']) {
-    assert.ok(deps.includes(d), `Skill Dependencies missing: ${d}`);
+    'skills/interaction-design/SKILL.md']) {
+    assert.ok(manifest.includes(d), `manifest missing dependency: ${d}`);
   }
+  assert.ok(!manifest.includes('scripts/context-loader.mjs'),
+    'the loader source stays out of the model context');
+  assert.ok(read(GROUND).includes('npm run context:load'),
+    'ground still runs the loader as a command');
   const done = section('Completion Criteria');
-  assert.ok(done.includes('11 STEPs') && done.includes('Quality Gate'),
-    'Completion Criteria must bind steps and gate');
+  assert.ok(done.includes('sete fases') && done.includes('Quality Gate'),
+    'Completion Criteria must bind the phases and the gate');
   assert.ok(done.includes('Gate reprovado não é review incompleto'),
     'failed gate must not equal incomplete review');
 });
@@ -390,7 +416,7 @@ test('report template materializes the official contract with explicit-absence r
   const t = read(TEMPLATE);
   // propriedade do contrato declarada: o molde não é um segundo contrato
   assert.ok(t.includes('standards/critique-framework.md') &&
-    t.includes('workflows/uxco-review.md'), 'template must name its contract owners');
+    t.includes('workflows/review/manifest.json'), 'template must name its contract owners');
   assert.ok(t.includes('contrato de saída, não texto rígido'));
   // todas as seções oficiais do report presentes no esqueleto
   for (const s of ['## Executive Summary', '## Issues', '## Patterns Detected',
@@ -413,9 +439,9 @@ test('report template materializes the official contract with explicit-absence r
 });
 
 test('workflow treats the eight failure modes explicitly', () => {
-  const wf = read(WORKFLOW);
-  const fh = wf.split('## Failure Handling')[1]?.split('\n## ')[0];
-  assert.ok(fh, 'missing Failure Handling section');
+  const fh = [
+    read(FAILURES), read(SCOPE), read(INSPECT), read(GROUND), read(ANALYZE), read(CLOSE),
+  ].join('\n');
   // os oito modos, na ordem canônica (7–8 chegaram com a camada adversarial)
   const modes = ['Paper indisponível', 'Nenhum escopo identificável',
     'Contexto incompleto, mas suficiente', 'Contexto crítico ausente',
@@ -453,7 +479,7 @@ test('workflow treats the eight failure modes explicitly', () => {
 });
 
 test('workflow honors the context gate contract of the Brief', () => {
-  const wf = read(WORKFLOW);
+  const wf = read(GROUND);
   for (const token of ['PROCEED', 'PROCEED WITH ASSUMPTIONS', 'REQUEST BLOCKING CONTEXT']) {
     assert.ok(wf.includes(token), `missing Execution Recommendation token: ${token}`);
   }

@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "reason"],
+  "properties": {
+    "status": { "enum": ["evaluated", "not-evaluable", "out-of-scope"] },
+    "reason": { "type": "string" }
+  }
+}

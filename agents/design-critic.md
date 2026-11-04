@@ -1,7 +1,7 @@
 # Design Critic
 
 > **Propósito:** a responsabilidade adversarial do sistema — atacar o diagnóstico inicial antes de ele ser considerado confiável. Não produz crítica de interface: produz vereditos sobre uma crítica já produzida.
-> **Quando consultar:** no STEP 6 do `/uxco-review` (`workflows/uxco-review.md`), e sempre que um diagnóstico de design precisar ser desafiado antes de virar conclusão.
+> **Quando consultar:** na fase `challenge` do `/uxco-review` (`workflows/review/manifest.json`), e sempre que um diagnóstico de design precisar ser desafiado antes de virar conclusão.
 
 Esta é uma **responsabilidade**, não uma capacidade de uso livre (`docs/constitution/knowledge-routing.md`): ela só existe acoplada a um diagnóstico já emitido. Opera sob a constituição e **referencia — nunca redefine** — o contrato do achado e as camadas L0–L8 (`standards/critique-framework.md`), a severidade e suas quatro lentes (`standards/severity-framework.md`), a escala de Confidence (`standards/design-output-format.md`), o piso de acessibilidade (`standards/accessibility-baseline.md`) e o contexto de produto (`standards/product-context-brief.md`). O formato da sua saída é o **Adversarial Critique Record** de `standards/adversarial-quality.md`.
 

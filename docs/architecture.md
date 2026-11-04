@@ -65,7 +65,7 @@ Quality Gate                        standards/quality-framework → veredito do 
 Design Critique Report
 ```
 
-O **Review Workflow** (Sprint 4, `workflows/uxco-review.md`) é o orquestrador dessa pilha; o comando `/uxco-review` é um roteador fino para ele. Nenhuma camada chama outra diretamente: o workflow aciona cada uma e passa adiante o artefato que ela produziu.
+O **Review** (Sprint 4, hoje a cadeia em `workflows/review/manifest.json`; `workflows/uxco-review.md` guarda o mapa) é o orquestrador dessa pilha; o comando `/uxco-review` é um roteador fino para ela. Nenhuma camada chama outra diretamente: cada fase recebe o artefato da anterior e produz o seu.
 
 ### Por que a camada adversarial existe
 
@@ -101,7 +101,7 @@ Decisões de arquitetura que delimitam a camada:
 4. **`agents/` em vez de `skills/`.** Critic e QA não são capacidades de uso livre: só existem acoplados a um estágio do review, com um artefato de entrada obrigatório. A camada `agents/` já estava declarada na hierarquia da constituição (`docs/constitution/knowledge-routing.md`) e esta é a sua primeira instância.
 5. **Observabilidade sem chain-of-thought.** Cada estágio registra um marcador canônico (`INITIAL_ANALYSIS` · `ADVERSARIAL_REVIEW` · `REVISION` · `FINAL_QA`), e o report carrega um bloco compacto (`## Review Assurance`) com o trace, as contagens do desafio e o veredito do QA. O trace declara **que** o estágio aconteceu e o que mudou em números — nunca como se chegou lá.
 
-Contratos completos em `standards/adversarial-quality.md`; o processo executável, nos STEPs 6–8 de `workflows/uxco-review.md`.
+Contratos completos em `standards/adversarial-quality.md`; o processo executável, nas fases `challenge`, `revise` e `close` de `workflows/review/manifest.json`.
 
 ### O que ainda não está medido
 

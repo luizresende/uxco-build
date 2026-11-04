@@ -23,6 +23,10 @@ const STANDARD = 'standards/adversarial-quality.md';
 const CRITIC = 'agents/design-critic.md';
 const QA = 'agents/design-qa.md';
 const WORKFLOW = 'workflows/uxco-review.md';
+const CHALLENGE = 'workflows/review/steps/challenge.md';
+const REVISE = 'workflows/review/steps/revise.md';
+const CLOSE = 'workflows/review/steps/close.md';
+const MANIFEST = 'workflows/review/manifest.json';
 const COMMAND = '.claude/commands/uxco-review.md';
 const FRAMEWORK = 'standards/critique-framework.md';
 const TEMPLATE = 'templates/reports/design-review.md';
@@ -105,7 +109,7 @@ test('stage markers are canonical, ordered, and shared by standard, workflow and
 
 test('ADV-F: the adversarial cycle is bounded to one pass of each stage, with no recursion', () => {
   const std = read(STANDARD);
-  const wf = read(WORKFLOW);
+  const wf = read(CHALLENGE);
 
   // o invariante numérico declarado nos dois lugares, idêntico
   const bound = /MÁXIMO:\s*1 adversarial critique\s*·\s*1 revision\s*·\s*1 final QA/;
@@ -270,7 +274,7 @@ test('ADV-A: a finding that resists the challenge survives intact, and confirmin
   assert.ok(/`confirmed`[^|]*\|[^|]*\|[^|]*`Change: None`/.test(c) ||
     /Change: None/.test(c), 'confirmed must declare Change: None explicitly');
   // o achado confirmado é preservado pela Revision
-  const rev = read(WORKFLOW).split('### Revision — um diagnóstico só')[1]?.split('\n### ')[0];
+  const rev = read(REVISE).split('### Revision — um diagnóstico só')[1]?.split('\n### ')[0];
   assert.ok(rev, 'missing revision contract');
   assert.ok(/resistir ao desafio é preservação/.test(rev),
     'the revision must preserve confirmed findings');
@@ -365,7 +369,7 @@ test('ADV-D: a missing finding can be discovered, but needs the same citable evi
   assert.ok(/Omissão sem evidência observável é Open Question/.test(c),
     'an unsupported omission must be an Open Question, not a finding');
   // a Revision incorpora a omissão no contrato pleno de 7 campos
-  const rev = read(WORKFLOW).split('### Revision — um diagnóstico só')[1]?.split('\n### ')[0];
+  const rev = read(REVISE).split('### Revision — um diagnóstico só')[1]?.split('\n### ')[0];
   assert.ok(/7 campos/.test(rev) && /sem desconto de evidência/.test(rev),
     'the revision must add omissions under the full finding contract');
   // o gabarito ancora a omissão na memória real do projeto — contexto de verdade
@@ -445,7 +449,7 @@ test('the review QA record has seven dimensions, a coarse scale and no composite
 
 test('QA blockers stay separate from the design quality gate blockers', () => {
   const std = read(STANDARD);
-  const wf = read(WORKFLOW);
+  const wf = read(CLOSE);
   const q = read(QA);
 
   // lista própria, nunca derivada por aritmética
@@ -478,7 +482,7 @@ test('QA blockers stay separate from the design quality gate blockers', () => {
 test('the report carries one revised diagnosis and a compact Review Assurance', () => {
   const fw = read(FRAMEWORK);
   const tpl = read(TEMPLATE);
-  const wf = read(WORKFLOW);
+  const wf = read(CLOSE);
   const std = read(STANDARD);
 
   // a seção é do contrato oficial — não uma seção paralela do workflow
@@ -522,27 +526,20 @@ test('the report carries one revised diagnosis and a compact Review Assurance', 
 // ------------------------------------------------------- workflow: os estágios
 
 test('the workflow wires the three new steps into the pipeline without losing the old ones', () => {
-  const wf = read(WORKFLOW);
-  const process = wf.split('## Process')[1]?.split('\n## ')[0];
-  const stepList = process.split('```text')[1]?.split('```')[0];
-  assert.ok(stepList, 'missing step list');
-
-  // os três estágios novos, na posição certa: depois da consolidação, antes do gate
-  assert.ok(/STEP 6\s+Adversarial Critique/.test(stepList), 'STEP 6 must be the critique');
-  assert.ok(/STEP 7\s+Revision/.test(stepList), 'STEP 7 must be the revision');
-  assert.ok(/STEP 8\s+Review QA/.test(stepList), 'STEP 8 must be the QA');
-  assert.ok(stepList.indexOf('Consolidation') < stepList.indexOf('Adversarial Critique'),
+  const manifest = JSON.parse(read(MANIFEST));
+  const ids = manifest.steps.map((step) => step.id);
+  assert.ok(ids.indexOf('analyze') < ids.indexOf('challenge'),
     'the critique must attack an already consolidated diagnosis');
-  assert.ok(stepList.indexOf('Review QA') < stepList.indexOf('Quality Gate'),
-    'the review QA must precede the design quality gate');
-  assert.ok(stepList.indexOf('Quality Gate') < stepList.indexOf('Report'),
-    'the gate must still precede the report');
-
-  // o gate pontua o diagnóstico revisado, não o inicial
-  assert.ok(/pior achado do diagnóstico \*\*revisado\*\*/.test(process),
+  assert.ok(ids.indexOf('challenge') < ids.indexOf('revise'));
+  assert.ok(ids.indexOf('revise') < ids.indexOf('close'),
+    'the review QA must precede the design quality gate and the report, which share close');
+  const close = manifest.steps.find((step) => step.id === 'close');
+  assert.ok(close.stages.indexOf('Audit review quality') < close.stages.indexOf('Generate report'),
+    'the gate audit of the review still precedes the report');
+  assert.ok(read(CLOSE).includes('diagnóstico revisado'),
     'the quality gate must score the revised diagnosis');
-  // a seção de orquestração existe e declara as quatro responsabilidades
-  const engine = section(WORKFLOW, 'Adversarial Quality Engine');
+
+  const engine = section(CHALLENGE, 'Adversarial Quality Engine');
   assert.ok(engine.includes('### Fronteira — quem pergunta o quê'),
     'the engine section must declare the boundary');
   for (const stage of ['Initial Analysis', 'Adversarial Critique', 'Revision', 'Review QA']) {
@@ -550,14 +547,12 @@ test('the workflow wires the three new steps into the pipeline without losing th
   }
   assert.ok(/não quatro personas|[Nn]ão são personas/.test(engine),
     'the stages must be declared responsibilities, not personas');
-  // dependências declaradas por referência, sem redefinir método
-  const deps = section(WORKFLOW, 'Skill Dependencies');
+  const deps = read(MANIFEST);
   for (const d of [CRITIC, QA, STANDARD]) {
-    assert.ok(deps.includes(d), `Skill Dependencies missing: ${d}`);
+    assert.ok(deps.includes(d), `manifest missing: ${d}`);
   }
-  // critérios de conclusão passaram a exigir o ciclo observável
   const done = section(WORKFLOW, 'Completion Criteria');
-  assert.ok(/11 STEPs/.test(done), 'completion criteria must bind the eleven steps');
+  assert.ok(/sete fases/.test(done), 'completion criteria must bind the seven phases');
   assert.ok(/[Cc]iclo adversarial completo e observável/.test(done),
     'completion must require the observable cycle');
   assert.ok(/Veredito do QA presente/.test(done),
@@ -575,7 +570,9 @@ test('ADV-G regression: the sprint 4 review contract survives the sprint 5 chang
   assert.deepEqual(commands, ['uxco-review.md'],
     'no new command may be introduced — /uxco-review stays the only interface');
   assert.ok(!exists('.claude/commands/uxco-review-v2.md'), 'no v2 command');
-  assert.ok(cmd.includes('STEPs 0–10'), 'the command must route to all eleven steps');
+  for (const id of ['scope', 'inspect', 'ground', 'analyze', 'challenge', 'revise', 'close']) {
+    assert.ok(cmd.includes(`\`${id}\``), `command missing phase: ${id}`);
+  }
 
   // o review segue integralmente READ, inclusive nos estágios novos
   const safety = section(WORKFLOW, 'Safety Model');
@@ -585,10 +582,16 @@ test('ADV-G regression: the sprint 4 review contract survives the sprint 5 chang
   assert.ok(/Critic e QA também são integralmente `READ`/.test(safety),
     'critic and QA must be READ-only too');
 
-  // mecanismos da Sprint 4 intactos
-  for (const s of ['## Scope Resolution', '## Context Integration', '## Paper Inspection',
-    '## Critique Orchestration', '## Issue Model']) {
-    assert.ok(wf.includes(s), `sprint 4 section lost: ${s}`);
+  // mecanismos da Sprint 4 intactos, agora cada um na fase que o executa
+  const kept = {
+    'workflows/review/steps/scope.md': '## Scope Resolution',
+    'workflows/review/steps/ground.md': '## Context Integration',
+    'workflows/review/steps/inspect.md': '## Paper Inspection',
+    'workflows/review/steps/analyze.md': '## Critique Orchestration',
+    'workflows/review/steps/analyze.md#issue': '## Issue Model',
+  };
+  for (const [file, heading] of Object.entries(kept)) {
+    assert.ok(read(file.split('#')[0]).includes(heading), `sprint 4 section lost: ${heading}`);
   }
   assert.ok(/Quality Gate sempre presente|seções \*\*Quality Gate\*\*/.test(wf),
     'the formal quality gate must remain mandatory');
@@ -607,8 +610,10 @@ test('regression: the sprint 5 change added no dependency and no new infrastruct
   assert.ok(!pkg.dependencies, 'no runtime dependencies may be added');
   assert.ok(!pkg.devDependencies, 'no dev dependencies may be added');
   // a suíte nova é coberta pelo glob existente — nenhum script novo necessário
-  assert.ok(pkg.scripts.test.includes('tests/review-workflow/*.test.mjs'),
-    'the existing test glob must already cover the new suite');
+  assert.equal(pkg.scripts.test, 'node scripts/run-tests.mjs',
+    'the suite runs from an explicit file list so Node 20 and Node 22 behave the same');
+  assert.ok(read('scripts/run-tests.mjs').includes('tests/review-workflow'),
+    'the runner must cover the review suite');
   assert.ok(pkg.scripts.verify === 'npm run preflight && npm test',
     'verify must remain pure orchestration');
   assert.ok(!exists('.mcp.json') || true, 'no new MCP wiring is required by this sprint');

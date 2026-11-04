@@ -122,19 +122,15 @@ O primeiro workflow do sistema (Sprint 4): a orquestração que conecta os dois 
 ```text
 /uxco-review <alvo>
       ↓
-workflows/uxco-review.md
+workflows/review/manifest.json
       ↓
-STEP 0-1  escopo · preflight condicional (canvas → PAPER_READY)
-STEP 2-3  Product Context Skill → Brief → gate de contexto
-STEP 4-5  Initial Analysis — Design Critique (+ Interaction Design) → consolidação
-STEP 6    Adversarial Critique — Design Critic desafia o diagnóstico
-STEP 7    Revision — vereditos incorporados em um diagnóstico só
-STEP 8    Review QA — Design QA audita a qualidade do review
-STEP 9-10 Quality Gate do design → Design Critique Report
+scope → inspect (só canvas) → ground → analyze → challenge → revise → close
 ```
 
-- **Workflow** — [`workflows/uxco-review.md`](workflows/uxco-review.md): processo em 11 STEPs com gates explícitos; orquestra por referência (nenhum método é redefinido) e é integralmente operação `READ` — review nunca escreve no canvas nem na memória.
-- **Comando** — [`.claude/commands/uxco-review.md`](.claude/commands/uxco-review.md): o slash command real do Claude Code; roteador fino para o workflow. Formas de invocação:
+Cada fase é um subagente com a própria lista de arquivos. O estado que passa adiante é um JSON. `node scripts/chain.mjs validate` recusa artefato fora do contrato: saída 2 é parada válida, saída 1 é contrato quebrado e a fase não se repete. O review continua `READ`.
+
+- **Cadeia** — [`workflows/review/manifest.json`](workflows/review/manifest.json): fases, contexto, artefatos e gates. [`workflows/uxco-review.md`](workflows/uxco-review.md) guarda o mapa dos 17 estágios, não o processo. Outro comando futuro reusa o mesmo validador com outro manifesto.
+- **Comando** — [`.claude/commands/uxco-review.md`](.claude/commands/uxco-review.md): o slash command. Ele não carrega o corpus; dispara a fase e o validador. Formas de invocação:
 
 ```text
 /uxco-review                                   escopo pela seleção do Paper ou pelo contexto da sessão
@@ -176,7 +172,7 @@ Initial Analysis ──▶ Adversarial Critique ──▶ Revision ──▶ Rev
 Quatro responsabilidades encadeadas — **não quatro personas**: a primeira olha o design, a segunda olha a primeira, a terceira consolida, a quarta audita o resultado das três.
 
 - **Design Critic** — [`agents/design-critic.md`](agents/design-critic.md): a responsabilidade adversarial. Pergunta "onde o nosso diagnóstico pode estar errado, incompleto, superficial ou excessivamente confiante?" por dez eixos (assumptions, evidência, severidade, confidence, causalidade, estados e edge cases omitidos, encaixe no contexto, recomendações, complexidade desnecessária) e dez sondas obrigatórias — incluindo "what would falsify this diagnosis?". Emite veredito por achado: `confirmed · revised · rejected · added`. **Não repete a varredura L0–L8** e **pode concluir que o diagnóstico inicial estava correto**: confirmar tudo é resultado válido, e não existe cota de mudanças.
-- **Revision** — o estágio de consolidação no workflow (STEP 7): rejeitados saem de Issues (suspeita legítima volta como Open Question), revisados mudam campo a campo, omissões entram no contrato pleno de 7 campos, e os mecanismos de consolidação e ordenação são reaplicados ao conjunto novo. **O usuário recebe uma conclusão, nunca duas análises contraditórias.**
+- **Revision** — a fase `revise`: rejeitados saem de Issues (suspeita legítima volta como Open Question), revisados mudam campo a campo, omissões entram no contrato pleno de 7 campos, e os mecanismos de consolidação e ordenação são reaplicados ao conjunto novo. **O usuário recebe uma conclusão, nunca duas análises contraditórias.**
 - **Design QA** — [`agents/design-qa.md`](agents/design-qa.md): audita a **qualidade do review**, não o design. Sete dimensões (Context Grounding · Evidence Quality · Severity Calibration · Actionability · Completeness · Accessibility Coverage · System Consistency) em `PASS/PARTIAL/FAIL/UNKNOWN`, **sem score composto** — média de tokens de conduta seria falsa precisão. Blockers ficam em lista própria, e o **QA blocker** (o review não é confiável) nunca se confunde com o **design blocker** (o design está reprovado).
 - **Contratos** — [`standards/adversarial-quality.md`](standards/adversarial-quality.md): os dois records, os marcadores de estágio (`INITIAL_ANALYSIS` → `ADVERSARIAL_REVIEW` → `REVISION` → `FINAL_QA`) e o **ciclo único**: 1 crítica, 1 revisão, 1 QA. Nenhuma recursão, nenhum agente debatendo; QA reprovando declara o blocker em vez de reprocessar.
 
@@ -194,7 +190,7 @@ Dez cenários manuais em [`tests/foundation/scenarios.md`](tests/foundation/scen
 
 **Os demais comandos `/uxco-*` não existem ainda** — `/uxco-new-feature`, `/uxco-improve-flow`, `/uxco-explore`, `/uxco-design-qa` e `/uxco-status` estão previstos para as próximas sprints (as três skills vieram das Sprints 2–3; o workflow de review e o comando `/uxco-review`, da Sprint 4; os dois agents, da Sprint 5). Nada neste repositório deve ser lido como se eles existissem; a constituição proíbe simular componente inexistente (`CLAUDE.md`; inventário em `docs/constitution/knowledge-routing.md`).
 
-Em particular: a camada de QA da Sprint 5 é um **estágio interno** do `/uxco-review` (STEP 8), **não** o comando `/uxco-design-qa`. Um futuro comando poderá rotear para `agents/design-qa.md` sem retrabalho — mas ele ainda não existe.
+Em particular: a camada de QA da Sprint 5 é a fase `close` do `/uxco-review`, **não** o comando `/uxco-design-qa`. Um futuro comando poderá rotear para `agents/design-qa.md` sem retrabalho — mas ele ainda não existe.
 
 ## Como executar o preflight
 

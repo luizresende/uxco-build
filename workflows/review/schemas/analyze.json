@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["step", "marker", "layers", "interactionDesign", "behavioralSmell", "issues", "opportunities"],
+  "properties": {
+    "step": { "const": "analyze" },
+    "marker": { "const": "INITIAL_ANALYSIS" },
+    "interactionDesign": { "enum": ["loaded", "not-applicable", "on-demand"] },
+    "behavioralSmell": { "nullable": true, "type": "string" },
+    "layers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["L0", "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8"],
+      "properties": {
+        "L0": { "$ref": "layer.json" },
+        "L1": { "$ref": "layer.json" },
+        "L2": { "$ref": "layer.json" },
+        "L3": { "$ref": "layer.json" },
+        "L4": { "$ref": "layer.json" },
+        "L5": { "$ref": "layer.json" },
+        "L6": { "$ref": "layer.json" },
+        "L7": { "$ref": "layer.json" },
+        "L8": { "$ref": "layer.json" }
+      }
+    },
+    "issues": { "type": "array", "items": { "$ref": "issue.json" } },
+    "opportunities": { "type": "array", "items": { "$ref": "issue.json" } }
+  }
+}

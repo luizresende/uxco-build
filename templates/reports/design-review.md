@@ -1,6 +1,6 @@
 # Report Template — Design Review (`/uxco-review`)
 
-> **O que é:** o molde operacional do Design Critique Report emitido pelo `/uxco-review`. O **contrato** é o de `standards/critique-framework.md` com a Composição do report de `workflows/uxco-review.md` — este arquivo apenas os materializa como ponto de partida de preenchimento. Divergência entre o molde e o contrato resolve-se sempre a favor do contrato.
+> **O que é:** o molde operacional do Design Critique Report emitido pelo `/uxco-review`. O **contrato** é o de `standards/critique-framework.md`; a fase `close` em `workflows/review/manifest.json` é quem o preenche. Este arquivo só materializa o ponto de partida. Divergência entre o molde e o contrato resolve-se sempre a favor do contrato.
 > **Como usar:** copiar a estrutura abaixo da linha e preencher. É **contrato de saída, não texto rígido**: a redação é livre; a estrutura, os tokens canônicos e as regras de ausência não são.
 
 ## Regras de preenchimento

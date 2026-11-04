@@ -10,6 +10,11 @@
  * Uso:
  *   node scripts/measure-context.mjs
  *   node scripts/measure-context.mjs --write benchmarks/harness-refactor/baseline.md
+ *   node scripts/measure-context.mjs --chain
+ *   node scripts/measure-context.mjs --compare --write benchmarks/harness-refactor/chain-vs-baseline.md
+ *
+ * --chain e --compare medem o manifesto da cadeia. Não reescrevem o baseline
+ * congelado. Não inventam token de sessão, latência nem qualidade.
  *
  * --write recusa sobrescrever um snapshot congelado cujo fingerprint do
  * corpus divergiu, a menos que --force seja passado. O baseline commitado
@@ -601,8 +606,199 @@ function render(result) {
   return `${lines.join("\n")}\n`;
 }
 
+function unique(paths) {
+  return [...new Set(paths)];
+}
+
+function measuredFiles(paths) {
+  return unique(paths).map((path) => ({ path, ...countText(readRel(path)) }));
+}
+
+function parseBaselineRow(text, label) {
+  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = text.match(new RegExp(`\\| ${escaped} \\| (\\d+) \\| (\\d+) \\| (\\d+) \\| (\\d+) \\| (\\d+) \\|`));
+  if (!match) throw new Error(`baseline sem a linha "${label}"`);
+  return {
+    files: Number(match[1]),
+    words: Number(match[2]),
+    chars: Number(match[3]),
+    bytes: Number(match[4]),
+    tokensApprox: Number(match[5]),
+  };
+}
+
+function measureChain() {
+  const manifest = JSON.parse(readRel("workflows/review/manifest.json"));
+  const steps = manifest.steps.map((step) => {
+    const entries = step.context.map((entry) => (typeof entry === "string" ? { path: entry } : entry));
+    const floorPaths = unique([
+      ...manifest.always,
+      manifest.agent,
+      step.prompt,
+      ...entries.filter((entry) => !entry.when).map((entry) => entry.path),
+    ]);
+    const conditional = entries.filter((entry) => entry.when).map((entry) => ({
+      path: entry.path,
+      when: entry.when,
+    }));
+    const ceilingPaths = unique([...floorPaths, ...conditional.map((entry) => entry.path)]);
+    return {
+      id: step.id,
+      when: step.when,
+      conditional,
+      floor: measuredFiles(floorPaths),
+      ceiling: measuredFiles(ceilingPaths),
+    };
+  });
+  const parentFloor = measuredFiles(manifest.orchestrator.loads);
+  const parentConditional = manifest.orchestrator.conditional.map((entry) => entry.path);
+  const parentCeiling = measuredFiles([...manifest.orchestrator.loads, ...parentConditional]);
+  const union = measuredFiles([
+    ...parentCeiling.map((file) => file.path),
+    ...steps.flatMap((step) => step.ceiling.map((file) => file.path)),
+  ]);
+  const sumCeiling = steps.reduce((acc, step) => {
+    const t = totals(step.ceiling);
+    return {
+      files: acc.files + t.files,
+      words: acc.words + t.words,
+      chars: acc.chars + t.chars,
+      bytes: acc.bytes + t.bytes,
+      tokensApprox: acc.tokensApprox + t.tokensApprox,
+    };
+  }, { files: 0, words: 0, chars: 0, bytes: 0, tokensApprox: 0 });
+  return { steps, parentFloor, parentCeiling, parentConditional, union, sumCeiling };
+}
+
+function heaviest(steps, key) {
+  return steps.reduce((best, step) => (totals(step[key]).words > totals(best[key]).words ? step : best));
+}
+
+function renderChain(chain) {
+  const lines = [];
+  lines.push("# Cadeia — contexto por fase");
+  lines.push("");
+  lines.push("Medição estática do manifesto `workflows/review/manifest.json`. Não é token de sessão.");
+  lines.push("");
+  lines.push("| Fase | Arquivos no piso | Palavras no piso | Tokens aprox. no piso | Palavras no teto | Tokens aprox. no teto | Condicional |");
+  lines.push("| --- | ---: | ---: | ---: | ---: | ---: | --- |");
+  for (const step of chain.steps) {
+    const floor = totals(step.floor);
+    const ceiling = totals(step.ceiling);
+    const conditional = step.conditional.length
+      ? step.conditional.map((entry) => `\`${entry.path}\` (${entry.when})`).join(", ")
+      : step.when === "canvas"
+        ? "a fase inteira só roda quando o canvas é fonte"
+        : "—";
+    lines.push(`| \`${step.id}\` | ${floor.files} | ${floor.words} | ${floor.tokensApprox} | ${ceiling.words} | ${ceiling.tokensApprox} | ${conditional} |`);
+  }
+  lines.push("");
+  const worst = heaviest(chain.steps, "ceiling");
+  lines.push(`Pior fase no teto: \`${worst.id}\`, ${totals(worst.ceiling).words} palavras, ${totals(worst.ceiling).tokensApprox} tokens aprox.`);
+  lines.push("");
+  return `${lines.join("\n")}\n`;
+}
+
+function renderCompare(chain) {
+  const baselineText = readRel("benchmarks/harness-refactor/baseline.md");
+  if (!baselineText.includes("<!-- snapshot: frozen -->")) {
+    throw new Error("baseline.md não está marcado como congelado");
+  }
+  const eager = parseBaselineRow(baselineText, "Teto eager (união)");
+  const worst = heaviest(chain.steps, "ceiling");
+  const worstFloor = heaviest(chain.steps.filter((step) => step.when === "always"), "floor");
+  const lines = [];
+  lines.push("# Harness refactor — baseline vs cadeia");
+  lines.push("");
+  lines.push("Comparação estática. O baseline é o arquivo congelado `benchmarks/harness-refactor/baseline.md`; os números da cadeia são o working tree, lidos do manifesto. Nada aqui foi medido numa sessão de Claude Code.");
+  lines.push("");
+  lines.push("## O que entra na fase");
+  lines.push("");
+  lines.push("ASSUMPTION, não fato de runtime: o subagente de uma fase carrega `CLAUDE.md`, `.claude/agents/review-step.md`, o prompt da fase e o contexto que o manifesto declara para ela. Não carrega o slash command, o manifesto nem o prompt das fases anteriores. Se o runtime vazar arquivo já lido para a fase seguinte, o máximo por fase abaixo é menor do que a sessão real.");
+  lines.push("");
+  lines.push("Piso é a fase sem arquivo `when`. Teto soma esses condicionais. A fase `inspect` inteira só existe quando o canvas é fonte; o piso e o teto dela são o que ela carrega se rodar.");
+  lines.push("");
+  lines.push("Contagem igual à do baseline: palavras por `\\S+` (`wc -w`), tokens aprox. = soma de `ceil(bytes UTF-8 / 4)` por arquivo. Não é o tokenizador do Claude e não é consumo de sessão.");
+  lines.push("");
+  lines.push("## Por fase");
+  lines.push("");
+  lines.push("| Fase | Arquivos no piso | Palavras no piso | Tokens aprox. no piso | Palavras no teto | Tokens aprox. no teto | Condicional |");
+  lines.push("| --- | ---: | ---: | ---: | ---: | ---: | --- |");
+  for (const step of chain.steps) {
+    const floor = totals(step.floor);
+    const ceiling = totals(step.ceiling);
+    const conditional = step.conditional.length
+      ? step.conditional.map((entry) => `\`${entry.path}\` (${entry.when})`).join(", ")
+      : step.when === "canvas"
+        ? "fase inteira, só com canvas"
+        : "—";
+    lines.push(`| \`${step.id}\` | ${floor.files} | ${floor.words} | ${floor.tokensApprox} | ${ceiling.words} | ${ceiling.tokensApprox} | ${conditional} |`);
+  }
+  lines.push("");
+  lines.push("## Totais");
+  lines.push("");
+  lines.push("| Recorte | Arquivos | Palavras | Tokens aprox. |");
+  lines.push("| --- | ---: | ---: | ---: |");
+  lines.push(`| Baseline, teto eager (run inteira, antes da cadeia) | ${eager.files} | ${eager.words} | ${eager.tokensApprox} |`);
+  const worstCeiling = totals(worst.ceiling);
+  const worstFloorTotals = totals(worstFloor.floor);
+  const union = totals(chain.union);
+  const parent = totals(chain.parentFloor);
+  lines.push(`| Cadeia, pior fase no teto (\`${worst.id}\`) | ${worstCeiling.files} | ${worstCeiling.words} | ${worstCeiling.tokensApprox} |`);
+  lines.push(`| Cadeia, pior fase sempre ligada, no piso (\`${worstFloor.id}\`) | ${worstFloorTotals.files} | ${worstFloorTotals.words} | ${worstFloorTotals.tokensApprox} |`);
+  lines.push(`| Cadeia, orquestrador no piso | ${parent.files} | ${parent.words} | ${parent.tokensApprox} |`);
+  lines.push(`| Cadeia, união de todos os arquivos de instrução | ${union.files} | ${union.words} | ${union.tokensApprox} |`);
+  lines.push(`| Soma dos tetos das fases (conta arquivo compartilhado mais de uma vez; não é custo) | ${chain.sumCeiling.files} | ${chain.sumCeiling.words} | ${chain.sumCeiling.tokensApprox} |`);
+  lines.push("");
+  lines.push(`O número que substitui o teto eager, para o tamanho de uma janela, é o pior teto de fase: \`${worst.id}\`, ${worstCeiling.words} palavras, ${worstCeiling.tokensApprox} tokens aprox., contra ${eager.words} palavras e ${eager.tokensApprox} tokens aprox. do baseline.`);
+  lines.push("");
+  lines.push("A união não é o que uma run carrega de uma vez. A soma dos tetos também não: `CLAUDE.md` e o subagente entram em toda fase, e alguns standards entram em mais de uma.");
+  lines.push("");
+  lines.push("## Runtime — não medido");
+  lines.push("");
+  lines.push("Qualidade, tokens consumidos e latência continuam `UNKNOWN`. O protocolo é o do baseline (`benchmarks/harness-refactor/baseline.md`, RVW-002, RVW-004, DIF-001, ADV-001; RVW-003 só com Paper). Não há número novo nesta comparação.");
+  lines.push("");
+  lines.push("| Run | Latência (s) | Tokens entrada | Tokens saída | Qualidade |");
+  lines.push("| --- | --- | --- | --- | --- |");
+  lines.push("| RVW-002 | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN |");
+  lines.push("| RVW-004 | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN |");
+  lines.push("| DIF-001 | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN |");
+  lines.push("| ADV-001 | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN |");
+  lines.push("| RVW-003 (exige Paper) | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN |");
+  lines.push("");
+  return `${lines.join("\n")}\n`;
+}
+
+function refuseBaseline(rel) {
+  const norm = rel.replaceAll("\\", "/");
+  if (norm === "benchmarks/harness-refactor/baseline.md" || norm.endsWith("/benchmarks/harness-refactor/baseline.md")) {
+    console.error("recusado: baseline.md é um snapshot congelado. --compare escreve outro arquivo.");
+    process.exit(1);
+  }
+}
+
 function main() {
   const args = process.argv.slice(2);
+  if (args.includes("--chain") || args.includes("--compare")) {
+    const chain = measureChain();
+    const markdown = args.includes("--compare") ? renderCompare(chain) : renderChain(chain);
+    const writeFlag = args.indexOf("--write");
+    if (writeFlag === -1) {
+      process.stdout.write(markdown);
+      return;
+    }
+    const outRel = args[writeFlag + 1];
+    if (!outRel || outRel.startsWith("--")) {
+      console.error("Usage: node scripts/measure-context.mjs --compare --write <arquivo.md>");
+      process.exit(1);
+    }
+    refuseBaseline(outRel);
+    const outAbs = repoPath(outRel);
+    mkdirSync(dirname(outAbs), { recursive: true });
+    writeFileSync(outAbs, markdown);
+    console.error(`escreveu ${outRel}`);
+    return;
+  }
   const writeFlag = args.indexOf("--write");
   const force = args.includes("--force");
   const result = measure();

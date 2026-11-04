@@ -11,34 +11,33 @@
 - Sprint 4 (Review Workflow — `/uxco-review`): complete
 - Harness foundation (Instructions/Tools/Environment/State/Feedback): complete — merge em `main` pelo PR #5 (commit `91f676c`)
 - Sprint 5 (Adversarial Quality Engine): complete — merge em `main` pelo PR #6 (commit `21bec71`)
-- Refactor lean-harness, passos 1–2: **nesta branch** `refactor/lean-harness`. Baseline congelado e constituição enxuta. A cadeia de STEPs (passo 3) ainda não existe. Sem pull request — o refactor inteiro fecha num PR só, no fim.
+- Refactor lean-harness, passos 1–3: **nesta branch** `refactor/lean-harness`. Baseline congelado, constituição enxuta, `/uxco-review` em sete fases. Sem pull request — o refactor inteiro fecha num PR só, no fim.
 
 ## Working Now
 
-Passos 1 e 2 do refactor para uma constituição curta e contexto sob demanda. O `/uxco-review` continua o workflow atual; o que mudou é o que está sempre carregado.
+Passo 3 do refactor: o `/uxco-review` roda como cadeia. Fonte executável: `workflows/review/manifest.json`. Validador: `scripts/chain.mjs`. O mapa dos 17 estágios ficou em `workflows/uxco-review.md`.
 
 - Baseline do corpus anterior ao split: `benchmarks/harness-refactor/baseline.md`, gerado por `scripts/measure-context.mjs` no commit `21bec71` (teto eager: 20 arquivos, 33856 palavras, ~58774 tokens pela heurística bytes/4). Tokens consumidos, latência e qualidade de saída estão `UNKNOWN` de propósito.
 - `CLAUDE.md` guarda taxonomia, gaps, segurança de ação, quatro anti-patterns e o contrato mínimo de saída. O resto está em `docs/constitution/`; o mapa de STEP → arquivo é `docs/constitution/INDEX.md`, inclusive os julgamentos em aberto para o dono.
-- Julgamentos que precisam de confirmação antes do passo 3: estão na seção homônima do índice. Nenhum deles foi tratado como decisão fechada.
+- Julgamentos em aberto do índice: continuam abertos. A cadeia não os fechou. Paper só entra em `inspect`; os doze princípios entram em `analyze` e `challenge` porque o arquivo é curto.
 
-O pipeline do review, desde a Sprint 5, segue com 11 STEPs (a interface pública não mudou):
+As sete fases (a interface pública continua sendo `/uxco-review`):
 
 ```text
-STEP 4–5   Initial Analysis + Consolidation      INITIAL_ANALYSIS
-STEP 6     Adversarial Critique (Design Critic)  ADVERSARIAL_REVIEW
-STEP 7     Revision — um diagnóstico só          REVISION
-STEP 8     Review QA (Design QA)                 FINAL_QA
-STEP 9–10  Quality Gate do design + Report
+scope → inspect (canvas) → ground → analyze   INITIAL_ANALYSIS
+challenge                                      ADVERSARIAL_REVIEW
+revise                                         REVISION
+close                                          FINAL_QA + Quality Gate + report
 ```
 
 Construído:
 
 - `standards/adversarial-quality.md` — contratos: Adversarial Critique Record (6 seções, entrada de 5 campos, 4 vereditos), Review QA Record (7 dimensões, escala `PASS/PARTIAL/FAIL/UNKNOWN`, sem score composto), marcadores de estágio e o invariante de ciclo único.
 - `agents/` — **primeira camada de agents do repositório**: `design-critic.md` (10 eixos de desafio, 10 sondas adversariais, 4 vereditos) e `design-qa.md` (auditoria do review, não do design).
-- `workflows/uxco-review.md` — seção `## Adversarial Quality Engine`, STEPs 6–8, pipeline canônico de 17 estágios, Failure Handling 7–8, Failure Conditions 9–13.
+- `workflows/review/` — manifesto, prompts, schemas. `workflows/uxco-review.md` ficou o mapa. `scripts/chain.mjs` valida os gates.
 - `standards/critique-framework.md` + `templates/reports/design-review.md` — seção `## Review Assurance` no contrato oficial do report (compacta; os records acompanham, nunca entram nas Issues).
 - `examples/adversarial-tests/01-flawed-initial-analysis/` — diagnóstico inicial deliberadamente falho sobre a fixture de design já existente (`examples/review-tests/02-pulse-new-item/`); nenhum design novo foi inventado.
-- Testes: `tests/review-workflow/adversarial.test.mjs` (determinísticos) + `adversarial-scenarios.md` (ADV-A..ADV-G, AGENT EVALUATION). Suíte total: **96** (era 73).
+- Testes: `tests/review-workflow/` inclui o contrato da cadeia (`chain.test.mjs`). Suíte determinística: **105**. Os cenários ADV-A..ADV-G continuam avaliação de agente, não teste automatizado.
 - Avaliação: `benchmarks/review-workflow/adversarial-protocol.md` (ADV-001, BEFORE × AFTER) + `expectations/03-flawed-initial-analysis.md` + cenário RVW-005.
 
 Decisões da Sprint 5, registradas quando a constituição ainda usava seção numerada:
@@ -53,8 +52,8 @@ Decisões da Sprint 5, registradas quando a constituição ainda usava seção n
 - Context Engine: `skills/product-context/`, `scripts/context-loader.mjs` (`npm run context:load`), `standards/product-context-brief.md`.
 - Critique Engine: `skills/design-critique/`, `skills/interaction-design/`, `standards/critique-framework.md`.
 - Adversarial Quality Engine: `agents/design-critic.md`, `agents/design-qa.md`, `standards/adversarial-quality.md`.
-- Review Workflow: `workflows/uxco-review.md` + comando `/uxco-review` (`.claude/commands/uxco-review.md`), integralmente `READ`.
-- Suíte de testes determinísticos: 96 testes em `tests/context-engine/`, `tests/critique-engine/`, `tests/review-workflow/` (`npm test`).
+- Review: cadeia em `workflows/review/manifest.json` + comando `/uxco-review`, integralmente `READ`.
+- Suíte de testes determinísticos em `tests/context-engine/`, `tests/critique-engine/`, `tests/review-workflow/` (`npm test`, lista explícita em `scripts/run-tests.mjs` para Node 20 e 22).
 - Machine Preflight (`scripts/preflight.mjs`): Node, Git, Claude Code, GitHub CLI, repositório/branch, arquivos essenciais, diagnóstico do endpoint Paper MCP.
 
 ## Blocked
@@ -70,15 +69,15 @@ None.
 
 ## Next
 
-- Passo 3 do refactor, na mesma branch, sem abrir PR até o refactor fechar: a cadeia que carrega, por STEP, só a linha correspondente de `docs/constitution/INDEX.md`. Antes disso, o dono responde os julgamentos em aberto do índice — em especial se as regras do Paper e os princípios 1, 6, 7 e 11 voltam para o sempre-carregado.
+- Os julgamentos em aberto de `docs/constitution/INDEX.md` continuam abertos. A cadeia não esperou por eles: Paper só em `inspect`; os doze princípios operacionais entram em `analyze` e `challenge` porque o arquivo é curto.
 - **Executar ADV-001** (`benchmarks/review-workflow/adversarial-protocol.md`): BEFORE × AFTER sobre a mesma fixture. É o que decide se a camada adversarial fica, simplifica ou sai — hoje o ganho é arquitetural, não medido. `NOT SUPPORTED` é resultado aceitável e valioso. Tokens e latência dessa sessão entram na folha vazia de `benchmarks/harness-refactor/baseline.md`, copiados da UI, nunca estimados a partir do `tokens aprox.`.
 - Executar RVW-002, RVW-004 e RVW-005 (e DIF-001) quando houver Claude Code, registrando em `benchmarks/review-workflow/results/` pelos protocolos que já existem.
-- `npm test` neste ambiente usa Node 22 (`.nvmrc`); o glob entre aspas do script `test` não expande no Node 20.
+- `npm test` lista os arquivos em `scripts/run-tests.mjs`. O glob entre aspas do Node 22 deixou de ser o script.
 
 ## Last Handoff
 
 - **Data:** 2026-11-04
-- **Branch:** `refactor/lean-harness` (a partir de `main` em `21bec71`). Commits: medição do corpus; constituição enxuta. Sem pull request.
-- **Trabalho realizado:** baseline reproduzível do que o `/uxco-review` carrega, e `CLAUDE.md` reduzido ao que tem de estar sempre no contexto. O texto que saiu está em `docs/constitution/`, com índice por STEP. Referências de workflow, skills, agents, standards e testes apontam para os novos caminhos.
-- **Verificações:** `npm test` no Node v22.23.4 (`.nvmrc`): 96/96. O glob entre aspas do script `test` é o que falha no Node 20; aqui não foi preciso expandir. `npm run preflight` neste ambiente: FAIL porque a CLI `claude` não está no PATH (REQUIRED, instalação manual — não foi instalada); Paper MCP em WARN (`ECONNREFUSED`), esperado sem o Paper Desktop. `npm run verify` não fecha verde por causa do `claude` ausente, não por regressão dos testes.
-- **Próximo passo recomendado:** ler os julgamentos em aberto em `docs/constitution/INDEX.md` e só então desenhar a cadeia do passo 3.
+- **Branch:** `refactor/lean-harness` (a partir de `main` em `21bec71`). Commits: medição do corpus; constituição enxuta; cadeia do review. Sem pull request.
+- **Trabalho realizado:** `/uxco-review` em sete fases, com manifesto, artefato JSON por fase e validador. O baseline congelado não foi reescrito. A comparação estática está em `benchmarks/harness-refactor/chain-vs-baseline.md`. Runtime continua `UNKNOWN`.
+- **Verificações:** `npm test` no Node do `.nvmrc`. `npm run preflight` neste ambiente segue vermelho se a CLI `claude` não estiver no PATH; isso não é regressão da suíte.
+- **Próximo passo recomendado:** o dono fecha ou reabre os julgamentos do índice. O PR do refactor ainda não existe, de propósito.
