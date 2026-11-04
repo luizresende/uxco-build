@@ -138,7 +138,7 @@ O campo **Context** é obrigatório: crítica sem contexto declarado esconde a p
 
 Regras que valem para qualquer skill de crítica. As que derivam da constituição ou de outro standard citam a fonte — a formulação aqui operacionaliza, não substitui:
 
-1. **Preferência estética nunca vira problema de usabilidade** sem impacto observável (CLAUDE.md §3.6; anti-pattern 9). A preferência pode ser atendida como escolha legítima do dono do produto — o que é proibido é travesti-la de defeito.
+1. **Preferência estética nunca vira problema de usabilidade** sem impacto observável (`docs/constitution/operating-principles.md`, princípio 6; anti-pattern 9, `docs/constitution/anti-patterns.md`). A preferência pode ser atendida como escolha legítima do dono do produto — o que é proibido é travesti-la de defeito.
 2. **Toda crítica demonstra impacto:** o campo User Impact é obrigatório e específico — "fica ruim" não é impacto; "o usuário não percebe que o formulário falhou e perde o que digitou" é.
 3. **Toda recomendação responde ao problema identificado** — na mesma camada ou na camada causal.
 4. **Recomendação que depende de contexto ausente é condicional**, nunca afirmada como verdade (regra 4 do contrato do achado).

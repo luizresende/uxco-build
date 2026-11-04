@@ -3,13 +3,13 @@
 > **Propósito:** o processo executável do review formal de design — conecta o Context Engine, o Critique Engine e o Adversarial Quality Engine em uma sequência única com gates explícitos: contexto → análise inicial → crítica adversarial → revisão → QA → quality gate → report.
 > **Quando consultar:** ao executar o comando `/uxco-review`, ou sempre que o usuário pedir um review formal de uma interface, tela ou fluxo.
 
-Este workflow opera sob a constituição (CLAUDE.md) e **orquestra** capacidades existentes — não redefine método algum: o contexto vem de `skills/product-context/SKILL.md`, a crítica de `skills/design-critique/SKILL.md` e `skills/interaction-design/SKILL.md`, o desafio adversarial e a auditoria do review de `agents/design-critic.md` e `agents/design-qa.md`, e os contratos de fronteira dos standards (`standards/product-context-brief.md`, `standards/critique-framework.md`, `standards/adversarial-quality.md`, `standards/quality-framework.md`, `standards/severity-framework.md`, `standards/design-output-format.md`, `standards/accessibility-baseline.md`). Qualquer conflito aparente se resolve a favor da camada mais alta (CLAUDE.md §9.2).
+Este workflow opera sob a constituição (CLAUDE.md) e **orquestra** capacidades existentes — não redefine método algum: o contexto vem de `skills/product-context/SKILL.md`, a crítica de `skills/design-critique/SKILL.md` e `skills/interaction-design/SKILL.md`, o desafio adversarial e a auditoria do review de `agents/design-critic.md` e `agents/design-qa.md`, e os contratos de fronteira dos standards (`standards/product-context-brief.md`, `standards/critique-framework.md`, `standards/adversarial-quality.md`, `standards/quality-framework.md`, `standards/severity-framework.md`, `standards/design-output-format.md`, `standards/accessibility-baseline.md`). Qualquer conflito aparente se resolve a favor da camada mais alta (`docs/constitution/knowledge-routing.md`, regra 2; em última instância, `CLAUDE.md`).
 
 ## Purpose
 
 Responder: **"este design está pronto — e, se não está, o que precisa mudar, em que ordem?"**
 
-`/uxco-review` é o rito **formal**: Brief de contexto, varredura completa de crítica, **o diagnóstico desafiado e revisado antes de virar conclusão**, auditoria da qualidade do próprio review e Quality Gate com veredito. Crítica pontual de um detalhe não passa por aqui — usa a Design Critique Skill diretamente, com a proporcionalidade da constituição (§2).
+`/uxco-review` é o rito **formal**: Brief de contexto, varredura completa de crítica, **o diagnóstico desafiado e revisado antes de virar conclusão**, auditoria da qualidade do próprio review e Quality Gate com veredito. Crítica pontual de um detalhe não passa por aqui — usa a Design Critique Skill diretamente, com a proporcionalidade de `docs/constitution/identity-and-mission.md`.
 
 A diferença entre este workflow e uma crítica direta não é só a formalidade do report: é que **o primeiro diagnóstico não é entregue como conclusão**. Ele é atacado primeiro (STEP 6), consolidado depois (STEP 7) e auditado antes de sair (STEP 8).
 
@@ -18,8 +18,8 @@ A diferença entre este workflow e uma crítica direta não é só a formalidade
 O workflow dispara por qualquer uma destas vias — todas equivalentes:
 
 - **Comando:** `/uxco-review` (puro, com alvo nomeado ou com caminho — formas em `.claude/commands/uxco-review.md`).
-- **Pedido contextual:** solicitação de review formal em linguagem natural ("faça o review do fluxo de checkout"), roteada pela constituição (CLAUDE.md §9).
-- **Ciclo de trabalho:** a etapa `critique` do ciclo (CLAUDE.md §2) elevada a avaliação formal, quando o usuário pedir o rito completo sobre trabalho da própria sessão.
+- **Pedido contextual:** solicitação de review formal em linguagem natural ("faça o review do fluxo de checkout"), roteada por `docs/constitution/knowledge-routing.md`.
+- **Ciclo de trabalho:** a etapa `critique` do ciclo (`docs/constitution/identity-and-mission.md`) elevada a avaliação formal, quando o usuário pedir o rito completo sobre trabalho da própria sessão.
 
 **Não dispara:** crítica pontual de um detalhe (Design Critique Skill direta) e pedido de design novo (crítica não é geração).
 
@@ -35,7 +35,7 @@ O workflow dispara por qualquer uma destas vias — todas equivalentes:
 ## Preconditions
 
 - **Artefato observável** disponível ou obtenível — a única precondição absoluta; sem ela, o review para no caso 4 da detecção de escopo (pedir a fonte).
-- **Canvas como fonte** exige `PAPER_READY` verificado por chamada real (CLAUDE.md §6.1); indisponível, a fonte canvas é declarada inacessível e o review segue com as demais fontes, se existirem.
+- **Canvas como fonte** exige `PAPER_READY` verificado por chamada real (`docs/constitution/canvas-safety.md`); indisponível, a fonte canvas é declarada inacessível e o review segue com as demais fontes, se existirem.
 - **Memória de projeto é opcional** — ausência não impede nada: vira Brief honesto com fontes `MISSING`.
 - **Context Loader** (`npm run context:load`, Node ≥ 18) quando houver caminho de memória; indisponível, o inventário dos STEPs 1–2 da skill é feito por leitura direta — declarado no Brief.
 - **Constituição e standards carregáveis** — o workflow não opera fora do repositório do UXCO Build (é sobre eles que toda referência resolve).
@@ -54,7 +54,7 @@ O review aceita como escopo qualquer uma destas unidades: **uma tela · um frame
 1. **Escopo explícito do usuário** — quando o pedido nomeia o alvo (argumento do comando, frame citado, fluxo descrito), ele é o escopo. O explícito pode vir como **caminho** (arquivo, fixture) ou como **nome** (ex.: `/uxco-review checkout`): o nome declara a intenção sem ambiguidade, mas seu **referente** ainda é resolvido contra as fontes da sessão — frames do canvas, arquivos citados, conversa; múltiplas correspondências plausíveis caem no degrau 4 (ambiguidade sinalizada com os candidatos). Seleção ativa divergente não substitui o explícito — divergência clara entre pedido e seleção é apontada ao usuário, nunca resolvida em silêncio.
 2. **Seleção ativa no Paper** — sem escopo explícito, havendo canvas como fonte (`PAPER_READY`) e seleção inequívoca, **a seleção tem prioridade**: ela é o escopo, declarado no report com essa origem.
 3. **Contexto disponível** — sem escopo explícito nem seleção inequívoca, tentar identificar o escopo pelo contexto da sessão: artefato único fornecido, fluxo em discussão na conversa, candidato natural no documento ativo (ex.: um único frame no canvas). A identificação é inferência — declarada como tal (`ASSUMPTION` de escopo, revisável pelo usuário). Candidato único de confiança razoável não é ambiguidade: é inferência declarada, e o review prossegue.
-4. **Ambiguidade** — múltiplos candidatos plausíveis (várias telas, seleção ambígua, conversa apontando para mais de um fluxo) cuja escolha errada comprometeria a confiabilidade da análise: o workflow **sinaliza a ambiguidade e pergunta**, com uma pergunta objetiva listando os candidatos (gap blocking — CLAUDE.md §4). **Inventar o escopo nunca é saída**: escopo inventado invalida o review inteiro (Failure Conditions).
+4. **Ambiguidade** — múltiplos candidatos plausíveis (várias telas, seleção ambígua, conversa apontando para mais de um fluxo) cuja escolha errada comprometeria a confiabilidade da análise: o workflow **sinaliza a ambiguidade e pergunta**, com uma pergunta objetiva listando os candidatos (gap blocking — `CLAUDE.md`, Gaps). **Inventar o escopo nunca é saída**: escopo inventado invalida o review inteiro (Failure Conditions).
 
 Escopo de tela/frame isolado ativa a disciplina do cenário D (`skills/design-critique/SKILL.md`); conjunto de frames ou fluxo completo, a do cenário E.
 
@@ -121,11 +121,11 @@ Como o review consome cada categoria do Brief (Evidence Classification da skill 
 **Política de bloqueio do review** — ausência de informação, por si, nunca bloqueia:
 
 - Contexto incompleto mas suficiente → o review **continua**, com as conclusões afetadas explicitamente rebaixadas de Confidence e as limitações declaradas (cenários B/C da Design Critique Skill).
-- Bloquear é exceção, reservada a quando a falta de contexto tornaria a análise **potencialmente enganosa** — quando, mesmo com limitações declaradas, o review provavelmente apontaria os problemas errados ou calibraria severidades sem sentido (o critério de blocking do CLAUDE.md §4 aplicado ao review inteiro).
+- Bloquear é exceção, reservada a quando a falta de contexto tornaria a análise **potencialmente enganosa** — quando, mesmo com limitações declaradas, o review provavelmente apontaria os problemas errados ou calibraria severidades sem sentido (o critério de blocking de `CLAUDE.md`, Gaps, aplicado ao review inteiro).
 
 ## Paper Inspection
 
-A leitura do canvas que alimenta as skills. Como o §6.1 da constituição, esta é a camada amarrada à ferramenta concreta — trocar de canvas no futuro substitui apenas ela.
+A leitura do canvas que alimenta as skills. Como `docs/constitution/canvas-safety.md`, esta é a camada amarrada à ferramenta concreta — trocar de canvas no futuro substitui apenas ela.
 
 **Somente leitura, sempre:** a inspeção usa exclusivamente operações `READ`, sob `PAPER_READY` (STEP 1). Nesta sprint, o `/uxco-review` **não modifica o canvas em nenhuma hipótese** — nem mediante aprovação; correção pertence a workflows futuros.
 
@@ -235,7 +235,7 @@ Disciplina por campo:
   Princípios (`standards/uxco-design-principles.md`) qualificam a evidência observada — não a substituem.
 - **User Impact** — a consequência potencial, nomeando a dimensão atingida: usuário, tarefa, negócio, compreensão, erro ou acessibilidade. "Fica ruim" não é impacto (regra 2 do critique-framework); impacto de negócio sem fato de negócio no contexto é inferência — declarada como tal.
 - **Confidence** — a escala de `standards/design-output-format.md` aplicada ao review: `High` = evidência direta no canvas e/ou no contexto; `Medium` = evidência razoável com informação importante ausente; `Low` = hipótese que merece validação — e a validação necessária vai na Recommendation.
-- **Recommendation** — responde ao problema identificado, nunca a outro: **específica** (o que mudar, onde), **proporcional** ao problema (correção pontual não vira redesign), **acionável** (o time sabe o que fazer ao ler) e **contextual** (padrões existentes do produto antes de padrões novos — CLAUDE.md §3.5). Recomendação genérica ("melhorar a usabilidade", "deixar mais claro") é falha de contrato.
+- **Recommendation** — responde ao problema identificado, nunca a outro: **específica** (o que mudar, onde), **proporcional** ao problema (correção pontual não vira redesign), **acionável** (o time sabe o que fazer ao ler) e **contextual** (padrões existentes do produto antes de padrões novos — `docs/constitution/operating-principles.md`, princípio 5). Recomendação genérica ("melhorar a usabilidade", "deixar mais claro") é falha de contrato.
 
 ### Severity Engine
 
@@ -321,13 +321,13 @@ Review impecável sobre design reprovado é `REVIEW READY` com gate reprovado. R
 
 ## Safety Model
 
-1. **O review inteiro é operação `READ`** (CLAUDE.md §6): este workflow nunca escreve no canvas, nunca altera a memória do projeto e nunca corrige o que criticou. Recomendar é o limite — execução de mudanças pertence a workflows futuros, com as aprovações que o Action Safety Model exigir. A camada adversarial **não abre exceção**: Critic e QA também são integralmente `READ` — eles revisam o diagnóstico, nunca o design.
-2. Canvas como fonte exige `PAPER_READY` verificado por chamada real (CLAUDE.md §6.1; state machine em `docs/architecture.md`). Canvas indisponível **não aborta o review**: a limitação é registrada e o review prossegue com as fontes restantes — ou pede ao usuário uma fonte observável alternativa quando o canvas era a única.
-3. Registro de decisão relevante nascida do review (ex.: aceite explícito de risco de um blocker) segue o §3.12 da constituição — bloco Design Decision, nunca escrita silenciosa em memória alheia.
+1. **O review inteiro é operação `READ`** (`CLAUDE.md`, Action Safety): este workflow nunca escreve no canvas, nunca altera a memória do projeto e nunca corrige o que criticou. Recomendar é o limite — execução de mudanças pertence a workflows futuros, com as aprovações que o Action Safety Model exigir. A camada adversarial **não abre exceção**: Critic e QA também são integralmente `READ` — eles revisam o diagnóstico, nunca o design.
+2. Canvas como fonte exige `PAPER_READY` verificado por chamada real (`docs/constitution/canvas-safety.md`; state machine em `docs/architecture.md`). Canvas indisponível **não aborta o review**: a limitação é registrada e o review prossegue com as fontes restantes — ou pede ao usuário uma fonte observável alternativa quando o canvas era a única.
+3. Registro de decisão relevante nascida do review (ex.: aceite explícito de risco de um blocker) segue o princípio 12 de `docs/constitution/operating-principles.md` — bloco Design Decision, nunca escrita silenciosa em memória alheia.
 
 ## Skill Dependencies
 
-Tudo consumido **por referência** — nada redefinido (CLAUDE.md §9.2):
+Tudo consumido **por referência** — nada redefinido (`docs/constitution/knowledge-routing.md`, regra 2):
 
 | Dependência | Papel no workflow |
 | --- | --- |
@@ -348,7 +348,7 @@ Tudo consumido **por referência** — nada redefinido (CLAUDE.md §9.2):
 
 ## Process
 
-Sequência obrigatória — nenhum STEP é pulado em silêncio; a profundidade de cada um é proporcional ao escopo (CLAUDE.md §2):
+Sequência obrigatória — nenhum STEP é pulado em silêncio; a profundidade de cada um é proporcional ao escopo (`docs/constitution/identity-and-mission.md`):
 
 ```text
 STEP 0  Resolve scope and target
@@ -400,7 +400,7 @@ Os STEPs implementam o pipeline canônico do review. O mapa preserva as dependê
 - **STEP 7 — Revision (`REVISION`).** Incorporar os vereditos em **um único** diagnóstico (contrato na seção Revision — um diagnóstico só): confirmados preservados, revisados alterados campo a campo, rejeitados removidos de Issues (e devolvidos a `Unknowns and Assumptions` quando restar suspeita legítima), omissões incluídas no contrato pleno de 7 campos. O conjunto resultante mudou, então os mecanismos do STEP 5 são **reaplicados** a ele — consolidação e ordenação por prioridade —, e os falsificadores registrados pelo Critic viram validação pendente na Recommendation ou nos next steps. **O usuário nunca recebe dois diagnósticos:** análise contraditória lado a lado é Failure Condition 11.
 - **STEP 8 — Review QA (`FINAL_QA`).** Acionar o **Design QA** (`agents/design-qa.md`) sobre o review pronto: sete dimensões em `PASS | PARTIAL | FAIL | UNKNOWN`, sem score composto, QA Blockers em lista própria e veredito (`REVIEW READY | REVIEW READY WITH RESERVATIONS | REVIEW NOT READY`). Reprovação **não dispara novo ciclo** (Ciclo único): é declarada no report. O QA não varre L0–L8 e não abre issue de design — lacuna encontrada é falha de `Completeness` nomeada.
 - **STEP 9 — Quality Gate.** Review formal é avaliação formal: aplicar o `quality-framework.md` ao **design** — nota por dimensão derivada do pior achado do diagnóstico **revisado**, dimensões críticas (★) avaliadas no nível do escopo, `UNKNOWN` onde não houver informação, e o veredito dos três gates (média ≥ 4; críticas ≥ 3; nenhum blocker aberto). Blocker aberto reprova independentemente da média; só sai por correção verificada ou aceite explícito de risco registrado como `DECISION`. Design blocker e QA blocker permanecem separados (seção Review QA).
-- **STEP 10 — Report.** Emitir o **Design Critique Report** completo (`standards/critique-framework.md`), incluindo a seção Quality Gate com o veredito, a seção **Review Assurance** com o stage trace e o veredito do QA, o Context citando o Brief e seu Context Status, Layer Coverage integral e Recommended Next Steps priorizados por impacto. As Issues são **as revisadas, e só elas**. Autocrítica antes da entrega: as Quality Checklists das skills e das responsabilidades envolvidas, e o Quality Gate da constituição (§8).
+- **STEP 10 — Report.** Emitir o **Design Critique Report** completo (`standards/critique-framework.md`), incluindo a seção Quality Gate com o veredito, a seção **Review Assurance** com o stage trace e o veredito do QA, o Context citando o Brief e seu Context Status, Layer Coverage integral e Recommended Next Steps priorizados por impacto. As Issues são **as revisadas, e só elas**. Autocrítica antes da entrega: as Quality Checklists das skills e das responsabilidades envolvidas, e o Quality Gate em `docs/constitution/quality-gate.md`.
 
 ## Output
 
@@ -449,7 +449,7 @@ O review está **completo** somente quando, simultaneamente:
 2. Report emitido na Composição canônica, com Quality Gate presente e veredito dos gates.
 3. Scope block íntegro no report, com a origem da resolução.
 4. Review Limitations cobrindo as quatro origens (contexto ausente · dados não expostos pela integração · suposições · validação humana pendente).
-5. Quality Checklist aprovada (a autocrítica do ciclo — CLAUDE.md §2, §8).
+5. Quality Checklist aprovada (a autocrítica do ciclo — `docs/constitution/identity-and-mission.md` e `docs/constitution/quality-gate.md`).
 6. Nenhuma escrita realizada em canvas ou memória de projeto.
 7. **Ciclo adversarial completo e observável:** os quatro marcadores registrados uma vez cada (`INITIAL_ANALYSIS → ADVERSARIAL_REVIEW → REVISION → FINAL_QA`), com as contagens do desafio fechando com o Adversarial Critique Record.
 8. **Um diagnóstico só:** as Issues do report são as revisadas — nenhum achado rejeitado permanece como problema afirmado, nenhuma omissão aceita ficou fora.
@@ -461,7 +461,7 @@ O review está **completo** somente quando, simultaneamente:
 
 Falhas de execução não são condições de invalidade (estas vivem em Failure Conditions): são **estados previstos, com comportamento definido** — degradar com honestidade, nunca improvisar. Cada modo abaixo aponta o mecanismo do workflow que o resolve; nada aqui redefine método. Regra transversal a todos: **a falha nunca é compensada por invenção** — nem de dados, nem de contexto, nem de método.
 
-**Falha 1 — Paper indisponível.** O preflight do STEP 1 não alcança `PAPER_READY` (verificado por chamada real — nunca por inferência; CLAUDE.md §6.1). Análise de canvas **jamais é inventada**: nenhum campo do Canvas Snapshot é preenchido sem leitura real. Havendo outra fonte observável (fixture, imagem, descrição na conversa), o review prossegue com ela, com a fonte canvas declarada inacessível nas Review Limitations (Safety Model, regra 2). Sendo o canvas a única fonte, o review **bloqueia**, reportando exatamente:
+**Falha 1 — Paper indisponível.** O preflight do STEP 1 não alcança `PAPER_READY` (verificado por chamada real — nunca por inferência; `docs/constitution/canvas-safety.md`). Análise de canvas **jamais é inventada**: nenhum campo do Canvas Snapshot é preenchido sem leitura real. Havendo outra fonte observável (fixture, imagem, descrição na conversa), o review prossegue com ela, com a fonte canvas declarada inacessível nas Review Limitations (Safety Model, regra 2). Sendo o canvas a única fonte, o review **bloqueia**, reportando exatamente:
 
 ```text
 Review blocked:
@@ -474,9 +474,9 @@ seguido da ação de correção (`npm run preflight` / Agent Preflight de `docs/
 
 **Falha 3 — Contexto incompleto, mas suficiente.** O review **continua** (Política de bloqueio da Context Integration). O registro é obrigatório e duplo: a premissa adotada entra como `ASSUMPTION` declarada (herdada do Brief ou registrada no report, em Unknowns and Assumptions), e o **impacto na confiança** é explícito — Confidence rebaixada nas conclusões afetadas, com a dependência nomeada no próprio achado. Continuar sem registrar é a Failure Condition 4.
 
-**Falha 4 — Contexto crítico ausente.** Bloquear é exceção, não reflexo: somente quando, **mesmo com limitações declaradas, uma análise responsável não é possível** — o review provavelmente apontaria os problemas errados ou calibraria severidades sem sentido (STEP 3; critério de blocking do CLAUDE.md §4). Nesse caso o review para nas blocking questions, explicando por que prosseguir seria pior que esperar. Inventar respostas nunca é saída; bloquear por ausência que não tornaria a análise enganosa é anti-pattern 10.
+**Falha 4 — Contexto crítico ausente.** Bloquear é exceção, não reflexo: somente quando, **mesmo com limitações declaradas, uma análise responsável não é possível** — o review provavelmente apontaria os problemas errados ou calibraria severidades sem sentido (STEP 3; critério de blocking de `CLAUDE.md`, Gaps). Nesse caso o review para nas blocking questions, explicando por que prosseguir seria pior que esperar. Inventar respostas nunca é saída; bloquear por ausência que não tornaria a análise enganosa é anti-pattern 10 (`docs/constitution/anti-patterns.md`).
 
-**Falha 5 — Skill ou responsabilidade indisponível.** Dependência de Skill Dependencies ausente ou ilegível (skill, **agente**, standard ou loader): falha **explícita** — nomear a dependência quebrada, o STEP que ela impediria e o que a restauraria. **Proibido executar silenciosamente uma versão genérica improvisada** do método: review sem o Critique Engine real não é review degradado, é simulação de componente — violação direta do CLAUDE.md §9.3 ("dizer que não existe — nunca simular"). A exceção já prevista permanece a única: Context Loader indisponível degrada para inventário por leitura direta, **declarado no Brief** (Preconditions).
+**Falha 5 — Skill ou responsabilidade indisponível.** Dependência de Skill Dependencies ausente ou ilegível (skill, **agente**, standard ou loader): falha **explícita** — nomear a dependência quebrada, o STEP que ela impediria e o que a restauraria. **Proibido executar silenciosamente uma versão genérica improvisada** do método: review sem o Critique Engine real não é review degradado, é simulação de componente — violação direta de `docs/constitution/knowledge-routing.md` ("dizer que não existe — nunca simular"). A exceção já prevista permanece a única: Context Loader indisponível degrada para inventário por leitura direta, **declarado no Brief** (Preconditions).
 
 **Falha 6 — Paper parcialmente legível.** `PAPER_READY` alcançado, mas leituras parciais — chamadas recusadas, propriedades ilegíveis, screenshot indisponível. Executar **apenas as análises sustentadas pelos dados realmente obtidos**: o Gate de evidência por camada decide o destino de cada uma (`evaluated` · Confidence reduzida · `not-evaluable — [o que faltou]`), e dado que a integração não retornou jamais é inventado (Paper Inspection). As limitações são registradas em `Limitations` do Canvas Snapshot e **sobem às Review Limitations do report** — nunca ficam só no snapshot.
 
@@ -493,7 +493,7 @@ O review é **inválido** — refazer, não entregar — se:
 3. STEP 2 pulado ou fabricado: crítica formal sem Brief, ou Brief inventado para viabilizar L0.
 4. Blocking question respondida por invenção; conclusão afetada por contexto ausente entregue sem a redução explícita de Confidence e a limitação declarada; ou review interrompido por ausência de informação que não tornaria a análise enganosa (bloqueio indevido — anti-pattern 10).
 5. Qualquer escrita em canvas ou memória de projeto durante o review.
-6. Report formal sem a seção Quality Gate, ou gate reprovado entregue como aprovado / com ressalvas escondidas (CLAUDE.md §8).
+6. Report formal sem a seção Quality Gate, ou gate reprovado entregue como aprovado / com ressalvas escondidas (`docs/constitution/quality-gate.md`).
 7. Qualquer Failure Condition das skills consumidas (elas permanecem válidas dentro do workflow).
 8. Falsa precisão no Layer Coverage: achado fabricado para camada sem evidência suficiente, ou camada não verificada apresentada como avaliada ou aprovada (violação do Gate de evidência por camada).
 9. **Ciclo adversarial pulado ou fabricado:** report formal sem `Review Assurance`; marcador registrado sem o estágio ter acontecido; ou contagens que não fecham com o Adversarial Critique Record.

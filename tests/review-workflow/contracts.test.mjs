@@ -531,8 +531,10 @@ test('expectation is complete and uses only allowed severities', () => {
 });
 
 test('constitution and README acknowledge the workflow (no simulated components)', () => {
-  assert.ok(read('CLAUDE.md').includes('workflows/uxco-review.md'),
-    'CLAUDE.md §9.3 must list the review workflow as existing');
+  assert.ok(read('CLAUDE.md').includes('nunca simular'),
+    'CLAUDE.md must keep the no-simulation rule always loaded');
+  assert.ok(read('docs/constitution/knowledge-routing.md').includes('workflows/uxco-review.md'),
+    'knowledge-routing inventory must list the review workflow as existing');
   assert.ok(read('README.md').includes('/uxco-review'),
     'README.md must document the review workflow');
 });

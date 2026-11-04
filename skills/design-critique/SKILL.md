@@ -1,7 +1,7 @@
 # Design Critique Skill
 
 > **Propósito:** análise crítica de interfaces e fluxos digitais — identificar problemas reais de experiência, priorizá-los por impacto e produzir recomendações acionáveis, no contrato de `standards/critique-framework.md`.
-> **Quando consultar:** sempre que uma interface, tela ou fluxo precisar ser avaliado criticamente; é a etapa `critique` do ciclo (CLAUDE.md §2) elevada a capacidade própria.
+> **Quando consultar:** sempre que uma interface, tela ou fluxo precisar ser avaliado criticamente; é a etapa `critique` do ciclo (`docs/constitution/identity-and-mission.md`) elevada a capacidade própria.
 
 Esta skill opera sob a constituição e **referencia** — nunca redefine — os standards: camadas L0–L8, contrato do achado e formato do report em `critique-framework.md`; severidade em `severity-framework.md`; dimensões e gates em `quality-framework.md`; piso de acessibilidade em `accessibility-baseline.md`; blocos e Confidence em `design-output-format.md`; contexto de produto em `standards/product-context-brief.md`.
 
@@ -9,7 +9,7 @@ Esta skill opera sob a constituição e **referencia** — nunca redefine — os
 
 Responder: **"o que, nesta interface, atrapalha o usuário a realizar a tarefa — com que gravidade, com que certeza, e o que fazer a respeito?"**
 
-A saída é o Design Critique Report. A skill **não redesenha, não corrige e não escreve no canvas** — crítica é operação `READ` (CLAUDE.md §6); recomendar é o limite da sua atuação.
+A saída é o Design Critique Report. A skill **não redesenha, não corrige e não escreve no canvas** — crítica é operação `READ` (`CLAUDE.md`, Action Safety); recomendar é o limite da sua atuação.
 
 ## When to Use
 
@@ -17,7 +17,7 @@ A saída é o Design Critique Report. A skill **não redesenha, não corrige e n
 - Etapa `critique` formalizada sobre trabalho produzido na própria sessão.
 - Futuro: `/uxco-review` e `/uxco-design-qa` a consumirão (não implementados — não simular).
 
-**Quando não usar:** pedido de design novo (crítica não é geração); ajuste pontual que não pede avaliação — o rito é proporcional à tarefa (CLAUDE.md §2).
+**Quando não usar:** pedido de design novo (crítica não é geração); ajuste pontual que não pede avaliação — o rito é proporcional à tarefa (`docs/constitution/identity-and-mission.md`).
 
 ## Inputs
 

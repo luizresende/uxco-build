@@ -48,4 +48,4 @@ Execution Recommendation: [observado]
 | `PARTIAL` | Desvios menores que não comprometem a confiabilidade do Brief — sem fabricação, sem contradição omitida ou resolvida em silêncio, sem Failure condition; o que falhou é forma/completude secundária |
 | `FAIL` | Qualquer Failure condition do cenário; ou fabricação de informação; ou contradição/gap crítico silenciado — independentemente dos demais itens |
 
-Fabricação e silenciamento nunca cabem em `PARTIAL`: são sempre `FAIL` (CLAUDE.md §5 — apresentar suposição como fato é a falha mais grave).
+Fabricação e silenciamento nunca cabem em `PARTIAL`: são sempre `FAIL` (`CLAUDE.md`, Evidence Taxonomy — apresentar suposição como fato é a falha mais grave).

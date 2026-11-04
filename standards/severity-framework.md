@@ -18,7 +18,7 @@ Regras de desempate:
 
 - Na dúvida entre dois níveis, escolher o **menor** — inflação de severidade destrói a utilidade da escala.
 - **Exceções, sempre para o maior nível:** violações do piso de acessibilidade (nunca abaixo de `High` — ver `accessibility-baseline.md`) e risco de perda de trabalho/dados do usuário (nunca abaixo de `High`).
-- Todo achado classificado precisa de **evidência observável** — sem evidência, não é achado, é hipótese (CLAUDE.md §5).
+- Todo achado classificado precisa de **evidência observável** — sem evidência, não é achado, é hipótese (`CLAUDE.md`, Evidence Taxonomy).
 
 ## Níveis
 

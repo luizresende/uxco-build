@@ -33,8 +33,10 @@ Claude Code  →  UXCO Design Engine  →  Paper MCP  →  Paper Canvas
 O que existe hoje no repositório e a responsabilidade de cada parte:
 
 ```text
-CLAUDE.md               Constituição operacional — sempre carregada (§11: harness — runtime,
-                        verificação, protocolo de sessão)
+CLAUDE.md               Constituição sempre carregada (taxonomia, gaps, segurança de ação,
+                        anti-patterns nucleares, contrato de saída)
+docs/constitution/      Detalhe da constituição sob demanda — índice em INDEX.md
+                        (identidade, princípios, Paper, harness, inventário)
 PROGRESS.md             Estado operacional entre sessões — onde estamos, próximo passo
 .nvmrc                  Versão de Node do ambiente de desenvolvimento
 standards/              Critérios compartilhados — consultados por tarefa
@@ -47,7 +49,8 @@ templates/              project/ (memória de projeto, copiada por projeto) ·
                         reports/ (molde do Design Critique Report do /uxco-review)
 examples/               Memória demo (Pulse) e fixtures de teste dos engines e do workflow
                         (inclui adversarial-tests/ — diagnósticos, não designs)
-scripts/                Machine Preflight e Context Loader
+scripts/                Machine Preflight, Context Loader e measure-context
+                        (tamanho do corpus do /uxco-review)
 tests/                  foundation/ · context-engine/ · critique-engine/ ·
                         review-workflow/ (determinísticos, inclui a camada adversarial)
 benchmarks/             Harnesses de avaliação manual (engines e review workflow)
@@ -57,7 +60,7 @@ experiments/paper-mcp/  Evidência do smoke test da Sprint 0 (histórico)
 
 ### CLAUDE.md — constituição operacional
 
-Define o comportamento global do agente em toda sessão: identidade, ciclo de trabalho (`context → investigate → decide → design → critique → validate`), princípios operacionais, protocolo de contexto (gaps blocking/non-blocking), taxonomia de evidência (`FACT`/`EVIDENCE`/`ASSUMPTION`/`HYPOTHESIS`/`DECISION`/`UNKNOWN`), modelo de segurança de ações (`READ`/`SAFE_WRITE`/`DESTRUCTIVE_WRITE`), framework de decisão, quality gate e anti-patterns. É deliberadamente compacta: **roteia** para o conhecimento especializado em vez de contê-lo. As regras específicas do Paper ficam isoladas em uma única subseção (§6.1).
+Define o que vale em toda sessão, e só isso: taxonomia de evidência (`FACT`/`EVIDENCE`/`ASSUMPTION`/`HYPOTHESIS`/`DECISION`/`UNKNOWN`), gaps blocking/non-blocking, segurança de ação (`READ`/`SAFE_WRITE`/`DESTRUCTIVE_WRITE`, com leitura subsequente antes de dar uma escrita por concluída) e o contrato mínimo de saída. Identidade por extenso, princípios, protocolo de carga, regras do Paper, quality gate, inventário e harness vivem em [`docs/constitution/`](docs/constitution/INDEX.md) e entram sob demanda. A constituição **roteia**; não carrega o conhecimento especializado.
 
 ### standards/ — critérios compartilhados
 
@@ -137,7 +140,7 @@ STEP 9-10 Quality Gate do design → Design Critique Report
 /uxco-review                                   escopo pela seleção do Paper ou pelo contexto da sessão
 /uxco-review checkout                          alvo nomeado — referente resolvido contra canvas, arquivos e conversa
 /uxco-review examples/.../fixture.md           caminho explícito
-"faça o review formal do fluxo de checkout"    pedido contextual equivalente, roteado pela constituição (§9)
+"faça o review formal do fluxo de checkout"    pedido contextual equivalente, roteado por docs/constitution/knowledge-routing.md
 ```
 - **Gate de contexto** — a `Execution Recommendation` do Brief governa a passagem: `REQUEST BLOCKING CONTEXT` exige respostas do usuário ou autorização explícita para o modo degradado (cenário C) — nunca respostas inventadas.
 - **Quality Gate sempre presente** — review formal é avaliação formal (`standards/quality-framework.md`): é o que o distingue da crítica pontual via skill.
@@ -189,7 +192,7 @@ Dez cenários manuais em [`tests/foundation/scenarios.md`](tests/foundation/scen
 
 ### Ainda não implementado
 
-**Os demais comandos `/uxco-*` não existem ainda** — `/uxco-new-feature`, `/uxco-improve-flow`, `/uxco-explore`, `/uxco-design-qa` e `/uxco-status` estão previstos para as próximas sprints (as três skills vieram das Sprints 2–3; o workflow de review e o comando `/uxco-review`, da Sprint 4; os dois agents, da Sprint 5). Nada neste repositório deve ser lido como se eles existissem; a própria constituição (§9.3) proíbe o agente de simular componentes inexistentes.
+**Os demais comandos `/uxco-*` não existem ainda** — `/uxco-new-feature`, `/uxco-improve-flow`, `/uxco-explore`, `/uxco-design-qa` e `/uxco-status` estão previstos para as próximas sprints (as três skills vieram das Sprints 2–3; o workflow de review e o comando `/uxco-review`, da Sprint 4; os dois agents, da Sprint 5). Nada neste repositório deve ser lido como se eles existissem; a constituição proíbe simular componente inexistente (`CLAUDE.md`; inventário em `docs/constitution/knowledge-routing.md`).
 
 Em particular: a camada de QA da Sprint 5 é um **estágio interno** do `/uxco-review` (STEP 8), **não** o comando `/uxco-design-qa`. Um futuro comando poderá rotear para `agents/design-qa.md` sem retrabalho — mas ele ainda não existe.
 
@@ -218,7 +221,7 @@ Instruções completas no cabeçalho de [`tests/foundation/scenarios.md`](tests/
 
 A confiabilidade do desenvolvimento entre sessões do Claude Code é estruturada em cinco subsistemas — o repositório é o system of record; nenhum deles depende de histórico de conversa:
 
-- **Instructions** — `CLAUDE.md` é o entry point sempre carregado (constituição + §11 harness); roteia para `standards/`, `skills/`, `agents/`, `workflows/` em vez de duplicá-los.
+- **Instructions** — `CLAUDE.md` é o entry point sempre carregado; o detalhe da constituição fica em `docs/constitution/` e o harness de sessão em `docs/constitution/harness.md`. Roteia para `standards/`, `skills/`, `agents/`, `workflows/` em vez de duplicá-los.
 - **Tools** — Node.js, Git, Claude Code e (opcionalmente) Paper MCP; verificados por `npm run preflight`.
 - **Environment** — `.nvmrc` + `engines` em `package.json` declaram o runtime; zero dependências externas por decisão de arquitetura.
 - **State** — [`PROGRESS.md`](PROGRESS.md) registra onde o desenvolvimento está, o que está bloqueado e o próximo passo — sem substituir Git ou o `CHANGELOG.md`.

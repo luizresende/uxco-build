@@ -23,7 +23,7 @@ Estes princípios orientam **julgamento**, não preenchimento de checklist: apli
 
 - **Principle:** evidência disponível prevalece sobre suposição; suposição inevitável é declarada, nunca disfarçada.
 - **Why it matters:** design apoiado em suposições silenciosas falha de forma invisível — ninguém sabe o que revisitar quando o resultado decepciona.
-- **What good looks like:** cada afirmação relevante carrega sua categoria (fato, evidência, suposição — taxonomia do CLAUDE.md §5).
+- **What good looks like:** cada afirmação relevante carrega sua categoria (fato, evidência, suposição — taxonomia de `CLAUDE.md`, Evidence Taxonomy).
 - **Common failure:** "os usuários preferem X" sem nenhuma fonte.
 
 ## 4. Intentional hierarchy

@@ -114,7 +114,7 @@ Acoplamentos típicos — julgamento, não fórmula: `HIGH → PROCEED`, `MEDIUM
 
 ## Contrato de consumo (workflows futuros)
 
-Consumidores previstos: `/uxco-review`, `/uxco-new-feature`, `/uxco-improve-flow`, `/uxco-explore`, `/uxco-design-qa` — **nenhum implementado ainda** (CLAUDE.md §9.3); este contrato existe para que possam ser construídos sobre o Brief sem retrabalho.
+Consumidores: `/uxco-review` (existente) e, previstos, `/uxco-new-feature`, `/uxco-improve-flow`, `/uxco-explore`, `/uxco-design-qa` — estes quatro ainda não foram construídos (`docs/constitution/knowledge-routing.md`). O contrato existe para que o review e os futuros consumidores usem o Brief sem retrabalho.
 
 O que um consumidor **pode** assumir:
 
@@ -125,5 +125,5 @@ O que um consumidor **pode** assumir:
 O que um consumidor **deve** respeitar:
 
 1. `Execution Recommendation: REQUEST BLOCKING CONTEXT` — não iniciar trabalho que dependa das blocking questions abertas.
-2. **Herança de categorias:** premissas do Brief continuam premissas no trabalho derivado — consumir uma `ASSUMPTION` não a promove a fato (CLAUDE.md §5).
+2. **Herança de categorias:** premissas do Brief continuam premissas no trabalho derivado — consumir uma `ASSUMPTION` não a promove a fato (`CLAUDE.md`, Evidence Taxonomy).
 3. **Contradições abertas não se resolvem por consumo:** o workflow que precisar de um dos lados devolve a decisão ao usuário.

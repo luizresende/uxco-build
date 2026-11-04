@@ -323,7 +323,7 @@ test('unit: each failure mode binds to its resolving mechanism, and the blocked 
     'Falha 3 must bind silent continuation to the invalidating condition');
   assert.ok(fh.includes('anti-pattern 10'),
     'Falha 4 must name undue blocking as the anti-pattern');
-  assert.ok(fh.includes('§9.3') && fh.includes('Preconditions'),
+  assert.ok(fh.includes('knowledge-routing.md') && fh.includes('Preconditions'),
     'Falha 5 must bind to the no-simulation rule and the declared loader exception');
   assert.ok(fh.includes('Paper Inspection') && fh.includes('sobem às Review Limitations'),
     'Falha 6 must bind to the inspection contract and surface limitations in the report');

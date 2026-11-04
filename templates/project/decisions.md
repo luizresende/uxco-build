@@ -1,6 +1,6 @@
 # Decisions
 
-> **Template de memória de projeto (UXCO Build).** Log **append-only** de decisões relevantes de design e produto (critério de relevância: CLAUDE.md §7; formato-fonte: `standards/design-output-format.md`, bloco Design Decision).
+> **Template de memória de projeto (UXCO Build).** Log **append-only** de decisões relevantes de design e produto (critério de relevância: `docs/constitution/decision-framework.md`; formato-fonte: `standards/design-output-format.md`, bloco Design Decision).
 >
 > Regras do log:
 >

@@ -46,6 +46,8 @@ const DENY_PREFIXES = ["tests/", "examples/", "benchmarks/"];
 const CONDITIONAL = {
   "docs/architecture.md":
     "somente quando o canvas é fonte (STEP 1, Agent Preflight até PAPER_READY)",
+  "docs/constitution/canvas-safety.md":
+    "somente quando o canvas é fonte (escopo, PAPER_READY e documento de teste)",
   "experiments/paper-mcp/smoke-test.md":
     "somente quando o canvas é fonte (repertório de leitura validado no STEP 1)",
   "scripts/context-loader.mjs":
